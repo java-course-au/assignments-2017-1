@@ -105,6 +105,9 @@ class Trie {
     }
 
     boolean contains(String element, int index) {
+        if (element.length() == 0) {
+            return isWord;
+        }
         int next = children.indexOf(new Trie(element.charAt(index)));
         if (next == -1) {
             return false;
@@ -116,6 +119,14 @@ class Trie {
     }
 
     boolean remove(String element, int index) {
+        if (element.length() == 0) {
+            if (isWord) {
+                isWord = false;
+                stringsWithPref--;
+                return true;
+            }
+            return false;
+        }
         int next = children.indexOf(new Trie(element.charAt(index)));
         if (next == -1) {
             return false;
