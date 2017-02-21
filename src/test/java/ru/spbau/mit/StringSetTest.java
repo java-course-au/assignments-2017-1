@@ -13,9 +13,40 @@ public class StringSetTest {
 
         assertTrue(stringSet.add("abc"));
         assertTrue(stringSet.contains("abc"));
+//        addTest(stringSet);
+//        containsTest(stringSet);
         assertEquals(1, stringSet.size());
         assertEquals(1, stringSet.howManyStartsWithPrefix("abc"));
     }
+
+//    public static void addTest(StringSet stringSet) {
+//        String str;
+//        for (int i = 0; i < StringSetImpl.CHARCOUNT; i++) {
+//            if (i >= StringSetImpl.ALPHABET) {
+//                str = Character.toString((char) (charA + i + StringSetImpl.CHCNTBWLOWANDUP));
+//            }
+//            else {
+//                str = Character.toString((char) (charA + i));
+//            }
+//            assertTrue(stringSet.add(str));
+//        }
+//        assertTrue(stringSet.add("abd"));
+//        assertTrue(stringSet.add("abe"));
+//        assertTrue(stringSet.add("abf"));
+//    }
+//
+//    public static void containsTest(StringSet stringSet) {
+//        String str;
+//        for (int i = 0; i < StringSetImpl.CHARCOUNT; i++) {
+//            if (i >= StringSetImpl.ALPHABET) {
+//                str = Character.toString((char) (charA + i + StringSetImpl.CHCNTBWLOWANDUP));
+//            }
+//            else {
+//                str = Character.toString((char) (charA + i));
+//            }
+//            assertTrue(stringSet.contains(str));
+//        }
+//    }
 
     public static StringSet instance() {
         try {
