@@ -63,15 +63,15 @@ public class StringSetImpl implements StringSet {
 
     @Override
     public int howManyStartsWithPrefix(String prefix) {
-        if (!contains(prefix)) {
-            return 0;
-        } else {
-            Node curNode = root;
-            for (int i = 0; i < prefix.length(); i++) {
-                curNode = curNode.getNext(prefix.charAt(i));
+        Node curNode = root;
+        for (int i = 0; i < prefix.length(); i++) {
+            if (curNode.getNext(prefix.charAt(i)) == null) {
+                return 0;
             }
-            return curNode.getNumStrings();
+            curNode = curNode.getNext(prefix.charAt(i));
         }
+
+        return curNode.getNumStrings();
     }
 }
 
