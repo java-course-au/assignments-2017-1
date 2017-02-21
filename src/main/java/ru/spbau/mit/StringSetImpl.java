@@ -46,7 +46,7 @@ public class StringSetImpl implements StringSet {
             return false;
         } else {
             Node curNode = root;
-            for (int i = 0; i < element.length() - 1; i++) {
+            for (int i = 0; i < element.length(); i++) {
                 curNode.decreaseNumStrings();
                 curNode = curNode.getNext(element.charAt(i));
             }
