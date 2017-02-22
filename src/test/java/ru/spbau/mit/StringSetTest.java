@@ -51,17 +51,19 @@ public class StringSetTest {
     @Test
     public void testBigPadding() {
         StringSet stringSet = instance();
+        final int padLength = 100500;
+        final int addedStrings = 3;
 
-        assertTrue(stringSet.add(padRightString("qwerty", 500, 'a')));
-        assertTrue(stringSet.add(padRightString("BinGOBinGO", 53450, 'a')));
-        assertTrue(stringSet.add(padRightString("abacadabacaba", 100500, 'a')));
-        assertEquals(3, stringSet.howManyStartsWithPrefix("aaaaaa"));
+        assertTrue(stringSet.add(padRightString("qwerty", padLength, 'a')));
+        assertTrue(stringSet.add(padRightString("BinGOBinGO", padLength, 'a')));
+        assertTrue(stringSet.add(padRightString("abacadabacaba", padLength, 'a')));
+        assertEquals(addedStrings, stringSet.howManyStartsWithPrefix("aaaaaa"));
     }
 
     @Test
     public void testAddRemoveBinaryStrings() {
         StringSet stringSet = instance();
-        int maxBinaryLength = 13;
+        final int maxBinaryLength = 13;
 
         for (int mask = 0; mask < (1 << maxBinaryLength); mask++) {
             String unpadded = Integer.toBinaryString(mask);
@@ -71,7 +73,9 @@ public class StringSetTest {
         assertEquals(1 << maxBinaryLength, stringSet.size());
 
         for (int mask = 0; mask < (1 << maxBinaryLength); mask++) {
-            assertTrue(stringSet.contains(Integer.toBinaryString(mask)));   // Some strings may repeat without padding.
+
+            // Some strings may repeat without padding.
+            assertTrue(stringSet.contains(Integer.toBinaryString(mask)));
         }
 
         String prefix = "";
@@ -87,7 +91,7 @@ public class StringSetTest {
         }
 
         for (int mask = 0; mask < (1 << maxBinaryLength); mask++) {
-            assertFalse(stringSet.contains(Integer.toBinaryString(mask)));   // Some strings may repeat without padding.
+            assertFalse(stringSet.contains(Integer.toBinaryString(mask)));
         }
     }
 
