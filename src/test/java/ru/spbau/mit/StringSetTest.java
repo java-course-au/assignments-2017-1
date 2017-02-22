@@ -8,14 +8,14 @@ import static org.junit.Assert.assertTrue;
 
 public class StringSetTest {
 
-    private String padRightString(String unpadded, int length, char pad) {
-        String padded = unpadded;
+    private String padLeftString(String unpadded, int length, char pad) {
+        String padding = "";
 
-        while (padded.length() < length) {
-            padded += pad;
+        while (padding.length() + unpadded.length() < length) {
+            padding += pad;
         }
 
-        return padded;
+        return padding + unpadded;
     }
 
     @Test
@@ -26,6 +26,17 @@ public class StringSetTest {
         assertTrue(stringSet.contains("abc"));
         assertEquals(1, stringSet.size());
         assertEquals(1, stringSet.howManyStartsWithPrefix("abc"));
+    }
+
+    @Test
+    public void testContainsRemoved() {
+        StringSet stringSet = instance();
+        String toAdd = "FHTAGN";
+
+        assertTrue(stringSet.add(toAdd));
+        assertTrue(stringSet.contains(toAdd));
+        assertTrue(stringSet.remove(toAdd));
+        assertFalse(stringSet.contains(toAdd));
     }
 
     @Test
@@ -54,9 +65,9 @@ public class StringSetTest {
         final int padLength = 100500;
         final int addedStrings = 3;
 
-        assertTrue(stringSet.add(padRightString("qwerty", padLength, 'a')));
-        assertTrue(stringSet.add(padRightString("BinGOBinGO", padLength, 'a')));
-        assertTrue(stringSet.add(padRightString("abacadabacaba", padLength, 'a')));
+        assertTrue(stringSet.add(padLeftString("qwerty", padLength, 'a')));
+        assertTrue(stringSet.add(padLeftString("BinGOBinGO", padLength, 'a')));
+        assertTrue(stringSet.add(padLeftString("abacadabacaba", padLength, 'a')));
         assertEquals(addedStrings, stringSet.howManyStartsWithPrefix("aaaaaa"));
     }
 
@@ -68,30 +79,33 @@ public class StringSetTest {
         for (int mask = 0; mask < (1 << maxBinaryLength); mask++) {
             String unpadded = Integer.toBinaryString(mask);
 
-            assertTrue(stringSet.add(padRightString(unpadded, maxBinaryLength, '0')));
+            assertTrue(stringSet.add(padLeftString(unpadded, maxBinaryLength, '0')));
         }
         assertEquals(1 << maxBinaryLength, stringSet.size());
 
         for (int mask = 0; mask < (1 << maxBinaryLength); mask++) {
+            String unpadded = Integer.toBinaryString(mask);
 
-            // Some strings may repeat without padding.
-            assertTrue(stringSet.contains(Integer.toBinaryString(mask)));
+            assertTrue(stringSet.contains(padLeftString(unpadded, maxBinaryLength, '0')));
         }
 
         String prefix = "";
         for (int prefixLength = 0; prefixLength <= maxBinaryLength; prefixLength++) {
             assertEquals(1 << (maxBinaryLength - prefixLength), stringSet.howManyStartsWithPrefix(prefix));
+            prefix += '0';
         }
 
         for (int mask = 0; mask < (1 << maxBinaryLength); mask++) {
             String unpadded = Integer.toBinaryString(mask);
 
-            assertTrue(stringSet.remove(padRightString(unpadded, maxBinaryLength, '0')));
+            assertTrue(stringSet.remove(padLeftString(unpadded, maxBinaryLength, '0')));
             assertEquals((1 << maxBinaryLength) - mask - 1, stringSet.size());
         }
 
         for (int mask = 0; mask < (1 << maxBinaryLength); mask++) {
-            assertFalse(stringSet.contains(Integer.toBinaryString(mask)));
+            String unpadded = Integer.toBinaryString(mask);
+
+            assertFalse(stringSet.contains(padLeftString(unpadded, maxBinaryLength, '0')));
         }
     }
 

@@ -7,9 +7,9 @@ public class StringSetImpl implements StringSet {
     private static final int JUMP_SIZE = 256 * 2;    // Java has 2-byte chars.
     private static final int FAILED_STATE = -1;
 
-    private ArrayList<int[]> nextState;
-    private ArrayList<Boolean> isTerminal;
-    private ArrayList<Integer> subtreeCount;
+    private ArrayList<int[]> nextState = new ArrayList<>();
+    private ArrayList<Boolean> isTerminal = new ArrayList<>();
+    private ArrayList<Integer> subtreeCount = new ArrayList<>();
     private int lastFreeState;
 
 
