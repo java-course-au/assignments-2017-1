@@ -29,6 +29,26 @@ public class StringSetTest {
     }
 
     @Test
+    public void testPrefix() {
+        StringSet stringSet = instance();
+
+        assertTrue(stringSet.add("working"));
+        assertEquals(1, stringSet.howManyStartsWithPrefix("work"));
+        assertTrue(stringSet.remove("working"));
+        assertEquals(0, stringSet.howManyStartsWithPrefix("work"));
+    }
+
+    @Test
+    public void testNonExistentStrings() {
+        StringSet stringSet = instance();
+
+        assertFalse(stringSet.contains("abacaba"));
+        assertFalse(stringSet.contains(""));
+        assertTrue(stringSet.add("ILoveJava"));
+        assertEquals(0, stringSet.howManyStartsWithPrefix("nonexistentPrefix"));
+    }
+
+    @Test
     public void testBigPadding() {
         StringSet stringSet = instance();
 

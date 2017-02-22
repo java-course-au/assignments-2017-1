@@ -26,13 +26,15 @@ public class StringSetImpl implements StringSet {
      */
     @Override
     public boolean add(String element) {
-        int curState = getStateOrFail(element, false);
+        int state = getStateOrFail(element, false);
 
-        if (isTerminal.get(curState)) {
+        if (isTerminal.get(state)) {
             return false;
         }
 
         addPrefixVal(element, 1);
+        isTerminal.set(state, true);
+
         return true;
     }
 
@@ -61,6 +63,8 @@ public class StringSetImpl implements StringSet {
         }
 
         addPrefixVal(element, -1);
+        isTerminal.set(state, false);
+
         return true;
     }
 
@@ -81,11 +85,6 @@ public class StringSetImpl implements StringSet {
         int state = getStateOrFail(prefix, true);
 
         return (state == FAILED_STATE) ? 0 : subtreeCount.get(state);
-    }
-
-
-    private void setTerminal(int stateNumber) {
-        isTerminal.set(stateNumber, true);
     }
 
     private int createState() {
