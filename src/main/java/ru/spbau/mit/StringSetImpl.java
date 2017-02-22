@@ -37,20 +37,22 @@ public class StringSetImpl implements StringSet {
         }
     }
 
-    final class Trail {
+    final class Trace {
         private Node node;
-        private int elementCnt;
+        private int length;
+        private String element;
 
-        Trail(Node nd, int cnt) {
-            node = nd;
-            elementCnt = cnt;
+        Trace(Node node, int length, String element) {
+            this.node = node;
+            this.length = length;
+            this.element = element;
         }
 
-        boolean match(String prefix) {
-            return elementCnt == prefix.length();
+        boolean found() {
+            return length == element.length();
         }
-        boolean equal(String element) {
-            return match(element) && node.isTerminal;
+        boolean foundTerminal() {
+            return found() && node.isTerminal;
         }
     }
 
@@ -60,69 +62,32 @@ public class StringSetImpl implements StringSet {
         head = new Node();
     }
 
-    private Trail search(String element) {
-        Node cur = head;
-
-        for (int i = 0; i < element.length(); i++) {
-            Node next = cur.searchSymbol(element.charAt(i));
-            if (next == null) {
-                return new Trail(cur, i);
-            }
-            cur = next;
-        }
-        return new Trail(cur, element.length());
-    }
-
     public boolean add(String element) {
-        Trail trail = search(element);
-        Node cur = trail.node;
+        final Trace trace = search(element);
+        Node cur = trace.node;
 
-        if (trail.equal(element)) {
+        if (trace.foundTerminal()) {
             return false;
         }
-
-        for (int i = trail.elementCnt; i < element.length(); i++) {
+        for (int i = trace.length; i < element.length(); i++) {
             cur = cur.addSymbol(element.charAt(i));
         }
-        cur.isTerminal = true;
-
-        cur = head;
-        for (int i = 0; i < element.length(); i++) {
-            cur.size++;
-            cur = cur.searchSymbol(element.charAt(i));
-        }
-        cur.size++;
+        setTerminal(element);
         return true;
     }
 
     public boolean contains(String element) {
-        Trail trail = search(element);
-        return trail.equal(element);
+        final Trace trace = search(element);
+        return trace.foundTerminal();
     }
 
     public boolean remove(String element) {
-        Trail res = search(element);
-        if (!res.equal(element)) {
+        final Trace res = search(element);
+        if (!res.foundTerminal()) {
             return false;
         }
-
-        Node cur = head;
-        for (int i = 0; i < element.length(); i++) {
-            cur.size--;
-            cur = cur.searchSymbol(element.charAt(i));
-        }
-        cur.size--;
-        cur.isTerminal = false;
-
-        cur = head;
-        for (int i = 0; i < element.length(); i++) {
-            Node next = cur.searchSymbol(element.charAt(i));
-            if (next.size == 0) {
-                cur.remove(element.charAt(i));
-                break;
-            }
-            cur = next;
-        }
+        ceaseTerminal(element);
+        reclaimTail(element);
         return true;
     }
 
@@ -131,10 +96,54 @@ public class StringSetImpl implements StringSet {
     }
 
     public int howManyStartsWithPrefix(String prefix) {
-        Trail trail = search(prefix);
-        if (!trail.match(prefix)) {
+        final Trace trace = search(prefix);
+        if (!trace.found()) {
             return 0;
         }
-        return trail.node.size;
+        return trace.node.size;
+    }
+
+    private Trace search(String element) {
+        Node cur = head;
+        for (int i = 0; i < element.length(); i++) {
+            Node next = cur.searchSymbol(element.charAt(i));
+            if (next == null) {
+                return new Trace(cur, i, element);
+            }
+            cur = next;
+        }
+        return new Trace(cur, element.length(), element);
+    }
+
+    private Node changeTraceSize(String element, int delta) {
+        Node cur = head;
+        for (int i = 0; i < element.length(); i++) {
+            cur.size += delta;
+            cur = cur.searchSymbol(element.charAt(i));
+        }
+        cur.size += delta;
+        return cur;
+    }
+
+    private void setTerminal(String element) {
+        Node tail = changeTraceSize(element, 1);
+        tail.isTerminal = true;
+    }
+
+    private void ceaseTerminal(String element) {
+        Node tail = changeTraceSize(element, -1);
+        tail.isTerminal = false;
+    }
+
+    private void reclaimTail(String element) {
+        Node cur = head;
+        for (int i = 0; i < element.length(); i++) {
+            Node next = cur.searchSymbol(element.charAt(i));
+            if (next.size == 0) {
+                cur.remove(element.charAt(i));
+                return;
+            }
+            cur = next;
+        }
     }
 }
