@@ -98,7 +98,7 @@ public class StringSetImpl implements StringSet {
     }
 
     private int index(char symbol) {
-        final int start = 27;
+        final int start = 26;
         if (symbol >= 'a' && symbol <= 'z') {
             return start + (int) symbol - (int) 'a';
         } else if (symbol >= 'A' && symbol <= 'Z') {
