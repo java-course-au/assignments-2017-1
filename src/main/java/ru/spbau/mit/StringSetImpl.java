@@ -35,14 +35,14 @@ public class StringSetImpl implements StringSet {
         for (int i = 0; i < element.length(); i++) {
             index = index(element.charAt(i));
             if (node[index] == null) {
-                return false;
+                break;
             }
             if (i == element.length() - 1) {
                 return node[index].getTerminate();
             }
             node = node[index].getListRef();
         }
-        return !(element.length() == 0);
+        return false;
     }
 
     @Override
@@ -77,14 +77,14 @@ public class StringSetImpl implements StringSet {
         for (int i = 0; i < prefix.length(); i++) {
             index = index(prefix.charAt(i));
             if (node[index] == null) {
-                break;
+                return 0;
             }
             if (i == prefix.length() - 1) {
                 return node[index].getHowManyStartsWithPrefix();
             }
             node = node[index].getListRef();
         }
-        return 0;
+        return countWords;
     }
 
     private int index(char symbol) {
@@ -97,16 +97,10 @@ public class StringSetImpl implements StringSet {
 }
 
 class Trie {
-    private boolean isTerminated;
+    private boolean isTerminated = false;
     private final int size = 52;
-    private int howManyStartsWithPrefix;
-    private Trie[] listRef;
-
-    Trie() {
-        isTerminated = false;
-        howManyStartsWithPrefix = 0;
-        listRef = new Trie[size];
-    }
+    private int howManyStartsWithPrefix = 0;
+    private Trie[] listRef = new Trie[size];
 
     public boolean getTerminate() {
         return isTerminated;
