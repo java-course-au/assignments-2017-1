@@ -61,8 +61,8 @@ public class StringSetImpl implements StringSet {
     }
 
     private int getIndexByChar(char value) {
-        final int ASCII_OFFSET = 65;
-        return value - ASCII_OFFSET;
+        final int asciiOffset = 65;
+        return value - asciiOffset;
     }
 
     @Override
@@ -118,24 +118,25 @@ public class StringSetImpl implements StringSet {
 
     class Node {
 
-        Node[] children;
-        char value;
-        int numberOfChildren;
-        int howManyStartsWithPrefix;
-        boolean isFullWord;
-        Node parent;
+        private Node[] children;
+        private char value;
+        private int numberOfChildren;
+        private int howManyStartsWithPrefix;
+        private boolean isFullWord;
+        private Node parent;
 
 
         Node(char value) {
+            final int sizeOfFrameInAscii = 58;
             this.value = value;
-            this.children = new Node[58];
+            this.children = new Node[sizeOfFrameInAscii];
         }
 
         Node getChild(char value) {
             return children[getIndexByChar(value)];
         }
 
-        void addChild(Node newChild) {
+        void addChild(final Node newChild) {
             children[getIndexByChar(newChild.value)] = newChild;
             numberOfChildren++;
         }

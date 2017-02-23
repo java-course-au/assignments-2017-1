@@ -39,34 +39,37 @@ public class StringSetTest {
         assertTrue(stringSet.contains("inn"));
         assertTrue(stringSet.contains("in"));
 
-        assertTrue(stringSet.size() == 7);
+        final int size = 7;
+        assertTrue(stringSet.size() == size);
 
         assertTrue(stringSet.howManyStartsWithPrefix("i") == 2);
         assertTrue(stringSet.howManyStartsWithPrefix("in") == 2);
-        assertTrue(stringSet.howManyStartsWithPrefix("te") == 3);
+        assertTrue(stringSet.howManyStartsWithPrefix("te")
+                == size - (size / 2) - 1); // :)
 
         assertTrue(stringSet.remove("in"));
 
-        assertTrue(stringSet.size() == 6);
+        assertTrue(stringSet.size() == size - 1);
         assertTrue(!stringSet.contains("in"));
         assertTrue(stringSet.contains("inn"));
         assertTrue(stringSet.howManyStartsWithPrefix("in") == 1);
-
-        assertTrue(stringSet.howManyStartsWithPrefix("te") == 3);
+        assertTrue(stringSet.howManyStartsWithPrefix("te")
+                == size - (size / 2) - 1);
         assertTrue(stringSet.howManyStartsWithPrefix("tea") == 1);
         assertTrue(stringSet.howManyStartsWithPrefix("ted") == 1);
         assertTrue(stringSet.howManyStartsWithPrefix("ten") == 1);
 
         assertTrue(!stringSet.remove("te"));
-        assertTrue(stringSet.size() == 6);
+        assertTrue(stringSet.size() == size - 1);
 
-        assertTrue(stringSet.howManyStartsWithPrefix("te") == 3);
+        assertTrue(stringSet.howManyStartsWithPrefix("te")
+                == size - (size / 2) - 1);
         assertTrue(stringSet.howManyStartsWithPrefix("tea") == 1);
         assertTrue(stringSet.howManyStartsWithPrefix("ted") == 1);
         assertTrue(stringSet.howManyStartsWithPrefix("ten") == 1);
 
         assertTrue(stringSet.remove("tea"));
-        assertTrue(stringSet.size() == 5);
+        assertTrue(stringSet.size() == size - 2);
 
         assertTrue(stringSet.howManyStartsWithPrefix("te") == 2);
         assertTrue(stringSet.howManyStartsWithPrefix("tea") == 0);
@@ -84,7 +87,7 @@ public class StringSetTest {
         stringSet.add("bcd");
 
         assertTrue(stringSet.contains("abc"));
-        assertTrue(stringSet.size() == 3);
+        assertTrue(stringSet.size() == 1 + 1 + 1);
         assertTrue(stringSet.remove("abc"));
         assertTrue(stringSet.size() == 2);
         assertTrue(!stringSet.contains("abc"));
@@ -145,7 +148,8 @@ public class StringSetTest {
 
     public static StringSet instance() {
         try {
-            return (StringSet) Class.forName("ru.spbau.mit.StringSetImpl").newInstance();
+            return (StringSet) Class.forName("ru.spbau.mit.StringSetImpl")
+                    .newInstance();
         } catch (InstantiationException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
