@@ -1,13 +1,13 @@
 package ru.spbau.mit;
 
 public class StringSetImpl implements StringSet {
-    private Trie[] head;
-    private int countWords;
-
-    StringSetImpl() {
-        countWords = 0;
-        head = new Trie[52];
-    }
+    private int countWords = 0;
+    private final int size = 52;
+    private Trie[] head = new Trie[size];
+//    StringSetImpl() {
+//        countWords = 0;
+//        head = new Trie[size];
+//    }
 
     @Override
     public boolean add(String element) {
@@ -24,12 +24,13 @@ public class StringSetImpl implements StringSet {
             if (node[index] == null) {
                 node[index] = new Trie();
             }
-            node[index].howManyStartsWithPrefix++;
+            int howMany = node[index].getHowManyStartsWithPrefix();
+            node[index].setHowManyStartsWithPrefix(++howMany);
             if (i == element.length() - 1) {
-                node[index].isTerminated = true;
+                node[index].setTerminate(true);
                 countWords++;
             }
-            node = node[index].listRef;
+            node = node[index].getListRef();
         }
         return !(element.length() == 0);
     }
@@ -44,9 +45,9 @@ public class StringSetImpl implements StringSet {
                 return false;
             }
             if (i == element.length() - 1) {
-                return node[index].isTerminated;
+                return node[index].getTerminate();
             }
-            node = node[index].listRef;
+            node = node[index].getListRef();
         }
         return !(element.length() == 0);
     }
@@ -63,11 +64,12 @@ public class StringSetImpl implements StringSet {
             if (index == -1) {
                 return false;
             }
-            node[index].howManyStartsWithPrefix--;
+            int howMany = node[index].getHowManyStartsWithPrefix();
+            node[index].setHowManyStartsWithPrefix(++howMany);
             if (i == element.length() - 1) {
-                node[index].isTerminated = false;
+                node[index].setTerminate(false);
             }
-            node = node[index].listRef;
+            node = node[index].getListRef();
         }
         countWords--;
         return true;
@@ -88,16 +90,17 @@ public class StringSetImpl implements StringSet {
                 break;
             }
             if (i == prefix.length() - 1) {
-                return node[index].howManyStartsWithPrefix;
+                return node[index].getHowManyStartsWithPrefix();
             }
-            node = node[index].listRef;
+            node = node[index].getListRef();
         }
         return 0;
     }
 
-    static private int index(char symbol) {
+    private int index(char symbol) {
+        final int start = 27;
         if (symbol >= 'a' && symbol <= 'z') {
-            return 27 + (int) symbol - (int) 'a';
+            return start + (int) symbol - (int) 'a';
         } else if (symbol >= 'A' && symbol <= 'Z') {
             return (int) symbol - (int) 'A';
         }
@@ -106,13 +109,34 @@ public class StringSetImpl implements StringSet {
 }
 
 class Trie {
-    boolean isTerminated;
-    int howManyStartsWithPrefix;
-    Trie[] listRef;
+    private boolean isTerminated;
+    private final int size = 52;
+    private int howManyStartsWithPrefix;
+    private Trie[] listRef;
 
     Trie() {
         isTerminated = false;
         howManyStartsWithPrefix = 0;
-        listRef = new Trie[52];
+        listRef = new Trie[size];
+    }
+
+    public boolean getTerminate() {
+        return isTerminated;
+    }
+
+    public void setTerminate(boolean isTerminated) {
+        this.isTerminated = isTerminated;
+    }
+
+    public int getHowManyStartsWithPrefix() {
+        return howManyStartsWithPrefix;
+    }
+
+    public void setHowManyStartsWithPrefix(int howManyStartsWithPrefix) {
+        this.howManyStartsWithPrefix = howManyStartsWithPrefix;
+    }
+
+    public Trie[] getListRef() {
+        return listRef;
     }
 }
