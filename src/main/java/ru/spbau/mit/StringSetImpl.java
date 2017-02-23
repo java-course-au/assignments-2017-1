@@ -4,10 +4,6 @@ public class StringSetImpl implements StringSet {
     private int countWords = 0;
     private final int size = 52;
     private Trie[] head = new Trie[size];
-//    StringSetImpl() {
-//        countWords = 0;
-//        head = new Trie[size];
-//    }
 
     @Override
     public boolean add(String element) {
@@ -18,9 +14,6 @@ public class StringSetImpl implements StringSet {
         int index = 0;
         for (int i = 0; i < element.length(); i++) {
             index = index(element.charAt(i));
-            if (index == -1) {
-                return false;
-            }
             if (node[index] == null) {
                 node[index] = new Trie();
             }
@@ -41,7 +34,7 @@ public class StringSetImpl implements StringSet {
         int index = 0;
         for (int i = 0; i < element.length(); i++) {
             index = index(element.charAt(i));
-            if (index == -1 || node[index] == null) {
+            if (node[index] == null) {
                 return false;
             }
             if (i == element.length() - 1) {
@@ -61,11 +54,8 @@ public class StringSetImpl implements StringSet {
         int index = 0;
         for (int i = 0; i < element.length(); i++) {
             index = index(element.charAt(i));
-            if (index == -1) {
-                return false;
-            }
             int howMany = node[index].getHowManyStartsWithPrefix();
-            node[index].setHowManyStartsWithPrefix(++howMany);
+            node[index].setHowManyStartsWithPrefix(--howMany);
             if (i == element.length() - 1) {
                 node[index].setTerminate(false);
             }
@@ -86,7 +76,7 @@ public class StringSetImpl implements StringSet {
         Trie[] node = head;
         for (int i = 0; i < prefix.length(); i++) {
             index = index(prefix.charAt(i));
-            if (index == -1 || node[index] == null) {
+            if (node[index] == null) {
                 break;
             }
             if (i == prefix.length() - 1) {
@@ -101,10 +91,8 @@ public class StringSetImpl implements StringSet {
         final int start = 26;
         if (symbol >= 'a' && symbol <= 'z') {
             return start + (int) symbol - (int) 'a';
-        } else if (symbol >= 'A' && symbol <= 'Z') {
-            return (int) symbol - (int) 'A';
         }
-        return -1;
+        return (int) symbol - (int) 'A';
     }
 }
 
