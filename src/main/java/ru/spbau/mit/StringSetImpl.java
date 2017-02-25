@@ -70,15 +70,13 @@ public class StringSetImpl implements StringSet {
             temp.count--;
             pred = temp;
             temp = temp.next[ind];
+            if (pred.count == 0) {
+                pred.next[ind] = null;
+            }
         }
 
-        if (temp.count == 1) {
-            if (pred == temp) {
-                temp = null;
-            } else {
-                pred.next[ind] = null;
-                temp = null;
-            }
+        if (temp.count == 1 && temp != pred) {
+            pred.next[ind] = null;
         } else {
             temp.isLeaf = false;
             temp.count--;

@@ -10,15 +10,18 @@ public class StringSetTest {
     @Test
     public void testSimple() {
         StringSet stringSet = instance();
-        assertTrue(stringSet.add("abc"));
-        assertTrue(stringSet.add("ab"));
-        assertTrue(stringSet.contains("abc"));
+        stringSet.add("abc");
 //        addTest(stringSet);
+//        System.out.println(stringSet.add("a"));
+//        removeTest(stringSet);
+//        System.out.println(stringSet.add("a"));
 //        containsTest(stringSet);
-//        System.out.println(stringSet.howManyStartsWithPrefix(""));
-        assertEquals(2, stringSet.size());
+        assertTrue(stringSet.contains("abc"));
+        assertEquals(1, stringSet.size());
         assertEquals(1, stringSet.howManyStartsWithPrefix("abc"));
-//        stringSet.remove("abc");
+        stringSet.remove("abc");
+//        stringSet.remove("");
+//        assertTrue(!stringSet.remove("abc"));
 //        stringSet.remove("");
     }
 
@@ -35,7 +38,7 @@ public class StringSetTest {
 //        }
 //    }
 //
-//    public static void containsTest(StringSet stringSet) {
+//    public static void removeTest(StringSet stringSet) {
 //        String str;
 //        for (int i = 0; i < 52; i++) {
 //            if (i >= 26) {
@@ -44,7 +47,7 @@ public class StringSetTest {
 //            else {
 //                str = Character.toString((char) (65 + i));
 //            }
-//            assertTrue(stringSet.contains(str));
+//            assertTrue(stringSet.remove(str));
 //        }
 //    }
 
