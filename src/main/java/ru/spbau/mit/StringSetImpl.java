@@ -5,20 +5,13 @@ package ru.spbau.mit;
  */
 public class StringSetImpl implements StringSet {
 
-    static final int ALPHABET = 26;
-    static final int CHCNTBWLOWANDUP = 6;
-    static final int CHARCOUNT = 2 * ALPHABET;
+    private static final int ALPHABET_SIZE = 26;
+    private static final int CHAR_COUNT = 2 * ALPHABET_SIZE;
 
     private static final class Vertex {
-        private Vertex[] next;
-        private boolean isLeaf;
-        private int count;
-
-        private Vertex() {
-            next = new Vertex[CHARCOUNT];
-            isLeaf = false;
-            count = 0;
-        }
+        private Vertex[] next = new Vertex[CHAR_COUNT];
+        private boolean isLeaf = false;
+        private int count = 0;
     }
 
     private Vertex root;
@@ -26,26 +19,23 @@ public class StringSetImpl implements StringSet {
 
     public StringSetImpl() {
         root = new Vertex();
-        root.isLeaf = false;
-        root.count = 0;
         size = 0;
     }
 
     private static int index(char i) {
-        int temp = i - 'A';
-        if (temp >= ALPHABET) {
-            return temp - CHCNTBWLOWANDUP;
+        if ('a' <= i && i <= 'z') {
+            return ALPHABET_SIZE + (i - 'a');
         }
-        return temp;
+        return i - 'A';
     }
 
     @Override
     public boolean add(String element) {
-        if (this.contains(element)) {
+        if (contains(element)) {
             return false;
         }
 
-        Vertex temp = this.root;
+        Vertex temp = root;
         for (int i = 0; i < element.length(); i++) {
             int ind = index(element.charAt(i));
             if (temp.next[ind] == null) {
@@ -56,58 +46,61 @@ public class StringSetImpl implements StringSet {
         }
         temp.isLeaf = true;
         temp.count++;
-        this.size++;
+        size++;
         return true;
     }
 
     @Override
     public boolean contains(String element) {
-        Vertex temp = this.root;
-        for (int i = 0; i < element.length(); i++) {
-            int ind = index(element.charAt(i));
-            if (temp.next[ind] == null) {
-                return false;
-            }
-            temp = temp.next[ind];
+        Vertex temp = traverse(element);
+        if (temp == null) {
+            return false;
         }
-
         return temp.isLeaf;
     }
 
     @Override
     public boolean remove(String element) {
-        if (!this.contains(element)) {
+        if (!contains(element)) {
             return false;
         }
 
-        Vertex temp = this.root;
+        Vertex temp = root;
         for (int i = 0; i < element.length(); i++) {
             int ind = index(element.charAt(i));
             temp.count--;
             temp = temp.next[ind];
-
         }
+
         temp.isLeaf = false;
-        this.size--;
         temp.count--;
+        size--;
         return true;
     }
 
     @Override
     public int size() {
-        return this.size;
+        return size;
     }
 
     @Override
     public int howManyStartsWithPrefix(String prefix) {
-        Vertex temp = this.root;
-        for (int i = 0; i < prefix.length(); i++) {
-            int ind = index(prefix.charAt(i));
+        Vertex temp = traverse(prefix);
+        if (temp == null) {
+            return 0;
+        }
+        return temp.count;
+    }
+
+    private Vertex traverse(String str) {
+        Vertex temp = root;
+        for (int i = 0; i < str.length(); i++) {
+            int ind = index(str.charAt(i));
             if (temp.next[ind] == null) {
-                return 0;
+                return null;
             }
             temp = temp.next[ind];
         }
-        return temp.count;
+        return temp;
     }
 }
