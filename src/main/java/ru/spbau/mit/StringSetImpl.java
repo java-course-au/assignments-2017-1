@@ -75,14 +75,22 @@ public class StringSetImpl implements StringSet {
         }
 
         Vertex temp = root;
+        Vertex pred = temp;
+        int ind = 0;
         for (int i = 0; i < element.length(); i++) {
-            int ind = index(element.charAt(i));
+            ind = index(element.charAt(i));
             temp.count--;
+            pred = temp;
             temp = temp.next[ind];
         }
 
         if (checkLeaf(temp)) {
-            temp = null;
+            if (pred == temp) {
+                temp = null;
+            } else {
+                pred.next[ind] = null;
+                temp = null;
+            }
         } else {
             temp.isLeaf = false;
             temp.count--;

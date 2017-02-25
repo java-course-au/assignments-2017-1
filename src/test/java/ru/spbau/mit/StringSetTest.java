@@ -18,9 +18,8 @@ public class StringSetTest {
 //        System.out.println(stringSet.howManyStartsWithPrefix(""));
         assertEquals(2, stringSet.size());
         assertEquals(1, stringSet.howManyStartsWithPrefix("abc"));
-        stringSet.remove("ab");
         stringSet.remove("abc");
-
+        stringSet.remove("");
     }
 
 //    public static void addTest(StringSet stringSet) {
