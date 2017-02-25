@@ -29,6 +29,15 @@ public class StringSetImpl implements StringSet {
         return i - 'A';
     }
 
+    private static boolean checkLeaf(Vertex node) {
+        for (int i = 0; i < CHAR_COUNT; i++) {
+            if (node.next[i] != null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     public boolean add(String element) {
         if (contains(element)) {
@@ -72,8 +81,12 @@ public class StringSetImpl implements StringSet {
             temp = temp.next[ind];
         }
 
-        temp.isLeaf = false;
-        temp.count--;
+        if (checkLeaf(temp)) {
+            temp = null;
+        } else {
+            temp.isLeaf = false;
+            temp.count--;
+        }
         size--;
         return true;
     }
@@ -103,4 +116,5 @@ public class StringSetImpl implements StringSet {
         }
         return temp;
     }
+
 }

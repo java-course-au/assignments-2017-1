@@ -11,13 +11,16 @@ public class StringSetTest {
     public void testSimple() {
         StringSet stringSet = instance();
         assertTrue(stringSet.add("abc"));
-//        assertTrue(stringSet.add("ab"));
+        assertTrue(stringSet.add("ab"));
         assertTrue(stringSet.contains("abc"));
 //        addTest(stringSet);
 //        containsTest(stringSet);
 //        System.out.println(stringSet.howManyStartsWithPrefix(""));
-        assertEquals(1, stringSet.size());
+        assertEquals(2, stringSet.size());
         assertEquals(1, stringSet.howManyStartsWithPrefix("abc"));
+        stringSet.remove("ab");
+        stringSet.remove("abc");
+
     }
 
 //    public static void addTest(StringSet stringSet) {
