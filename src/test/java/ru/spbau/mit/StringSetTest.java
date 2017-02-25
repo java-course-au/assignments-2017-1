@@ -13,40 +13,40 @@ public class StringSetTest {
         assertTrue(stringSet.add("abc"));
         assertTrue(stringSet.add("ab"));
         assertTrue(stringSet.contains("abc"));
-//        addTest(stringSet);
-//        containsTest(stringSet);
+        addTest(stringSet);
+        containsTest(stringSet);
 //        System.out.println(stringSet.howManyStartsWithPrefix(""));
-        assertEquals(2, stringSet.size());
-        assertEquals(1, stringSet.howManyStartsWithPrefix("abc"));
+//        assertEquals(2, stringSet.size());
+//        assertEquals(1, stringSet.howManyStartsWithPrefix("abc"));
         stringSet.remove("abc");
         stringSet.remove("");
     }
 
-//    public static void addTest(StringSet stringSet) {
-//        String str;
-//        for (int i = 0; i < 52; i++) {
-//            if (i >= 26) {
-//                str = Character.toString((char) (65 + i + 6));
-//            }
-//            else {
-//                str = Character.toString((char) (65 + i));
-//            }
-//            assertTrue(stringSet.add(str));
-//        }
-//    }
-//
-//    public static void containsTest(StringSet stringSet) {
-//        String str;
-//        for (int i = 0; i < 52; i++) {
-//            if (i >= 26) {
-//                str = Character.toString((char) (65 + i + 6));
-//            }
-//            else {
-//                str = Character.toString((char) (65 + i));
-//            }
-//            assertTrue(stringSet.contains(str));
-//        }
-//    }
+    public static void addTest(StringSet stringSet) {
+        String str;
+        for (int i = 0; i < 52; i++) {
+            if (i >= 26) {
+                str = Character.toString((char) (65 + i + 6));
+            }
+            else {
+                str = Character.toString((char) (65 + i));
+            }
+            assertTrue(stringSet.add(str));
+        }
+    }
+
+    public static void containsTest(StringSet stringSet) {
+        String str;
+        for (int i = 0; i < 52; i++) {
+            if (i >= 26) {
+                str = Character.toString((char) (65 + i + 6));
+            }
+            else {
+                str = Character.toString((char) (65 + i));
+            }
+            assertTrue(stringSet.contains(str));
+        }
+    }
 
     public static StringSet instance() {
         try {

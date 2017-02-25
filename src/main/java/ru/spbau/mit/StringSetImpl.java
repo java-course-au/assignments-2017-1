@@ -29,15 +29,6 @@ public class StringSetImpl implements StringSet {
         return i - 'A';
     }
 
-    private static boolean checkLeaf(Vertex node) {
-        for (int i = 0; i < CHAR_COUNT; i++) {
-            if (node.next[i] != null) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     @Override
     public boolean add(String element) {
         if (contains(element)) {
@@ -62,10 +53,7 @@ public class StringSetImpl implements StringSet {
     @Override
     public boolean contains(String element) {
         Vertex temp = traverse(element);
-        if (temp == null) {
-            return false;
-        }
-        return temp.isLeaf;
+        return temp != null && temp.isLeaf;
     }
 
     @Override
@@ -84,7 +72,7 @@ public class StringSetImpl implements StringSet {
             temp = temp.next[ind];
         }
 
-        if (checkLeaf(temp)) {
+        if (temp.count == 1) {
             if (pred == temp) {
                 temp = null;
             } else {
@@ -107,10 +95,7 @@ public class StringSetImpl implements StringSet {
     @Override
     public int howManyStartsWithPrefix(String prefix) {
         Vertex temp = traverse(prefix);
-        if (temp == null) {
-            return 0;
-        }
-        return temp.count;
+        return (temp == null) ? 0 : temp.count;
     }
 
     private Vertex traverse(String str) {
