@@ -63,7 +63,7 @@ public class StringSetImpl implements StringSet {
     public boolean add(String element) {
         TrieNode state = getNodeOrNull(element, false);
 
-        // `state.isTerminal` will not result in NPO, because `getNodeOrNull` with `false` as the second
+        // `state.isTerminal` will not result in NPE, because `getNodeOrNull` with `false` as the second
         // argument will always return a valid node.
         if (state.isTerminal()) {
             return false;

@@ -35,6 +35,35 @@ public class StringSetTest {
     }
 
     @Test
+    public void testStringEdgeCases() {
+        StringSet stringSet = instance();
+
+        assertTrue(stringSet.add("A"));
+        assertTrue(stringSet.contains("A"));
+        assertFalse(stringSet.contains("a"));
+        assertFalse(stringSet.contains("z"));
+        assertTrue(stringSet.remove("A"));
+
+        assertTrue(stringSet.add("Z"));
+        assertTrue(stringSet.contains("Z"));
+        assertFalse(stringSet.contains("a"));
+        assertFalse(stringSet.contains("z"));
+        assertTrue(stringSet.remove("Z"));
+
+        assertTrue(stringSet.add("a"));
+        assertTrue(stringSet.contains("a"));
+        assertFalse(stringSet.contains("Z"));
+        assertFalse(stringSet.contains("A"));
+        assertTrue(stringSet.remove("a"));
+
+        assertTrue(stringSet.add("z"));
+        assertTrue(stringSet.contains("z"));
+        assertFalse(stringSet.contains("Z"));
+        assertFalse(stringSet.contains("A"));
+        assertTrue(stringSet.remove("z"));
+    }
+
+    @Test
     public void testContainsPrefix() {
         StringSet stringSet = instance();
 
