@@ -40,6 +40,10 @@ public class Vertex {
         this.increaseAmountOfStrings();
     }
 
+    public void loseEnd() {
+        isEndVertex = false;
+    }
+
     public boolean isEnd() {
         return isEndVertex;
     }
@@ -49,8 +53,17 @@ public class Vertex {
         this.increaseAmountOfStrings();
     }
 
+    public void deleteChild(char ch) {
+        children[getindex(ch)] = null;
+        this.decreaseAmountOfStrings();
+    }
+
     public void increaseAmountOfStrings() {
         amountOfStrings++;
+    }
+
+    public void decreaseAmountOfStrings() {
+        amountOfStrings--;
     }
 
     public Integer getAmountOfStrings() {

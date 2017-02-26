@@ -35,7 +35,6 @@ public class StringSetImpl implements StringSet {
                 break;
             }
         }
-        System.out.println(i);
         Vertex predVertex = new Vertex();
         predVertex.makeEnd();
         for (int j = element.length() - 1; j > i; j--) {
@@ -45,7 +44,6 @@ public class StringSetImpl implements StringSet {
         }
         data.add(0, predVertex);
         currVertex.setChild(element.charAt(i), data.get(0));
-        System.out.println(root.contains('a'));
         return true;
     }
 
@@ -74,6 +72,25 @@ public class StringSetImpl implements StringSet {
      */
     @Override
     public boolean remove(String element) {
+        if (!contains(element)) {
+            return false;
+        }
+        Vertex curVertex = root;
+        Vertex curChild = root.getChild(element.charAt(0));
+        curVertex.decreaseAmountOfStrings();
+        for (int i = 0; i < element.length(); i++) {
+            curChild.decreaseAmountOfStrings();
+            if (curChild.getAmountOfStrings() == 0) {
+                curVertex.deleteChild(element.charAt(i));
+                data.remove(curChild);
+            }
+            if (i != element.length() - 1) {
+                curVertex = curChild;
+                curChild = curChild.getChild(element.charAt(i + 1));
+            } else {
+                curChild.loseEnd();
+            }
+        }
         return true;
     }
 
