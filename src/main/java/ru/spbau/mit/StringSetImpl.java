@@ -35,7 +35,7 @@ public class StringSetImpl implements StringSet {
                 break;
             }
         }
-        if (i == element.length() - 1) {
+        if (i == element.length()) {
             currVertex.makeEnd();
         } else {
             Vertex predVertex = new Vertex();
