@@ -1,5 +1,7 @@
 package ru.spbau.mit;
 
+import java.util.function.Function;
+
 public class StringSetImpl implements StringSet {
     private static final int ALPHABET_SIZE = 52;
 
@@ -8,80 +10,30 @@ public class StringSetImpl implements StringSet {
 
     @Override
     public boolean add(String element) {
-        boolean res = add(root, element, 0);
-        if (res) {
-            size++;
+        if (contains(element)) {
+            return false;
         }
-        return res;
-    }
-
-    private boolean add(Node cur, String s, int idx) {
-        if (idx == s.length()) {
-            if (cur.isTerminal) {
-                return false;
-            }
-            cur.terminalsNumber++;
-            cur.isTerminal = true;
-            return true;
-        }
-        int childIdx = charToIdx(s.charAt(idx));
-        Node next = cur.child[childIdx];
-        if (next == null) {
-            cur.child[childIdx] = new Node();
-            next = cur.child[childIdx];
-        }
-        boolean res = add(next, s, idx + 1);
-        if (res) {
-            cur.terminalsNumber++;
-        }
-        return res;
+        Node lastNode = createPath(element);
+        lastNode.isTerminal = true;
+        size++;
+        return true;
     }
 
     @Override
     public boolean contains(String element) {
-        return contains(root, element, 0);
-    }
-
-    private boolean contains(Node cur, String s, int idx) {
-        if (idx == s.length()) {
-            return cur.isTerminal;
-        }
-        int childIdx = charToIdx(s.charAt(idx));
-        Node next = cur.child[childIdx];
-
-        //noinspection SimplifiableIfStatement
-        if (next == null || next.terminalsNumber == 0) {
-            return false;
-        }
-        return contains(next, s, idx + 1);
+        Node lastNode = findNode(element);
+        return lastNode != null && lastNode.isTerminal;
     }
 
     @Override
     public boolean remove(String element) {
-        return remove(root, element, 0);
-    }
-
-    private boolean remove(Node cur, String s, int idx) {
-        if (idx == s.length()) {
-            if (cur.isTerminal) {
-                cur.isTerminal = false;
-                size--;
-                cur.terminalsNumber--;
-                return true;
-            }
+        if (!contains(element)) {
             return false;
         }
-
-        int childIdx = charToIdx(s.charAt(idx));
-        Node next = cur.child[childIdx];
-        if (next == null) {
-            return false;
-        }
-        boolean res = remove(next, s, idx + 1);
-        if (res) {
-            cur.terminalsNumber--;
-        }
-        return res;
+        size--;
+        Node lastNode = removeTerminal(element);
+        lastNode.isTerminal = false;
+        return true;
     }
 
     @Override
@@ -91,24 +43,48 @@ public class StringSetImpl implements StringSet {
 
     @Override
     public int howManyStartsWithPrefix(String prefix) {
-        return howManyStartsWithPrefix(root, prefix, 0);
-    }
-
-    private int howManyStartsWithPrefix(Node cur, String s, int idx) {
-        if (idx == s.length()) {
-            return cur.terminalsNumber;
-        }
-
-        int childIdx = charToIdx(s.charAt(idx));
-        Node next = cur.child[childIdx];
-        if (next == null || next.terminalsNumber == 0) {
+        Node lastNode = findNode(prefix);
+        if (lastNode == null) {
             return 0;
         }
-
-        return howManyStartsWithPrefix(next, s, idx + 1);
+        return lastNode.terminalsNumber;
     }
 
-    private int charToIdx(char c) {
+    private Node findNode(String s) {
+        return followPath(s, Function.identity());
+    }
+
+    private Node createPath(String s) {
+        return followPath(s, (Node n) -> {
+            if (n == null) {
+                n = new Node();
+            }
+            n.terminalsNumber++;
+            return n;
+        });
+    }
+
+    private Node removeTerminal(String s) {
+        return followPath(s, (Node n) -> {
+            n.terminalsNumber--;
+            return n;
+        });
+    }
+
+    private Node followPath(String s, Function<Node, Node> f) {
+        Node cur = f.apply(root);
+        for (int i = 0; i < s.length(); i++) {
+            int index = getIndex(s.charAt(i));
+            cur.children[index] = f.apply(cur.children[index]);
+            cur = cur.children[index];
+            if (cur == null) {
+                return null;
+            }
+        }
+        return cur;
+    }
+
+    private static int getIndex(char c) {
         if (c >= 'a' && c <= 'z') {
             return c - 'a';
         }
@@ -119,7 +95,7 @@ public class StringSetImpl implements StringSet {
     }
 
     private static class Node {
-        private Node[] child = new Node[ALPHABET_SIZE];
+        private Node[] children = new Node[ALPHABET_SIZE];
         private boolean isTerminal = false;
         private int terminalsNumber = 0;
     }
