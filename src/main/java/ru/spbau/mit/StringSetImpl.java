@@ -77,7 +77,7 @@ public class StringSetImpl implements StringSet {
         }
         Vertex curVertex = root;
         Vertex curChild = root.getChild(element.charAt(0));
-        curVertex.decreaseAmountOfStrings();
+        root.decreaseAmountOfStrings();
         for (int i = 0; i < element.length(); i++) {
             curChild.decreaseAmountOfStrings();
             if (curChild.getAmountOfStrings() == 0) {

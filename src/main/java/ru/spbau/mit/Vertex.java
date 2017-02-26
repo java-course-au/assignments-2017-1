@@ -55,7 +55,7 @@ public class Vertex {
 
     public void deleteChild(char ch) {
         children[getindex(ch)] = null;
-        this.decreaseAmountOfStrings();
+
     }
 
     public void increaseAmountOfStrings() {
