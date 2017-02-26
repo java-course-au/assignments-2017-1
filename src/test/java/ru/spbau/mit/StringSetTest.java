@@ -79,10 +79,10 @@ public class StringSetTest {
         final int padLength = 100500;
         final int addedStrings = 3;
 
-        assertTrue(stringSet.add(padLeftString("qwerty", padLength, 'a')));
-        assertTrue(stringSet.add(padLeftString("BinGOBinGO", padLength, 'a')));
-        assertTrue(stringSet.add(padLeftString("abacadabacaba", padLength, 'a')));
-        assertEquals(addedStrings, stringSet.howManyStartsWithPrefix("aaaaaa"));
+        assertTrue(stringSet.add(padLeftString("qwerty", padLength, 'x')));
+        assertTrue(stringSet.add(padLeftString("BinGOBinGO", padLength, 'x')));
+        assertTrue(stringSet.add(padLeftString("abacadabacaba", padLength, 'x')));
+        assertEquals(addedStrings, stringSet.howManyStartsWithPrefix("xxxxxx"));
     }
 
     @Test

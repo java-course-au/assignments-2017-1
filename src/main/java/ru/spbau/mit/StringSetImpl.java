@@ -1,21 +1,52 @@
 package ru.spbau.mit;
 
-import java.util.ArrayList;
-
 
 public class StringSetImpl implements StringSet {
-    private static final int JUMP_SIZE = 256 * 2;    // Java has 2-byte chars.
-    private static final int FAILED_STATE = -1;
+    private TrieNode trieRoot = new TrieNode();
 
-    private ArrayList<int[]> nextState = new ArrayList<>();
-    private ArrayList<Boolean> isTerminal = new ArrayList<>();
-    private ArrayList<Integer> subtreeCount = new ArrayList<>();
-    private int lastFreeState;
+    private static class TrieNode {
+        private boolean isTerminal = false;
+        private int subtreeCount = 0;
+        private TrieNode[] nextState = new TrieNode[26 * 2]; // Only letters 'a'-'z' 'A'-'Z' are allowed.
 
+        private static int convertCharToIndex(char character) {
+            if ('a' <= character && character <= 'z') {
+                return character - 'a';
+            }
+            return character - 'A' + 26;
+        }
 
-    public StringSetImpl() {
-        lastFreeState = 0;
-        createState();
+        boolean isTerminal() {
+            return isTerminal;
+        }
+
+        void setTerminal(boolean terminal) {
+            isTerminal = terminal;
+        }
+
+        int getSubtreeCount() {
+            return subtreeCount;
+        }
+
+        void addSubtreeCount(int addend) {
+            subtreeCount += addend;
+        }
+
+        void removeNextState(char nextCharacter) {
+            nextState[convertCharToIndex(nextCharacter)] = null;
+        }
+
+        void createNextState(char nextCharacter) {
+            nextState[convertCharToIndex(nextCharacter)] = new TrieNode();
+        }
+
+        TrieNode getNextState(char nextCharacter) {
+            return nextState[convertCharToIndex(nextCharacter)];
+        }
+
+        boolean canJumpTo(char nextCharacter) {
+            return nextState[convertCharToIndex(nextCharacter)] != null;
+        }
     }
 
     /**
@@ -26,14 +57,14 @@ public class StringSetImpl implements StringSet {
      */
     @Override
     public boolean add(String element) {
-        int state = getStateOrFail(element, false);
+        TrieNode state = getNodeOrNull(element, false);
 
-        if (isTerminal.get(state)) {
+        if (state.isTerminal()) {
             return false;
         }
 
         addPrefixVal(element, 1);
-        isTerminal.set(state, true);
+        state.setTerminal(true);
 
         return true;
     }
@@ -44,9 +75,9 @@ public class StringSetImpl implements StringSet {
      */
     @Override
     public boolean contains(String element) {
-        int state = getStateOrFail(element, true);
+        TrieNode state = getNodeOrNull(element, true);
 
-        return (state != FAILED_STATE && isTerminal.get(state));
+        return (state != null && state.isTerminal());
     }
 
     /**
@@ -56,14 +87,14 @@ public class StringSetImpl implements StringSet {
      */
     @Override
     public boolean remove(String element) {
-        int state = getStateOrFail(element, true);
+        TrieNode state = getNodeOrNull(element, true);
 
-        if (state == FAILED_STATE) {
+        if (state == null) {
             return false;
         }
 
         addPrefixVal(element, -1);
-        isTerminal.set(state, false);
+        state.setTerminal(false);
 
         return true;
     }
@@ -73,7 +104,7 @@ public class StringSetImpl implements StringSet {
      */
     @Override
     public int size() {
-        return subtreeCount.get(0);
+        return trieRoot.getSubtreeCount();
     }
 
     /**
@@ -82,48 +113,41 @@ public class StringSetImpl implements StringSet {
      */
     @Override
     public int howManyStartsWithPrefix(String prefix) {
-        int state = getStateOrFail(prefix, true);
+        TrieNode state = getNodeOrNull(prefix, true);
 
-        return (state == FAILED_STATE) ? 0 : subtreeCount.get(state);
-    }
-
-    private int createState() {
-        isTerminal.add(false);
-        nextState.add(new int[JUMP_SIZE]);
-        subtreeCount.add(0);
-        lastFreeState++;
-        return lastFreeState - 1;
-    }
-
-    private boolean canJump(int stateNumber, char offset) {
-        return nextState.get(stateNumber)[offset] != 0;
+        return (state == null) ? 0 : state.getSubtreeCount();
     }
 
     private void addPrefixVal(String element, int addend) {
-        int curState = 0;
+        TrieNode curState = trieRoot;
 
-        subtreeCount.set(curState, subtreeCount.get(curState) + addend);
+        curState.addSubtreeCount(addend);
         for (int i = 0; i < element.length(); i++) {
             char offset = element.charAt(i);
-            curState = nextState.get(curState)[offset];
-            subtreeCount.set(curState, subtreeCount.get(curState) + addend);
+            TrieNode nextState = curState.getNextState(offset);
+            nextState.addSubtreeCount(addend);
+
+            if (nextState.getSubtreeCount() == 0) {
+                curState.removeNextState(offset);
+            }
+
+            curState = nextState;
         }
     }
 
-    private int getStateOrFail(String element, boolean failOnNoJump) {
-        int curState = 0;
+    private TrieNode getNodeOrNull(String element, boolean failOnNoJump) {
+        TrieNode curState = trieRoot;
 
         for (int i = 0; i < element.length(); i++) {
             char offset = element.charAt(i);
-            if (!canJump(curState, offset)) {
+            if (!curState.canJumpTo(offset)) {
                 if (failOnNoJump) {
-                    return FAILED_STATE;
+                    return null;
                 }
 
-                int newState = createState();
-                nextState.get(curState)[offset] = newState;
+                curState.createNextState(offset);
             }
-            curState = nextState.get(curState)[offset];
+            curState = curState.getNextState(offset);
         }
 
         return curState;
