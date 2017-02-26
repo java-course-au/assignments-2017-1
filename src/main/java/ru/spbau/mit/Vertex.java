@@ -21,7 +21,7 @@ public class Vertex {
             return (ascii - (int) 'A');
         } else {
             if ((int) 'a' <= ascii && ascii <= (int) 'z') {
-                return (((int) 'z' - (2 * (int) 'a')) + ascii + 2);
+                return (((int) 'z' - (2 * (int) 'a')) + ascii + 1);
             }
         }
         return 2 * ((int) 'z' - (int) 'a' + 1) + 1;
