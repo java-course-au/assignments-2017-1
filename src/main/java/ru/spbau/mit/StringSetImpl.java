@@ -57,7 +57,7 @@ public class StringSetImpl implements StringSet {
             Node prevNode = curNode;
             char curChar = element.charAt(i);
             curNode = curNode.getNext(curChar);
-            if (curNode.getNumStrings() == 0) {
+            if (curNode.getNumStrings() == 1) {
                 prevNode.delete(curChar);
             }
         }
