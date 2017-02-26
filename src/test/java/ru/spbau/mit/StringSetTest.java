@@ -18,6 +18,12 @@ public class StringSetTest {
         return padding + unpadded;
     }
 
+    private String convertNumberToBinaryAb(int number, int desiredLength) {
+        String unpadded = Integer.toBinaryString(number).replace('0', 'a').replace('1', 'b');
+
+        return padLeftString(unpadded, desiredLength, 'a');
+    }
+
     @Test
     public void testSimple() {
         StringSet stringSet = instance();
@@ -26,6 +32,14 @@ public class StringSetTest {
         assertTrue(stringSet.contains("abc"));
         assertEquals(1, stringSet.size());
         assertEquals(1, stringSet.howManyStartsWithPrefix("abc"));
+    }
+
+    @Test
+    public void testContainsPrefix() {
+        StringSet stringSet = instance();
+
+        assertTrue(stringSet.add("preFIX"));
+        assertFalse(stringSet.contains("preF"));
     }
 
     @Test
@@ -77,35 +91,27 @@ public class StringSetTest {
         final int maxBinaryLength = 13;
 
         for (int mask = 0; mask < (1 << maxBinaryLength); mask++) {
-            String unpadded = Integer.toBinaryString(mask);
-
-            assertTrue(stringSet.add(padLeftString(unpadded, maxBinaryLength, '0')));
+            assertTrue(stringSet.add(convertNumberToBinaryAb(mask, maxBinaryLength)));
         }
         assertEquals(1 << maxBinaryLength, stringSet.size());
 
         for (int mask = 0; mask < (1 << maxBinaryLength); mask++) {
-            String unpadded = Integer.toBinaryString(mask);
-
-            assertTrue(stringSet.contains(padLeftString(unpadded, maxBinaryLength, '0')));
+            assertTrue(stringSet.contains(convertNumberToBinaryAb(mask, maxBinaryLength)));
         }
 
         String prefix = "";
         for (int prefixLength = 0; prefixLength <= maxBinaryLength; prefixLength++) {
             assertEquals(1 << (maxBinaryLength - prefixLength), stringSet.howManyStartsWithPrefix(prefix));
-            prefix += '0';
+            prefix += 'a';
         }
 
         for (int mask = 0; mask < (1 << maxBinaryLength); mask++) {
-            String unpadded = Integer.toBinaryString(mask);
-
-            assertTrue(stringSet.remove(padLeftString(unpadded, maxBinaryLength, '0')));
+            assertTrue(stringSet.remove(convertNumberToBinaryAb(mask, maxBinaryLength)));
             assertEquals((1 << maxBinaryLength) - mask - 1, stringSet.size());
         }
 
         for (int mask = 0; mask < (1 << maxBinaryLength); mask++) {
-            String unpadded = Integer.toBinaryString(mask);
-
-            assertFalse(stringSet.contains(padLeftString(unpadded, maxBinaryLength, '0')));
+            assertFalse(stringSet.contains(convertNumberToBinaryAb(mask, maxBinaryLength)));
         }
     }
 
