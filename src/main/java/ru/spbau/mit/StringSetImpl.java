@@ -35,15 +35,19 @@ public class StringSetImpl implements StringSet {
                 break;
             }
         }
-        Vertex predVertex = new Vertex();
-        predVertex.makeEnd();
-        for (int j = element.length() - 1; j > i; j--) {
+        if (i == element.length() - 1) {
+            currVertex.makeEnd();
+        } else {
+            Vertex predVertex = new Vertex();
+            predVertex.makeEnd();
+            for (int j = element.length() - 1; j > i; j--) {
+                data.add(0, predVertex);
+                predVertex = new Vertex();
+                predVertex.setChild(element.charAt(j), data.get(0));
+            }
             data.add(0, predVertex);
-            predVertex = new Vertex();
-            predVertex.setChild(element.charAt(j), data.get(0));
+            currVertex.setChild(element.charAt(i), data.get(0));
         }
-        data.add(0, predVertex);
-        currVertex.setChild(element.charAt(i), data.get(0));
         return true;
     }
 
@@ -74,6 +78,10 @@ public class StringSetImpl implements StringSet {
     public boolean remove(String element) {
         if (!contains(element)) {
             return false;
+        }
+        if (element == "") {
+            root.loseEnd();
+            return true;
         }
         Vertex curVertex = root;
         Vertex curChild = root.getChild(element.charAt(0));
