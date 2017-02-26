@@ -5,15 +5,19 @@ public class StringSetImpl implements StringSet {
     private TrieNode trieRoot = new TrieNode();
 
     private static class TrieNode {
+        private static final int ENGLISH_ALPHABET_SIZE = 26;
+
         private boolean isTerminal = false;
         private int subtreeCount = 0;
-        private TrieNode[] nextState = new TrieNode[26 * 2]; // Only letters 'a'-'z' 'A'-'Z' are allowed.
+
+        // Only letters 'a'-'z' 'A'-'Z' are allowed, so jump table has the size twice of the english alphabet.
+        private TrieNode[] nextState = new TrieNode[ENGLISH_ALPHABET_SIZE * 2];
 
         private static int convertCharToIndex(char character) {
             if ('a' <= character && character <= 'z') {
                 return character - 'a';
             }
-            return character - 'A' + 26;
+            return character - 'A' + ENGLISH_ALPHABET_SIZE;
         }
 
         boolean isTerminal() {
@@ -59,6 +63,8 @@ public class StringSetImpl implements StringSet {
     public boolean add(String element) {
         TrieNode state = getNodeOrNull(element, false);
 
+        // `state.isTerminal` will not result in NPO, because `getNodeOrNull` with `false` as the second
+        // argument will always return a valid node.
         if (state.isTerminal()) {
             return false;
         }
