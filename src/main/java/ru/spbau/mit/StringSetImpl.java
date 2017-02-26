@@ -4,7 +4,7 @@ public class StringSetImpl implements StringSet {
 
     private static final int LETTER_COUNT = 'Z' - 'A' + 'z' - 'a' + 2;
 
-    final class Node {
+    private final class Node {
         private boolean isTerminal;
         private int size;
         private Node[] nexts;
@@ -37,7 +37,7 @@ public class StringSetImpl implements StringSet {
         }
     }
 
-    final class Trace {
+    private final class Trace {
         private Node node;
         private int length;
         private String element;
