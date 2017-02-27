@@ -32,7 +32,9 @@ public class StringSetImpl implements StringSet {
         }
         size--;
         Node lastNode = removeTerminal(element);
-        lastNode.isTerminal = false;
+        if (lastNode != null) {
+            lastNode.isTerminal = false;
+        }
         return true;
     }
 
@@ -67,19 +69,19 @@ public class StringSetImpl implements StringSet {
     private Node removeTerminal(String s) {
         return followPath(s, (Node n) -> {
             n.terminalsNumber--;
+            if (n.terminalsNumber == 0) {
+                return null;
+            }
             return n;
         });
     }
 
     private Node followPath(String s, Function<Node, Node> f) {
         Node cur = f.apply(root);
-        for (int i = 0; i < s.length(); i++) {
+        for (int i = 0; cur != null && i < s.length(); i++) {
             int index = getIndex(s.charAt(i));
             cur.children[index] = f.apply(cur.children[index]);
             cur = cur.children[index];
-            if (cur == null) {
-                return null;
-            }
         }
         return cur;
     }
