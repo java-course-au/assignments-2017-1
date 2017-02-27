@@ -69,7 +69,7 @@ public class StringSetImpl implements StringSet {
     private Node removeTerminal(String s) {
         return followPath(s, (Node n) -> {
             n.terminalsNumber--;
-            if (n.terminalsNumber == 0) {
+            if (n != root && n.terminalsNumber == 0) {
                 return null;
             }
             return n;
