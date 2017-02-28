@@ -1,18 +1,69 @@
 package ru.spbau.mit;
 
-
-import java.util.ArrayList;
-
-
 public class StringSetImpl implements StringSet {
+    private static class Vertex {
+        private static final int SIZE = 2 * ('z' - 'a' + 1);
+        private Vertex[] children = new Vertex[SIZE];
+        private int amountOfStrings = 0;
+        private boolean isEndVertex = false;
+
+        private static int getindex(char ch) {
+            if ('A' <= ch && ch <= 'Z') {
+                return (ch - 'A');
+            } else {
+                if ('a' <= ch && ch <= 'z') {
+                    return ('z' - (2 * 'a') + ch + 1);
+                }
+            }
+            return 2 * ('z' - 'a' + 1) + 1;
+        }
+
+        public void makeEnd() {
+            isEndVertex = true;
+            increaseAmountOfStrings();
+        }
+
+        public void loseEnd() {
+            isEndVertex = false;
+        }
+
+        public boolean isEnd() {
+            return isEndVertex;
+        }
+
+        public void setChild(Character ch, Vertex v) {
+            children[getindex(ch)] = v;
+            increaseAmountOfStrings();
+        }
+
+        public void deleteChild(char ch) {
+            children[getindex(ch)] = null;
+        }
+
+        public void increaseAmountOfStrings() {
+            amountOfStrings++;
+        }
+
+        public void decreaseAmountOfStrings() {
+            amountOfStrings--;
+        }
+
+        public Integer getAmountOfStrings() {
+            return amountOfStrings;
+        }
+
+        public Vertex getChild(Character ch) {
+            return children[getindex(ch)];
+        }
+
+        public boolean contains(Character ch) {
+            return null != children[getindex(ch)];
+        }
+    }
     private Vertex root;
-    private ArrayList<Vertex> data;
 
     public StringSetImpl() {
-        data = new ArrayList<>();
-        data.add(new Vertex());
-        data.get(0).makeRoot();
-        root = data.get(0);
+        root = new Vertex();
     }
 
     /**
@@ -39,14 +90,14 @@ public class StringSetImpl implements StringSet {
             currVertex.makeEnd();
         } else {
             Vertex predVertex = new Vertex();
+            Vertex childVertex;
             predVertex.makeEnd();
             for (int j = element.length() - 1; j > i; j--) {
-                data.add(0, predVertex);
+                childVertex = predVertex;
                 predVertex = new Vertex();
-                predVertex.setChild(element.charAt(j), data.get(0));
+                predVertex.setChild(element.charAt(j), childVertex);
             }
-            data.add(0, predVertex);
-            currVertex.setChild(element.charAt(i), data.get(0));
+            currVertex.setChild(element.charAt(i), predVertex);
         }
         return true;
     }
@@ -64,10 +115,7 @@ public class StringSetImpl implements StringSet {
             }
             curVertex = curVertex.getChild(element.charAt(i));
         }
-        if (!curVertex.isEnd()) {
-            return false;
-        }
-        return true;
+        return curVertex.isEnd();
     }
 
     /**
@@ -79,7 +127,7 @@ public class StringSetImpl implements StringSet {
         if (!contains(element)) {
             return false;
         }
-        if (element == "") {
+        if (element.equals("")) {
             root.loseEnd();
             return true;
         }
@@ -90,7 +138,6 @@ public class StringSetImpl implements StringSet {
             curChild.decreaseAmountOfStrings();
             if (curChild.getAmountOfStrings() == 0) {
                 curVertex.deleteChild(element.charAt(i));
-                data.remove(curChild);
             }
             if (i != element.length() - 1) {
                 curVertex = curChild;
@@ -123,7 +170,6 @@ public class StringSetImpl implements StringSet {
             curVertex = curVertex.getChild(prefix.charAt(i));
         }
         return curVertex.getAmountOfStrings();
-
     }
 }
 
