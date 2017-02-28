@@ -1,42 +1,43 @@
 package ru.spbau.mit;
 
 public class StringSetImpl implements StringSet {
-    private int countWords;
-    private Trie head;
+    private static class Trie {
+
+        private boolean isTerminated = false;
+        private int howManyStartsWithPrefix = 0;
+        private Trie[] nodes = new Trie[SYMBOL_COUNT];
+    }
+
+    private static final int START_INDEX = 26;
+    private static final int SYMBOL_COUNT = 52;
+    private Trie root;
 
     public StringSetImpl() {
-        head = new Trie();
-        countWords = 0;
+        root = new Trie();
     }
     @Override
     public boolean add(String element) {
         if (contains(element)) {
             return false;
         }
-        Trie node = head;
+        Trie node = root;
         for (int i = 0; i < element.length(); i++) {
-            int index = index(element.charAt(i));
-            if (node.getTrie(index) == null) {
-                node.setTrie(new Trie(), index);
+            int index = getIndex(element.charAt(i));
+            if (node.nodes[index] == null) {
+                node.nodes[index] = new Trie();
             }
-            node = node.getTrie(index);
-            node.incHowManyStartsWithPrefix();
+            node = node.nodes[index];
+            node.howManyStartsWithPrefix++;
         }
-        node.setTerminate(true);
-        countWords++;
+        node.isTerminated = true;
+        root.howManyStartsWithPrefix++;
         return true;
     }
 
     @Override
     public boolean contains(String element) {
-        Trie node = head;
-        for (int i = 0; i < element.length(); i++) {
-            node = node.getTrie(index(element.charAt(i)));
-            if (node == null) {
-                return false;
-            }
-        }
-        return node.getTerminate();
+        Trie node = traverse(element);
+        return node != null && node.isTerminated;
     }
 
     @Override
@@ -44,82 +45,53 @@ public class StringSetImpl implements StringSet {
         if (!contains(element)) {
             return false;
         }
-        Trie node = head;
+        Trie next = root;
+        Trie prev = root;
+        int index = 0;
         for (int i = 0; i < element.length(); i++) {
-            node = node.getTrie(index(element.charAt(i)));
-            if (node == null) {
-                return false;
+            index = getIndex(element.charAt(i));
+            prev = next;
+            next = next.nodes[index];
+            next.howManyStartsWithPrefix--;
+            if (next.howManyStartsWithPrefix == 0) {
+                prev.nodes[index] = null;
             }
-            node.decHowManyStartsWithPrefix();
         }
-        node.setTerminate(false);
-        countWords--;
+        if (next != prev && next.howManyStartsWithPrefix == 1) {
+            prev.nodes[index] = null;
+        } else {
+            next.isTerminated = false;
+            root.howManyStartsWithPrefix--;
+        }
         return true;
     }
 
     @Override
     public int size() {
-        return countWords;
+        return root.howManyStartsWithPrefix;
     }
 
     @Override
     public int howManyStartsWithPrefix(String prefix) {
-        Trie node = head;
-        for (int i = 0; i < prefix.length(); i++) {
-            if (node == null) {
-                return 0;
-            }
-            node = node.getTrie(index(prefix.charAt(i)));
-        }
-        return prefix.length() == 0 ? countWords : node.getHowManyStartsWithPrefix();
+        Trie node = traverse(prefix);
+        return node == null ? 0 : node.howManyStartsWithPrefix;
     }
 
-    private int index(char symbol) {
-        final int start = 26;
+    private static int getIndex(char symbol) {
         if (symbol >= 'a' && symbol <= 'z') {
-            return start + (int) symbol - (int) 'a';
+            return START_INDEX + (int) symbol - (int) 'a';
         }
         return (int) symbol - (int) 'A';
     }
-}
 
-class Trie {
-    private boolean isTerminated;
-    private final int size = 52;
-    private int howManyStartsWithPrefix;
-    private Trie[] listRef;
-
-    Trie() {
-        listRef = new Trie[size];
-        howManyStartsWithPrefix = 0;
-        isTerminated = false;
+    private Trie traverse(String element) {
+        Trie node = root;
+        for (int i = 0; i < element.length(); i++) {
+            if (node == null) {
+                return null;
+            }
+            node = node.nodes[getIndex(element.charAt(i))];
+        }
+        return node;
     }
-    public boolean getTerminate() {
-        return isTerminated;
-    }
-
-    public void setTerminate(boolean isTerminated) {
-        this.isTerminated = isTerminated;
-    }
-
-    public int getHowManyStartsWithPrefix() {
-        return howManyStartsWithPrefix;
-    }
-
-    public void incHowManyStartsWithPrefix() {
-        howManyStartsWithPrefix++;
-    }
-
-    public void decHowManyStartsWithPrefix() {
-        howManyStartsWithPrefix--;
-    }
-
-    public Trie getTrie(int index) {
-        return listRef[index];
-    }
-
-    public void setTrie(Trie node, int index) {
-        listRef[index] = node;
-    }
-
 }
