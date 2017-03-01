@@ -4,22 +4,38 @@ public class StringSetImpl implements StringSet {
 
     private static class Trie {
         private static final int ALPHABET_SIZE = 52;
-        private Trie[] children;
+        private Trie[] children = new Trie[ALPHABET_SIZE];
         private int stringsWithPref = 0;
         private boolean isWord = false;
 
-        Trie() {
-            children = new Trie[ALPHABET_SIZE];
+        private int charToIndex(char symbol) {
+            if (symbol <= 'Z') {
+                return symbol - 'A';
+            } else {
+                return symbol - 'a' + ('z' - 'a');
+            }
         }
 
-        private int charToIndex(char symbol) {
-            if (symbol <= 'z') {
-                return symbol - 'A';
-            } else return symbol - 'a' + ('z' - 'a');
+        private Trie find(String element) {
+            int index = 0;
+            Trie currentNode = this;
+
+            while (index != element.length()) {
+                int childIndex = charToIndex(element.charAt(index));
+                currentNode = currentNode.children[childIndex];
+                if (currentNode == null) {
+                    return null;
+                }
+                index++;
+            }
+
+            return currentNode;
         }
 
         boolean add(String element) {
-            if (!contains(element)) {
+            if (contains(element)) {
+                return false;
+            } else {
                 Trie currentNode = this;
                 int index = 0;
 
@@ -37,31 +53,13 @@ public class StringSetImpl implements StringSet {
                 }
                 currentNode.stringsWithPref++;
                 currentNode.isWord = true;
-            } else {
-                return false;
+                return true;
             }
-
-            return true;
         }
 
         boolean contains(String element) {
-            int index = 0;
-            Trie currentNode = this;
-
-            while (index != element.length()) {
-                int childIndex = charToIndex(element.charAt(index));
-                Trie child = currentNode.children[childIndex];
-
-                if (child == null) {
-                    return false;
-                }
-                if (index == element.length() - 1) {
-                    return child.isWord;
-                }
-                currentNode = child;
-                index++;
-            }
-            return isWord;
+            Trie elementNode = find(element);
+            return elementNode != null && elementNode.isWord;
         }
 
         boolean remove(String element) {
@@ -77,10 +75,10 @@ public class StringSetImpl implements StringSet {
                 }
                 currentNode.stringsWithPref--;
                 currentNode.isWord = false;
+                return true;
             } else {
                 return false;
             }
-            return true;
         }
 
         int size() {
@@ -88,19 +86,8 @@ public class StringSetImpl implements StringSet {
         }
 
         int howManyStartsWithPrefix(String prefix) {
-            int index = 0;
-            Trie currentNode = this;
-
-            while (index != prefix.length()) {
-                int childIndex = charToIndex(prefix.charAt(index));
-                currentNode = currentNode.children[childIndex];
-                if (currentNode == null) {
-                    return 0;
-                }
-                index++;
-            }
-
-            return currentNode.stringsWithPref;
+            Trie prefixNode = find(prefix);
+            return prefixNode == null ? 0 : prefixNode.stringsWithPref;
         }
     }
 
