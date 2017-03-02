@@ -91,15 +91,11 @@ public class StringSetImpl implements StringSet {
         }
     }
 
-    private Trie tree;
-
-    public StringSetImpl() {
-        tree = new Trie();
-    }
+    private Trie trie = new Trie();
 
     @Override
     public boolean add(String element) {
-        return tree.add(element);
+        return trie.add(element);
     }
 
     /**
@@ -107,7 +103,7 @@ public class StringSetImpl implements StringSet {
      */
     @Override
     public boolean contains(String element) {
-        return tree.contains(element);
+        return trie.contains(element);
     }
 
     /**
@@ -117,7 +113,7 @@ public class StringSetImpl implements StringSet {
      */
     @Override
     public boolean remove(String element) {
-        return tree.remove(element);
+        return trie.remove(element);
     }
 
     /**
@@ -125,7 +121,7 @@ public class StringSetImpl implements StringSet {
      */
     @Override
     public int size() {
-        return tree.size();
+        return trie.size();
     }
 
     /**
@@ -133,7 +129,6 @@ public class StringSetImpl implements StringSet {
      */
     @Override
     public int howManyStartsWithPrefix(String prefix) {
-        return tree.howManyStartsWithPrefix(prefix);
+        return trie.howManyStartsWithPrefix(prefix);
     }
 }
-
