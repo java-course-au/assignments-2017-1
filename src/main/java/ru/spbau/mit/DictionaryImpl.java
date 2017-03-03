@@ -60,7 +60,7 @@ public class DictionaryImpl implements Dictionary {
 
     @Override
     public String remove(String key) {
-        int id = getId(key);
+        int id = getCell(key);
         if (state[id] == State.FREE) {
             return null;
         }
@@ -85,9 +85,9 @@ public class DictionaryImpl implements Dictionary {
         State[] oldState = state;
         state = new State[state.length * 2];
         Arrays.fill(state, State.FREE);
-        freeNumber = key.length;
         String[] oldKey = key;
         key = new String[key.length * 2];
+        freeNumber = key.length;
 
         for (int id = 0; id < oldKey.length; id++) {
             if (oldState[id] == State.BUSY) {
