@@ -13,12 +13,7 @@ public class DictionaryImpl implements Dictionary {
     private int freeNumber;
 
     DictionaryImpl() {
-        key = new String[DEFAULT_CAPACITY];
-        value = new String[DEFAULT_CAPACITY];
-        state = new State[DEFAULT_CAPACITY];
-        Arrays.fill(state, State.FREE);
-        size = 0;
-        freeNumber = DEFAULT_CAPACITY;
+        clear();
     }
 
     @Override
@@ -71,6 +66,13 @@ public class DictionaryImpl implements Dictionary {
 
     @Override
     public void clear() {
+        key = new String[DEFAULT_CAPACITY];
+        value = new String[DEFAULT_CAPACITY];
+        state = new State[DEFAULT_CAPACITY];
+        freeAll();
+    }
+
+    private void freeAll() {
         Arrays.fill(state, State.FREE);
         size = 0;
         freeNumber = key.length;
@@ -86,7 +88,7 @@ public class DictionaryImpl implements Dictionary {
         state = new State[state.length * 2];
         String[] oldKey = key;
         key = new String[key.length * 2];
-        clear();
+        freeAll();
 
         for (int id = 0; id < oldKey.length; id++) {
             if (oldState[id] == State.BUSY) {
