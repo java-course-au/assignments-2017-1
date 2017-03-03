@@ -34,7 +34,7 @@ public class DictionaryImpl implements Dictionary {
     @Override
     public String get(String key) {
         int id = getCell(key);
-        if (id == -1) {
+        if (state[id] == State.FREE) {
             return null;
         }
         return value[id];
