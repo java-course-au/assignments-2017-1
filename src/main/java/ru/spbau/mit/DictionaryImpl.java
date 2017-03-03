@@ -84,10 +84,9 @@ public class DictionaryImpl implements Dictionary {
         value = new String[value.length * 2];
         State[] oldState = state;
         state = new State[state.length * 2];
-        Arrays.fill(state, State.FREE);
         String[] oldKey = key;
         key = new String[key.length * 2];
-        freeNumber = key.length;
+        clear();
 
         for (int id = 0; id < oldKey.length; id++) {
             if (oldState[id] == State.BUSY) {
