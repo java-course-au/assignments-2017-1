@@ -61,7 +61,10 @@ public class DictionaryImpl implements Dictionary {
         }
         size--;
         state[id] = State.REMOVED;
-        return value[id];
+        this.key[id] = null;
+        String oldValue = value[id];
+        value[id] = null;
+        return oldValue;
     }
 
     @Override
