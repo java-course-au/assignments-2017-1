@@ -3,9 +3,12 @@ package ru.spbau.mit;
 public class DictionaryImpl implements Dictionary {
 
     private static final int DEFAULT_HASH_SIZE = 100;
+    private static final double REHASH_LEVEL = 0.75;
+    private static final double RESIZE_FACTOR = 1.666;
 
     private Node[] hashes;
     private int size;
+    private int bucketNum;
 
     public DictionaryImpl() {
         clear();
@@ -16,7 +19,7 @@ public class DictionaryImpl implements Dictionary {
     }
 
     public boolean contains(String key) {
-        return get(key) != null;
+        return getNode(key) != null;
     }
 
     public String get(String key) {
@@ -25,8 +28,16 @@ public class DictionaryImpl implements Dictionary {
     }
 
     public String put(String key, String value) {
+        if (key == null) {
+            return null;
+        }
+
         final String old = remove(key);
         append(key, value);
+
+        if (old == null && needRehash()) {
+            rehash();
+        }
         return old;
     }
 
@@ -41,21 +52,40 @@ public class DictionaryImpl implements Dictionary {
         }
 
         while (cur.next != null) {
-            if (cur.next.key.equals(key)) {
-                final String res = cur.next.value;
-                cur.next = cur.next.next;
+            final Node next = cur.next;
+            if (next.key.equals(key)) {
+                cur.next = next.next;
                 size -= 1;
-                return res;
+                return next.value;
             }
-            cur = cur.next;
+            cur = next;
         }
 
         return null;
     }
 
     public void clear() {
-        hashes = new Node[DEFAULT_HASH_SIZE];
+        bucketNum = DEFAULT_HASH_SIZE;
+        hashes = new Node[bucketNum];
         size = 0;
+    }
+
+    private boolean needRehash() {
+        return size() > REHASH_LEVEL * bucketNum;
+    }
+
+    private void rehash() {
+        final Node[] oldHashes = hashes;
+        bucketNum *= RESIZE_FACTOR;
+        hashes = new Node[bucketNum];
+        size = 0;
+
+        for (Node node : oldHashes) {
+            while (node != null) {
+                append(node.key, node.value);
+                node = node.next;
+            }
+        }
     }
 
     private int getIndex(String key) {
