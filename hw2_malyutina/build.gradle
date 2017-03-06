@@ -1,0 +1,13 @@
+group 'ru.spbau.mit'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    compile group: 'org.jetbrains', name: 'annotations', version: '15.0'
+}
