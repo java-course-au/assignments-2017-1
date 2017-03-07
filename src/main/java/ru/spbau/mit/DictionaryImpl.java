@@ -94,6 +94,7 @@ public class DictionaryImpl implements Dictionary {
                 if (bucket[i] == null) {
                     bucket[i] = new Node(key, value);
                     count++;
+                    break;
                 }
             }
             return true;
