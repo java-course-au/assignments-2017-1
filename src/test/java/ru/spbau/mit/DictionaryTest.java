@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.math.BigInteger;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -120,17 +121,37 @@ public class DictionaryTest {
 
         Set<String> keys = new HashSet<>(mapJdk.keySet());
 
-        keys
-                .forEach(key -> assertEquals(dict.get(key), mapJdk.get(key)));
+        keys.forEach(key -> assertEquals(dict.get(key), mapJdk.get(key)));
 
-        keys
+        keys = keys
                 .stream()
-                .limit(size / (2 * 2 * 2 * 2))
-                .forEach(key -> assertEquals(dict.remove(key), mapJdk.remove(key)));
+                .limit(size / (2 * 2 * 2 * 2)).collect(Collectors.toSet());
+
+        keys.forEach(key -> assertEquals(dict.remove(key), mapJdk.remove(key)));
+
+        keys.forEach(key -> assertFalse(dict.contains(key)));
 
         assertEquals(mapJdk.size(), dict.size());
     }
 
+    @Test
+    public void testNulls() {
+        Dictionary dict = instance();
+        dict.put(null, null);
+        assertFalse(dict.contains(null));
+
+        assertNull(dict.put("abc", null));
+        assertTrue(dict.contains("abc"));
+        assertEquals(1, dict.size());
+        assertEquals(null, dict.get("abc"));
+
+        dict.put("abc", null);
+        assertEquals(1, dict.size());
+
+        dict.remove("abc");
+        assertFalse(dict.contains("abc"));
+
+    }
 
 
     private static Dictionary instance() {
