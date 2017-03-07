@@ -99,7 +99,7 @@ public class StringSetImpl implements StringSet {
         return true;
     }
 
-    private Vertex go_down(String element) {
+    private Vertex goDown(String element) {
         Vertex curVertex = root;
         for (int i = 0; i < element.length(); i++) {
             if (!curVertex.contains(element.charAt(i))) {
@@ -115,7 +115,7 @@ public class StringSetImpl implements StringSet {
      */
     @Override
     public  boolean contains(String element) {
-        Vertex curVertex = go_down(element);
+        Vertex curVertex = goDown(element);
         if (curVertex == null) {
             return false;
         }
@@ -166,7 +166,7 @@ public class StringSetImpl implements StringSet {
      */
     @Override
     public int howManyStartsWithPrefix(String prefix) {
-        Vertex curVertex = go_down(prefix);
+        Vertex curVertex = goDown(prefix);
         if (curVertex == null) {
             return 0;
         }
