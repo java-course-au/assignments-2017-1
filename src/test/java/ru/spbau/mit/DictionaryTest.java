@@ -73,11 +73,18 @@ public class DictionaryTest {
     @Test
     public void testCornerCase() {
         Dictionary dict = instance();
-        assertNull(dict.get(""));
 
-        assertNull(dict.put("", "cde"));
-        assertTrue(dict.contains(""));
-        assertEquals("cde", dict.get(""));
+        dict.put("1", null);
+        assertTrue(dict.contains("1"));
+        assertNull(dict.put("1", "b"));
+        assertTrue(dict.contains("1"));
+        dict.remove("1");
+        assertFalse(dict.contains("1"));
+
+        dict.put("1", null);
+        assertTrue(dict.contains("1"));
+        assertNull(dict.remove("1"));
+        assertFalse(dict.contains("1"));
     }
 
     private static Dictionary instance() {

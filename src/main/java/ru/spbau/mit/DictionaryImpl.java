@@ -3,6 +3,9 @@ package ru.spbau.mit;
 public class DictionaryImpl implements Dictionary {
     private static final int START_NUM_BUCKETS = 47;
     private static final int BUCKET_SIZE = 10;
+    private static final double UP_FACTOR = 2.0;
+    private static final double DOWN_FACTOR = 0.5;
+    private static final int DOWN_FACTOR_SIZE = 4;
     private int numBuckets = START_NUM_BUCKETS;
     private ArrayDict[] buckets = new ArrayDict[numBuckets];
     private int size = 0;
@@ -19,19 +22,17 @@ public class DictionaryImpl implements Dictionary {
     }
 
     private int getNumberOfBucket(String key) {
-        final int positiveShift = 0x7fffffff;
-        return (key.hashCode() & positiveShift) % numBuckets;
+        return (Math.abs(key.hashCode())) % numBuckets;
     }
 
     private int getNumberOfBucket(String key, int newNumBuckets) {
-        final int positiveShift = 0x7fffffff;
-        return (key.hashCode() & positiveShift) % newNumBuckets;
+        return (Math.abs(key.hashCode())) % newNumBuckets;
     }
 
     @Override
     public boolean contains(String key) {
         ArrayDict bucket = buckets[getNumberOfBucket(key)];
-        return bucket.find(key) != null;
+        return bucket.contains(key);
     }
 
     @Override
@@ -48,15 +49,15 @@ public class DictionaryImpl implements Dictionary {
             size++;
 
             if (bucket.getSize() == BUCKET_SIZE) {
-                rehash();
+                rehash(UP_FACTOR);
             }
         }
 
         return oldValue;
     }
 
-    private void rehash() {
-        int newNumBuckets = numBuckets * 2;
+    private void rehash(double factor) {
+        int newNumBuckets = (int) (numBuckets * factor);
         ArrayDict[] newBuckets = new ArrayDict[newNumBuckets];
         for (int i = 0; i < newNumBuckets; i++) {
             newBuckets[i] = new ArrayDict();
@@ -69,7 +70,7 @@ public class DictionaryImpl implements Dictionary {
                 String value = bucket.getValue(j);
                 ArrayDict newBucket = newBuckets[
                         getNumberOfBucket(key, newNumBuckets)];
-                newBucket.replace(key, value);
+                newBucket.add(key, value);
             }
         }
 
@@ -83,6 +84,9 @@ public class DictionaryImpl implements Dictionary {
         String oldValue = bucket.remove(key);
         if (oldValue != null) {
             size--;
+            if (size == numBuckets / DOWN_FACTOR_SIZE) {
+                rehash(DOWN_FACTOR);
+            }
         }
         return oldValue;
     }
@@ -118,7 +122,7 @@ public class DictionaryImpl implements Dictionary {
             return values[i];
         }
 
-        private void add(String key, String value) {
+        void add(String key, String value) {
             keys[size] = key;
             values[size] = value;
             size++;
@@ -135,6 +139,15 @@ public class DictionaryImpl implements Dictionary {
 
             add(key, value);
             return null;
+        }
+
+        boolean contains(String key) {
+            for (int i = 0; i < size; i++) {
+                if (keys[i].equals(key)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         String find(String key) {
