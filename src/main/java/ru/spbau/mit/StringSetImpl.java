@@ -60,11 +60,8 @@ public class StringSetImpl implements StringSet {
             return null != children[getindex(ch)];
         }
     }
-    private Vertex root;
 
-    public StringSetImpl() {
-        root = new Vertex();
-    }
+    private Vertex root = new Vertex();
 
     /**
      * Expected complexity: O(|element|)
@@ -73,7 +70,7 @@ public class StringSetImpl implements StringSet {
      */
     @Override
     public boolean add(String element) {
-        if (this.contains(element)) {
+        if (contains(element)) {
             return false;
         }
         Vertex currVertex =  root;
@@ -102,18 +99,25 @@ public class StringSetImpl implements StringSet {
         return true;
     }
 
+    private Vertex go_down(String element) {
+        Vertex curVertex = root;
+        for (int i = 0; i < element.length(); i++) {
+            if (!curVertex.contains(element.charAt(i))) {
+                return null;
+            }
+            curVertex = curVertex.getChild(element.charAt(i));
+        }
+        return curVertex;
+    }
 
     /**
      * Expected complexity: O(|element|)
      */
     @Override
     public  boolean contains(String element) {
-        Vertex curVertex = root;
-        for (int i = 0; i < element.length(); i++) {
-            if (!curVertex.contains(element.charAt(i))) {
-                return false;
-            }
-            curVertex = curVertex.getChild(element.charAt(i));
+        Vertex curVertex = go_down(element);
+        if (curVertex == null) {
+            return false;
         }
         return curVertex.isEnd();
     }
@@ -162,12 +166,9 @@ public class StringSetImpl implements StringSet {
      */
     @Override
     public int howManyStartsWithPrefix(String prefix) {
-        Vertex curVertex = root;
-        for (int i = 0; i < prefix.length(); i++) {
-            if (!curVertex.contains(prefix.charAt(i))) {
-                return 0;
-            }
-            curVertex = curVertex.getChild(prefix.charAt(i));
+        Vertex curVertex = go_down(prefix);
+        if (curVertex == null) {
+            return 0;
         }
         return curVertex.getAmountOfStrings();
     }
