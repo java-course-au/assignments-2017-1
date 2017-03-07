@@ -24,29 +24,24 @@ public class DictionaryImpl implements Dictionary {
 
     @Override
     public boolean contains(String key) {
+
         if (key == null) {
             return false;
         }
 
         int hash = getHash(key);
-        if (buckets[hash] == null) {
-            return false;
-        }
-        return buckets[hash].contains(key);
+
+        return buckets[hash] != null && buckets[hash].contains(key);
     }
 
     @Override
     public String get(String key) {
 
-        if (key == null) {
+        if (contains(key)) {
+            return getBucket(key).find(key);
+        } else {
             return null;
         }
-
-        int hash = getHash(key);
-        if (buckets[hash] == null) {
-            return null;
-        }
-        return buckets[hash].find(key);
     }
 
     @Override
@@ -56,44 +51,48 @@ public class DictionaryImpl implements Dictionary {
             return null;
         }
 
+        if (contains(key)) {
+
+            List bucket = getBucket(key);
+            String prevVal = bucket.remove(key);
+            bucket.push(key, value);
+            return prevVal;
+
+        } else {
+
+            List bucket = getBucket(key);
+            bucket.push(key, value);
+            size++;
+            handleOverflow();
+            return null;
+
+        }
+    }
+
+    private List getBucket(String key) {
         int hash = getHash(key);
         if (buckets[hash] == null) {
             buckets[hash] = new List();
         }
-        List bucket = buckets[hash];
+        return buckets[hash];
+    }
 
-        if (!bucket.contains(key)) {
-            size++;
-        }
-
-        String prevVal = bucket.remove(key);
-        bucket.push(key, value);
-
-        if (size > capacity * (2 + 1) / (2 + 2)) { // 3 / 4
+    private void handleOverflow() {
+        final int threshold = capacity * 3 / 4;
+        if (size > threshold) {
             rehash();
         }
-
-        return prevVal;
     }
 
     @Override
     public String remove(String key) {
 
-        if (key == null) {
-            return null;
-        }
-
-        int hash = getHash(key);
-        if (buckets[hash] == null) {
-            return null;
-        }
-
-        List bucket = buckets[hash];
-        if (bucket.contains(key)) {
+        if (contains(key)) {
             size--;
+            return getBucket(key).remove(key);
+        } else {
+            return null;
         }
-
-        return bucket.remove(key);
     }
 
     @Override
@@ -152,21 +151,22 @@ public class DictionaryImpl implements Dictionary {
         }
 
         String find(String key) {
-            for (Node cur = root; cur != null; cur = cur.next) {
-                if (cur.key.equals(key)) {
-                    return cur.value;
-                }
-            }
-            return null;
+            Node node = getNodeByKey(key);
+            return node == null ? null : node.value;
         }
 
         boolean contains(String key) {
+
+            return getNodeByKey(key) != null;
+        }
+
+        private Node getNodeByKey(String key) {
             for (Node cur = root; cur != null; cur = cur.next) {
                 if (cur.key.equals(key)) {
-                    return true;
+                    return cur;
                 }
             }
-            return false;
+            return null;
         }
 
         class Node {
