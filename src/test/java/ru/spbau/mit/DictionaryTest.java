@@ -21,9 +21,10 @@ public class DictionaryTest {
         Dictionary dict = instance();
         assertNull(dict.get("abc"));
 
-        String[] keys = new String[500];
-        String[] values = new String[500];
-        for (int i = 0; i < 500; i++) {
+        final int elementsSize = 500;
+        String[] keys = new String[elementsSize];
+        String[] values = new String[elementsSize];
+        for (int i = 0; i < elementsSize; i++) {
             String key = String.valueOf(i);
             String value = UUID.randomUUID().toString();
             keys[i] = key;
@@ -32,14 +33,14 @@ public class DictionaryTest {
             assertNull(dict.put(key, value));
         }
 
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < elementsSize; i++) {
             assertEquals(values[i], dict.get(keys[i]));
         }
 
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < elementsSize; i++) {
             dict.remove(keys[i]);
             assertFalse(dict.contains(keys[i]));
-            assertEquals(499 - i, dict.size());
+            assertEquals(elementsSize - i - 1, dict.size());
         }
 
         assertNull(dict.put("abc", "cde"));
@@ -51,14 +52,15 @@ public class DictionaryTest {
         Dictionary dict = instance();
         assertNull(dict.get("abc"));
 
-        for (int i = 0; i < 500; i++) {
+        final int elementsSize = 500;
+        for (int i = 0; i < elementsSize; i++) {
             String key = String.valueOf(i);
             assertNull(dict.put(key, key));
         }
 
         dict.clear();
 
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < elementsSize; i++) {
             assertFalse(dict.contains(String.valueOf(i)));
             assertNull(dict.get(String.valueOf(i)));
         }
