@@ -59,6 +59,7 @@ public class DictionaryTest {
         }
 
         dict.clear();
+        assertEquals(0, dict.size());
 
         for (int i = 0; i < elementsSize; i++) {
             assertFalse(dict.contains(String.valueOf(i)));
@@ -67,6 +68,16 @@ public class DictionaryTest {
 
         assertNull(dict.put("abc", "cde"));
         assertEquals("cde", dict.get("abc"));
+    }
+
+    @Test
+    public void testCornerCase() {
+        Dictionary dict = instance();
+        assertNull(dict.get(""));
+
+        assertNull(dict.put("", "cde"));
+        assertTrue(dict.contains(""));
+        assertEquals("cde", dict.get(""));
     }
 
     private static Dictionary instance() {

@@ -18,21 +18,31 @@ public class DictionaryImpl implements Dictionary {
         return size;
     }
 
+    private int getNumberOfBucket(String key) {
+        final int positiveShift = 0x7fffffff;
+        return (key.hashCode() & positiveShift) % numBuckets;
+    }
+
+    private int getNumberOfBucket(String key, int newNumBuckets) {
+        final int positiveShift = 0x7fffffff;
+        return (key.hashCode() & positiveShift) % newNumBuckets;
+    }
+
     @Override
     public boolean contains(String key) {
-        ArrayDict bucket = buckets[key.hashCode() % numBuckets];
+        ArrayDict bucket = buckets[getNumberOfBucket(key)];
         return bucket.find(key) != null;
     }
 
     @Override
     public String get(String key) {
-        ArrayDict bucket = buckets[key.hashCode() % numBuckets];
+        ArrayDict bucket = buckets[getNumberOfBucket(key)];
         return bucket.find(key);
     }
 
     @Override
     public String put(String key, String value) {
-        ArrayDict bucket = buckets[key.hashCode() % numBuckets];
+        ArrayDict bucket = buckets[getNumberOfBucket(key)];
         String oldValue = bucket.replace(key, value);
         if (oldValue == null) {
             size++;
@@ -57,7 +67,8 @@ public class DictionaryImpl implements Dictionary {
             for (int j = 0; j < bucket.getSize(); j++) {
                 String key = bucket.getKey(j);
                 String value = bucket.getValue(j);
-                ArrayDict newBucket = newBuckets[key.hashCode() % newNumBuckets];
+                ArrayDict newBucket = newBuckets[
+                        getNumberOfBucket(key, newNumBuckets)];
                 newBucket.replace(key, value);
             }
         }
@@ -68,7 +79,7 @@ public class DictionaryImpl implements Dictionary {
 
     @Override
     public String remove(String key) {
-        ArrayDict bucket = buckets[key.hashCode() % numBuckets];
+        ArrayDict bucket = buckets[getNumberOfBucket(key)];
         String oldValue = bucket.remove(key);
         if (oldValue != null) {
             size--;
@@ -81,6 +92,7 @@ public class DictionaryImpl implements Dictionary {
         for (ArrayDict bucket : buckets) {
             bucket.clear();
         }
+        size = 0;
     }
 
     private class ArrayDict {
