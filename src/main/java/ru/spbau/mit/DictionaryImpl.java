@@ -74,7 +74,11 @@ public class DictionaryImpl implements Dictionary {
                 String[] keys = oldHashMap[i].getKeys();
                 if (keys != null) {
                     for (String key : keys) {
-                        put(key, oldHashMap[i].getValue(key));
+                        int hash = Math.abs(key.hashCode()) % sizeMap;
+                        if (hashMap[hash] == null) {
+                            hashMap[hash] = new Array();
+                        }
+                        hashMap[hash].add(key, oldHashMap[i].getValue(key));
                     }
                 }
             }
@@ -87,7 +91,7 @@ public class DictionaryImpl implements Dictionary {
         private int count = 0;
 
         public boolean add(String key, String value) {
-            if (count > SIZE) {
+            if (count >= SIZE) {
                 return false;
             }
             for (int i = 0; i < SIZE; i++) {
@@ -111,7 +115,7 @@ public class DictionaryImpl implements Dictionary {
         }
         public String remove(String key) {
             for (int i = 0; i < SIZE; i++) {
-                if (bucket[i].key.equals(key)) {
+                if (bucket[i] != null && bucket[i].key.equals(key)) {
                     String out = bucket[i].value;
                     bucket[i] = null;
                     count--;
@@ -123,7 +127,7 @@ public class DictionaryImpl implements Dictionary {
 
         public String getValue(String key) {
             for (int i = 0; i < SIZE; i++) {
-                if (bucket[i].key.equals(key)) {
+                if (bucket[i] != null && bucket[i].key.equals(key)) {
                     return bucket[i].value;
                 }
             }
@@ -131,7 +135,12 @@ public class DictionaryImpl implements Dictionary {
         }
 
         public boolean contains(String key) {
-            return getValue(key) != null;
+            for (int i = 0; i < SIZE; i++) {
+                if (bucket[i] != null && bucket[i].key.equals(key)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public String[] getKeys() {
