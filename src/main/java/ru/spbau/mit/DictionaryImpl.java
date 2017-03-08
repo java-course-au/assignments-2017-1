@@ -129,7 +129,8 @@ public class DictionaryImpl implements Dictionary {
     }
 
     private int getHashCode(String key) {
-        return key.hashCode() % capacity;
+        int res = key.hashCode() % capacity;
+        return res >= 0 ? res : (capacity + res);
     }
 
     private void rehash() {
