@@ -53,11 +53,16 @@ public class DictionaryTest {
     public void testClearSizeContains() {
         Dictionary dict = instance();
 
+        int curSize = 0;
         assertNull(dict.put("a", "1"));
+        curSize++;
         assertNull(dict.put("b", "1"));
+        curSize++;
         assertNull(dict.put("c", "1"));
+        curSize++;
         assertNull(dict.put("d", "1"));
-        assertEquals(4, dict.size());
+        curSize++;
+        assertEquals(curSize, dict.size());
 
         assertTrue(dict.contains("a"));
         assertTrue(dict.contains("b"));

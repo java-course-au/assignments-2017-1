@@ -148,9 +148,9 @@ public class DictionaryImpl implements Dictionary {
         private String value;
         private StringListNode nextNode;
 
-        StringListNode(String key_, String value_) {
-            key = key_;
-            value = value_;
+        StringListNode(String key, String value) {
+            this.key = key;
+            this.value = value;
             nextNode = null;
         }
 
@@ -201,16 +201,16 @@ public class DictionaryImpl implements Dictionary {
             return value;
         }
 
-        public void setValue(String value_) {
-            value = value_;
+        public void setValue(String value) {
+            this.value = value;
         }
 
         public StringListNode getNextNode() {
             return nextNode;
         }
 
-        public void setNextNode(StringListNode nextNode_) {
-            nextNode = nextNode_;
+        public void setNextNode(StringListNode nextNode) {
+            this.nextNode = nextNode;
         }
     }
 }
