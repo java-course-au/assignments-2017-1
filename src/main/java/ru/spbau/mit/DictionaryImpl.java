@@ -4,7 +4,7 @@ public class DictionaryImpl implements Dictionary {
 
     private static final double LOAD_FACTOR = 0.75;
     private static final int DOUBLED_CAPACITY = 2;
-
+    private static final int DEFAULT_CAPACITY = 11;
     private static final class List {
         private List next = null;
         private String key;
@@ -16,7 +16,7 @@ public class DictionaryImpl implements Dictionary {
         }
     }
 
-    private int capacity = 11;
+    private int capacity = DEFAULT_CAPACITY;
     private int size = 0;
     private List[] hashTable = new List[capacity];
 
@@ -41,7 +41,7 @@ public class DictionaryImpl implements Dictionary {
 
     @Override
     public String put(String key, String value) {
-        if ((double) size / capacity >= LOAD_FACTOR ) {
+        if ((double) size / capacity >= LOAD_FACTOR) {
             rehash();
         }
         int hash = getHashCode(key);
