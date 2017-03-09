@@ -1,101 +1,63 @@
 package ru.spbau.mit;
 
 public class StringSetImpl implements StringSet {
-
-    private static class Trie {
+    private static class TrieNode {
         private static final int ALPHABET_SIZE = 52;
-        private Trie[] children = new Trie[ALPHABET_SIZE];
+        private TrieNode[] children = new TrieNode[ALPHABET_SIZE];
         private int stringsWithPref = 0;
         private boolean isWord = false;
+    }
 
-        private int charToIndex(char symbol) {
-            if (symbol <= 'Z') {
-                return symbol - 'A';
-            } else {
-                return symbol - 'a' + ('z' - 'a');
-            }
-        }
+    private TrieNode root = new TrieNode();
 
-        private Trie find(String element) {
-            int index = 0;
-            Trie currentNode = this;
-
-            while (index != element.length()) {
-                int childIndex = charToIndex(element.charAt(index));
-                currentNode = currentNode.children[childIndex];
-                if (currentNode == null) {
-                    return null;
-                }
-                index++;
-            }
-
-            return currentNode;
-        }
-
-        boolean add(String element) {
-            if (contains(element)) {
-                return false;
-            } else {
-                Trie currentNode = this;
-                int index = 0;
-
-                while (index != element.length()) {
-                    currentNode.stringsWithPref++;
-                    int childIndex = charToIndex(element.charAt(index));
-                    Trie child = currentNode.children[childIndex];
-
-                    if (child == null) {
-                        currentNode.children[childIndex] = new Trie();
-                        child = currentNode.children[childIndex];
-                    }
-                    currentNode = child;
-                    index++;
-                }
-                currentNode.stringsWithPref++;
-                currentNode.isWord = true;
-                return true;
-            }
-        }
-
-        boolean contains(String element) {
-            Trie elementNode = find(element);
-            return elementNode != null && elementNode.isWord;
-        }
-
-        boolean remove(String element) {
-            if (contains(element)) {
-                int index = 0;
-                Trie currentNode = this;
-
-                while (index != element.length()) {
-                    currentNode.stringsWithPref--;
-                    int childIndex = charToIndex(element.charAt(index));
-                    currentNode = currentNode.children[childIndex];
-                    index++;
-                }
-                currentNode.stringsWithPref--;
-                currentNode.isWord = false;
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        int size() {
-            return stringsWithPref;
-        }
-
-        int howManyStartsWithPrefix(String prefix) {
-            Trie prefixNode = find(prefix);
-            return prefixNode == null ? 0 : prefixNode.stringsWithPref;
+    private static int charToIndex(char symbol) {
+        if (symbol <= 'Z') {
+            return symbol - 'A';
+        } else {
+            return symbol - 'a' + ('z' - 'a');
         }
     }
 
-    private Trie trie = new Trie();
+    private TrieNode find(String element) {
+        int index = 0;
+        TrieNode currentNode = root;
+
+        while (index != element.length()) {
+            int childIndex = charToIndex(element.charAt(index));
+            currentNode = currentNode.children[childIndex];
+            if (currentNode == null) {
+                return null;
+            }
+            index++;
+        }
+
+        return currentNode;
+    }
 
     @Override
     public boolean add(String element) {
-        return trie.add(element);
+        if (contains(element)) {
+            return false;
+        } else {
+            TrieNode currentNode = root;
+            int index = 0;
+
+            while (index != element.length()) {
+                currentNode.stringsWithPref++;
+                int childIndex = charToIndex(element.charAt(index));
+                TrieNode child = currentNode.children[childIndex];
+
+                if (child == null) {
+                    currentNode.children[childIndex] = new TrieNode();
+                    child = currentNode.children[childIndex];
+                }
+                currentNode = child;
+                index++;
+            }
+            currentNode.stringsWithPref++;
+            currentNode.isWord = true;
+            return true;
+        }
     }
 
     /**
@@ -103,7 +65,8 @@ public class StringSetImpl implements StringSet {
      */
     @Override
     public boolean contains(String element) {
-        return trie.contains(element);
+        TrieNode elementNode = find(element);
+        return elementNode != null && elementNode.isWord;
     }
 
     /**
@@ -113,7 +76,22 @@ public class StringSetImpl implements StringSet {
      */
     @Override
     public boolean remove(String element) {
-        return trie.remove(element);
+        if (!contains(element)) {
+            return false;
+        } else {
+            int index = 0;
+            TrieNode currentNode = root;
+
+            while (index != element.length()) {
+                currentNode.stringsWithPref--;
+                int childIndex = charToIndex(element.charAt(index));
+                currentNode = currentNode.children[childIndex];
+                index++;
+            }
+            currentNode.stringsWithPref--;
+            currentNode.isWord = false;
+            return true;
+        }
     }
 
     /**
@@ -121,7 +99,7 @@ public class StringSetImpl implements StringSet {
      */
     @Override
     public int size() {
-        return trie.size();
+        return root.stringsWithPref;
     }
 
     /**
@@ -129,6 +107,7 @@ public class StringSetImpl implements StringSet {
      */
     @Override
     public int howManyStartsWithPrefix(String prefix) {
-        return trie.howManyStartsWithPrefix(prefix);
+        TrieNode prefixNode = find(prefix);
+        return prefixNode == null ? 0 : prefixNode.stringsWithPref;
     }
 }
