@@ -57,6 +57,7 @@ public class StringSetImpl implements StringSet, StreamSerializable {
     @Override
     public void serialize(OutputStream out) {
         PrintWriter pw = new PrintWriter(out);
+        pw.println(size);
         traverse(root, pw);
         pw.close();
         if (pw.checkError()) {
@@ -84,8 +85,10 @@ public class StringSetImpl implements StringSet, StreamSerializable {
 
     @Override
     public void deserialize(InputStream in) {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        size = safeParseInt(safeRead(reader));
         root = new Node();
-        restore(root, new BufferedReader(new InputStreamReader(in)));
+        restore(root, reader);
     }
 
     private void restore(Node cur, BufferedReader br) {
