@@ -4,11 +4,12 @@
 
 import org.junit.Assert;
 import org.junit.Test;
+import ru.spbau.mit.TrieImpl;
 
 
 public class TrieTest {
 
-    private void setWordsInTrie(ImplTrie trieWords, String[] words){
+    private void setWordsInTrie(TrieImpl trieWords, String[] words){
         for(String str : words){
             trieWords.add(str);
         }
@@ -17,7 +18,7 @@ public class TrieTest {
     @Test
     public void containsWords(){
 
-        ImplTrie trie = new ImplTrie();
+        TrieImpl trie = new TrieImpl();
 
         String[] words = {"aaa" , "bbb", "ccc", "abc", "abs", "bas", "baa"};
         setWordsInTrie(trie,words);
@@ -31,7 +32,7 @@ public class TrieTest {
 
     @Test
     public void deleteWords(){
-        ImplTrie impltrie = new ImplTrie();
+        TrieImpl impltrie = new TrieImpl();
 
         String[] words = {"aaa", "aab", "aac" , "aabc"};
 
@@ -47,7 +48,7 @@ public class TrieTest {
 
     @Test
     public void checkSize(){
-        ImplTrie impltrie = new ImplTrie();
+        TrieImpl impltrie = new TrieImpl();
         String[] words = {"a", "b", "c"};
 
         setWordsInTrie(impltrie,words);
@@ -64,7 +65,7 @@ public class TrieTest {
 
     @Test
     public void checkPrefix(){
-        ImplTrie impltrie = new ImplTrie();
+        TrieImpl impltrie = new TrieImpl();
 
         String[] words = {"aab", "aaa", "aac"};
         setWordsInTrie(impltrie, words);
@@ -77,7 +78,7 @@ public class TrieTest {
     @Test
     public void checkTypicalCases(){
 
-        ImplTrie implTrie = new ImplTrie();
+        TrieImpl implTrie = new TrieImpl();
         String[] words = {"aaa", "bbb", "a", "b", "c", "ac", "ab", "ba", "bb" };
         setWordsInTrie(implTrie, words);
 
