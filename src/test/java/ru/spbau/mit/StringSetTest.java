@@ -1,71 +1,70 @@
 package ru.spbau.mit;
 
 import static org.junit.Assert.*;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
+import java.nio.channels.Channels;
+import java.nio.channels.Pipe;
 
 public class StringSetTest {
+    private StringSetImpl stringSet;
+    private StringSetImpl deserializedStringSet;
+    private InputStream input;
+    private OutputStream output;
 
-    @Test
-    public void testSimple() {
-        StringSet stringSet = instance();
+    @Before
+    public void setUp() throws Exception {
+        stringSet = new StringSetImpl();
+        deserializedStringSet = new StringSetImpl();
+        final Pipe pipe = Pipe.open();
+        input = Channels.newInputStream(pipe.source());
+        output = Channels.newOutputStream(pipe.sink());
+    }
 
-        assertTrue(stringSet.add("abc"));
-        assertTrue(stringSet.contains("abc"));
-        assertEquals(1, stringSet.size());
-        assertEquals(1, stringSet.howManyStartsWithPrefix("abc"));
+    @After
+    public void tearDown() throws Exception {
+        input.close();
+        output.close();
     }
 
     @Test
-    public void testSimpleSerialization() {
-        StringSet stringSet = instance();
+    public void testSerializationSimple() throws IOException {
+        stringSet.add("abc");
+        stringSet.add("cde");
+        stringSet.serialize(output);
+        output.close();
+        deserializedStringSet.deserialize(input);
+        assertEquals(stringSet, deserializedStringSet);
+    }
 
-        assertTrue(stringSet.add("abc"));
-        assertTrue(stringSet.add("cde"));
+    @Test
+    public void testSerializationEmpty() throws IOException {
+        stringSet.serialize(output);
+        output.close();
+        deserializedStringSet.deserialize(input);
+        assertEquals(stringSet, deserializedStringSet);
+    }
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        ((StreamSerializable) stringSet).serialize(outputStream);
-
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-        StringSet newStringSet = instance();
-        ((StreamSerializable) newStringSet).deserialize(inputStream);
-
-        assertTrue(newStringSet.contains("abc"));
-        assertTrue(newStringSet.contains("cde"));
+    @Test
+    public void testSerializationDeep() throws IOException {
+        stringSet.add("");
+        stringSet.add("a");
+        stringSet.add("abc");
+        stringSet.serialize(output);
+        output.close();
+        deserializedStringSet.deserialize(input);
+        assertEquals(stringSet, deserializedStringSet);
     }
 
 
     @Test(expected = SerializationException.class)
-    public void testSimpleSerializationFails() {
-        StringSet stringSet = instance();
-
-        assertTrue(stringSet.add("abc"));
-        assertTrue(stringSet.add("cde"));
-
-        OutputStream outputStream = new OutputStream() {
-            @Override
-            public void write(int b) throws IOException {
-                throw new IOException("Fail");
-            }
-        };
-
-        ((StreamSerializable) stringSet).serialize(outputStream);
-    }
-
-    public static StringSet instance() {
-        try {
-            return (StringSet) Class.forName("ru.spbau.mit.StringSetImpl").newInstance();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        throw new IllegalStateException("Error while class loading");
+    public void testSerializationFails() throws IOException {
+        output.close();
+        deserializedStringSet.deserialize(input);
+        fail();
     }
 }
