@@ -6,9 +6,9 @@ public class DictionaryImpl implements Dictionary {
     private static final int DEFAULT_CAPACITY = 4;
     private static final int CAPACITY_COEF = 4;
 
-    private String[] key;
-    private String[] value;
-    private State[] state;
+    private String[] keys;
+    private String[] values;
+    private State[] states;
     private int size;
     private int freeNumber;
 
@@ -23,30 +23,30 @@ public class DictionaryImpl implements Dictionary {
 
     @Override
     public boolean contains(String key) {
-        return state[getCell(key)] == State.BUSY;
+        return states[getCell(key)] == State.BUSY;
     }
 
     @Override
     public String get(String key) {
         int id = getCell(key);
-        if (state[id] == State.FREE) {
+        if (states[id] == State.FREE) {
             return null;
         }
-        return value[id];
+        return values[id];
     }
 
     @Override
     public String put(String key, String value) {
         int id = getCell(key);
-        String oldValue = this.value[id];
-        if (state[id] == State.FREE) {
-            this.key[id] = key;
+        String oldValue = this.values[id];
+        if (states[id] == State.FREE) {
+            this.keys[id] = key;
             size++;
             freeNumber--;
             oldValue = null;
         }
-        state[id] = State.BUSY;
-        this.value[id] = value;
+        states[id] = State.BUSY;
+        this.values[id] = value;
 
         ensureCapacity();
 
@@ -56,41 +56,41 @@ public class DictionaryImpl implements Dictionary {
     @Override
     public String remove(String key) {
         int id = getCell(key);
-        if (state[id] == State.FREE) {
+        if (states[id] == State.FREE) {
             return null;
         }
         size--;
-        state[id] = State.REMOVED;
-        this.key[id] = null;
-        String oldValue = value[id];
-        value[id] = null;
+        states[id] = State.REMOVED;
+        this.keys[id] = null;
+        String oldValue = values[id];
+        values[id] = null;
         return oldValue;
     }
 
     @Override
     public void clear() {
-        key = new String[DEFAULT_CAPACITY];
-        value = new String[DEFAULT_CAPACITY];
-        state = new State[DEFAULT_CAPACITY];
+        keys = new String[DEFAULT_CAPACITY];
+        values = new String[DEFAULT_CAPACITY];
+        states = new State[DEFAULT_CAPACITY];
         freeAll();
     }
 
     private void freeAll() {
-        Arrays.fill(state, State.FREE);
+        Arrays.fill(states, State.FREE);
         size = 0;
-        freeNumber = key.length;
+        freeNumber = keys.length;
     }
 
     private void ensureCapacity() {
-        if ((key.length - freeNumber) * CAPACITY_COEF <= key.length) {
+        if ((keys.length - freeNumber) * CAPACITY_COEF <= keys.length) {
             return;
         }
-        String[] oldValue = value;
-        value = new String[value.length * 2];
-        State[] oldState = state;
-        state = new State[state.length * 2];
-        String[] oldKey = key;
-        key = new String[key.length * 2];
+        String[] oldValue = values;
+        values = new String[values.length * 2];
+        State[] oldState = states;
+        states = new State[states.length * 2];
+        String[] oldKey = keys;
+        keys = new String[keys.length * 2];
         freeAll();
 
         for (int id = 0; id < oldKey.length; id++) {
@@ -100,22 +100,27 @@ public class DictionaryImpl implements Dictionary {
         }
     }
 
-    private int getCell(String s) {
-        int id = getId(s);
-        while (state[id] != State.FREE) {
-            if (state[id] == State.BUSY && s.equals(key[id])) {
+
+    /**
+     * Find where key is supposed to be in {@link #keys} array
+     * @return position of the key or closest free position to the right
+     */
+    private int getCell(String key) {
+        int id = getId(key);
+        while (states[id] != State.FREE) {
+            if (states[id] == State.BUSY && key.equals(keys[id])) {
                 break;
             }
             id++;
-            if (id == key.length) {
+            if (id == keys.length) {
                 id = 0;
             }
         }
         return id;
     }
 
-    private int getId(String s) {
-        return (s.hashCode() % key.length + key.length) % key.length;
+    private int getId(String key) {
+        return (key.hashCode() % keys.length + keys.length) % keys.length;
     }
 
     private enum State {
