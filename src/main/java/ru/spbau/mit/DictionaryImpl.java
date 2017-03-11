@@ -1,8 +1,11 @@
 package ru.spbau.mit;
 
+import java.util.Arrays;
+
 public class DictionaryImpl implements Dictionary {
     private static final int START_NUM_BUCKETS = 47;
-    private static final int BUCKET_SIZE = 10;
+    private static final int START_BUCKET_SIZE = 20;
+    private static final double LOAD_LEVEL = 0.9;
     private static final double UP_FACTOR = 2.0;
     private static final double DOWN_FACTOR = 0.5;
     private static final int DOWN_FACTOR_SIZE = 4;
@@ -21,34 +24,35 @@ public class DictionaryImpl implements Dictionary {
         return size;
     }
 
-    private int getNumberOfBucket(String key) {
+    private int getIndexOfBucket(String key) {
         return (Math.abs(key.hashCode())) % numBuckets;
     }
 
-    private int getNumberOfBucket(String key, int newNumBuckets) {
+    private int getIndexOfBucket(String key, int newNumBuckets) {
         return (Math.abs(key.hashCode())) % newNumBuckets;
     }
 
     @Override
     public boolean contains(String key) {
-        ArrayDict bucket = buckets[getNumberOfBucket(key)];
+        ArrayDict bucket = buckets[getIndexOfBucket(key)];
         return bucket.contains(key);
     }
 
     @Override
     public String get(String key) {
-        ArrayDict bucket = buckets[getNumberOfBucket(key)];
+        ArrayDict bucket = buckets[getIndexOfBucket(key)];
         return bucket.find(key);
     }
 
     @Override
     public String put(String key, String value) {
-        ArrayDict bucket = buckets[getNumberOfBucket(key)];
+        ArrayDict bucket = buckets[getIndexOfBucket(key)];
         String oldValue = bucket.replace(key, value);
         if (oldValue == null) {
             size++;
 
-            if (bucket.getSize() == BUCKET_SIZE) {
+            int capacity = numBuckets * START_BUCKET_SIZE;
+            if (size / capacity >= LOAD_LEVEL) {
                 rehash(UP_FACTOR);
             }
         }
@@ -59,6 +63,7 @@ public class DictionaryImpl implements Dictionary {
     private void rehash(double factor) {
         int newNumBuckets = (int) (numBuckets * factor);
         ArrayDict[] newBuckets = new ArrayDict[newNumBuckets];
+
         for (int i = 0; i < newNumBuckets; i++) {
             newBuckets[i] = new ArrayDict();
         }
@@ -69,7 +74,7 @@ public class DictionaryImpl implements Dictionary {
                 String key = bucket.getKey(j);
                 String value = bucket.getValue(j);
                 ArrayDict newBucket = newBuckets[
-                        getNumberOfBucket(key, newNumBuckets)];
+                        getIndexOfBucket(key, newNumBuckets)];
                 newBucket.add(key, value);
             }
         }
@@ -80,11 +85,12 @@ public class DictionaryImpl implements Dictionary {
 
     @Override
     public String remove(String key) {
-        ArrayDict bucket = buckets[getNumberOfBucket(key)];
+        ArrayDict bucket = buckets[getIndexOfBucket(key)];
         String oldValue = bucket.remove(key);
         if (oldValue != null) {
             size--;
-            if (size == numBuckets / DOWN_FACTOR_SIZE) {
+            if (size > START_NUM_BUCKETS
+                    && size == numBuckets / DOWN_FACTOR_SIZE) {
                 rehash(DOWN_FACTOR);
             }
         }
@@ -99,87 +105,99 @@ public class DictionaryImpl implements Dictionary {
         size = 0;
     }
 
-    private class ArrayDict {
+    private static class ArrayDict {
         private int size = 0;
-        private String[] keys;
-        private String[] values;
+        private int capacity = START_BUCKET_SIZE;
+        private String[] keys = new String[START_BUCKET_SIZE];
+        private String[] values = new String[START_BUCKET_SIZE];
 
-        ArrayDict() {
-            size = 0;
-            keys = new String[BUCKET_SIZE];
-            values = new String[BUCKET_SIZE];
-        }
-
-        int getSize() {
+        private int getSize() {
             return size;
         }
 
-        String getKey(int i) {
+        private void add(String key, String value) {
+            keys[size] = key;
+            values[size] = value;
+
+            size++;
+
+            if (size == capacity) {
+                resize(UP_FACTOR);
+            }
+        }
+
+        private void resize(double factor) {
+            capacity = (int) (capacity * factor);
+            keys = Arrays.copyOf(keys, capacity);
+            values = Arrays.copyOf(values, capacity);
+        }
+
+        private String getKey(int i) {
             return keys[i];
         }
 
-        String getValue(int i) {
+        private String getValue(int i) {
             return values[i];
         }
 
-        void add(String key, String value) {
-            keys[size] = key;
-            values[size] = value;
-            size++;
-        }
-
-        String replace(String key, String value) {
+        private int traverse(String key) {
             for (int i = 0; i < size; i++) {
                 if (keys[i].equals(key)) {
-                    String oldValue = values[i];
-                    values[i] = value;
-                    return oldValue;
+                    return i;
                 }
+            }
+
+            return -1;
+        }
+
+        private String replace(String key, String value) {
+            int index = traverse(key);
+            if (index != -1) {
+                String oldValue = values[index];
+                values[index] = value;
+                return oldValue;
             }
 
             add(key, value);
             return null;
         }
 
-        boolean contains(String key) {
-            for (int i = 0; i < size; i++) {
-                if (keys[i].equals(key)) {
-                    return true;
-                }
-            }
-            return false;
+        private boolean contains(String key) {
+            return traverse(key) != -1;
         }
 
-        String find(String key) {
-            for (int i = 0; i < size; i++) {
-                if (keys[i].equals(key)) {
-                    return values[i];
+        private String find(String key) {
+            int index = traverse(key);
+            return index != -1 ? values[index] : null;
+        }
+
+        private String remove(String key) {
+            int index = traverse(key);
+
+            if (index != -1) {
+                keys[index] = keys[size - 1];
+                keys[size - 1] = null;
+
+                final String value = values[index];
+                values[index] = values[size - 1];
+                values[size - 1] = null;
+
+                size--;
+
+                if (size > START_BUCKET_SIZE
+                        && size == capacity / DOWN_FACTOR_SIZE) {
+                    resize(DOWN_FACTOR);
                 }
+                return value;
             }
+
             return null;
         }
 
-        String remove(String key) {
-            for (int i = 0; i < size; i++) {
-                if (keys[i].equals(key)) {
-                    keys[i] = keys[size - 1];
-                    keys[size - 1] = null;
-
-                    final String value = values[i];
-                    values[i] = values[size - 1];
-                    values[size - 1] = null;
-
-                    size--;
-                    return value;
-                }
-            }
-            return null;
-        }
-
-        void clear() {
+        private void clear() {
             size = 0;
-            keys = new String[BUCKET_SIZE];
-            values = new String[BUCKET_SIZE];
+            keys = new String[START_BUCKET_SIZE];
+            values = new String[START_BUCKET_SIZE];
         }
     }
 }

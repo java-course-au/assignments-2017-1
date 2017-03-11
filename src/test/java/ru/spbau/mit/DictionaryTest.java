@@ -25,8 +25,8 @@ public class DictionaryTest {
         String[] keys = new String[elementsSize];
         String[] values = new String[elementsSize];
         for (int i = 0; i < elementsSize; i++) {
-            String key = String.valueOf(i);
-            String value = UUID.randomUUID().toString();
+            String key = UUID.randomUUID().toString();
+            String value = String.valueOf(i);
             keys[i] = key;
             values[i] = value;
             assertEquals(dict.size(), i);
