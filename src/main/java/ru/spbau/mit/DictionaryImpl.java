@@ -1,7 +1,6 @@
 package ru.spbau.mit;
 
 public class DictionaryImpl implements Dictionary {
-
     private int capacity;
     private int size;
     private List[] buckets;
@@ -24,27 +23,23 @@ public class DictionaryImpl implements Dictionary {
 
     @Override
     public boolean contains(String key) {
-
         return getNodeFromArrayByKey(key) != null;
     }
 
     @Override
     public String get(String key) {
-
         List.Node node = getNodeFromArrayByKey(key);
         return node == null ? null : node.value;
     }
 
     @Override
     public String put(String key, String value) {
-
         String result = putUnbalanced(key, value);
         handleOverflow();
         return result;
     }
 
     private String putUnbalanced(String key, String value) {
-
         if (key == null) {
             return null;
         }
@@ -66,20 +61,17 @@ public class DictionaryImpl implements Dictionary {
     }
 
     private List getBucket(String key) {
-
         int index = getIndex(key);
         return buckets[index];
     }
 
     private List createBucket(String key) {
-
         int index = getIndex(key);
         buckets[index] = new List();
         return buckets[index];
     }
 
     private void handleOverflow() {
-
         final int upperThreshold = capacity * 3 / 4;
         final int lowerThreshold = capacity / 8;
         if (size > upperThreshold) {
@@ -90,7 +82,6 @@ public class DictionaryImpl implements Dictionary {
     }
 
     private void rehash(int newCapacity) {
-
         capacity = newCapacity;
         List[] prevBuckets = buckets;
         buckets = new List[capacity];
@@ -107,7 +98,6 @@ public class DictionaryImpl implements Dictionary {
 
     @Override
     public String remove(String key) {
-
         List bucket = getBucket(key);
 
         if (bucket == null) {
@@ -133,7 +123,6 @@ public class DictionaryImpl implements Dictionary {
     }
 
     private List.Node getNodeFromArrayByKey(String key) {
-
         if (key == null) {
             return null;
         }
@@ -148,7 +137,6 @@ public class DictionaryImpl implements Dictionary {
     }
 
     private static class List {
-
         private Node root;
 
         private void push(String key, String value) {
@@ -156,7 +144,6 @@ public class DictionaryImpl implements Dictionary {
         }
 
         private Node remove(String key) {
-
             for (Node cur = root, prev = null; cur != null;  prev = cur, cur = cur.next) {
                 if (cur.key.equals(key)) {
                     if (prev == null) {
@@ -184,7 +171,6 @@ public class DictionaryImpl implements Dictionary {
         }
 
         private static final class Node {
-
             private String key;
             private String value;
             private Node next;
@@ -194,7 +180,6 @@ public class DictionaryImpl implements Dictionary {
                 this.value = value;
                 this.next = next;
             }
-
         }
     }
 }
