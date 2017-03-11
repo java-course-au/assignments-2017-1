@@ -2,9 +2,13 @@ package ru.spbau.mit;
 
 public class DictionaryImpl implements Dictionary {
     private static final int START_SIZE = 32;
+    private static final double LOAD_FACTOR_UP = 0.75;
+    private static final double LOAD_FACTOR_DOWN = 0.15;
     private int sizeMap = START_SIZE;
-    private Array[] hashMap = new Array[START_SIZE];
+    private int countElementsUp = (int) (START_SIZE * LOAD_FACTOR_UP);
+    private int countElementsDown = (int) (START_SIZE * LOAD_FACTOR_DOWN);
     private int countElements = 0;
+    private ListBucket[] hashMap = new ListBucket[START_SIZE];
 
     @Override
     public int size() {
@@ -12,154 +16,165 @@ public class DictionaryImpl implements Dictionary {
     }
     @Override
     public boolean contains(String key) {
-        int hash = Math.abs(key.hashCode()) % sizeMap;
+        int hash = getBucketID(key, sizeMap);
         return hashMap[hash] != null && hashMap[hash].contains(key);
     }
 
     @Override
     public String get(String key) {
-        int hash = Math.abs(key.hashCode()) % sizeMap;
-        if (hashMap[hash] == null) {
+        int bucketID = getBucketID(key, sizeMap);
+        if (hashMap[bucketID] == null) {
             return null;
         }
-        return hashMap[hash].getValue(key);
+        return hashMap[bucketID].getValue(key);
     }
 
     @Override
     public String put(String key, String value) {
-        int hash = Math.abs(key.hashCode()) % sizeMap;
-        if (hashMap[hash] == null) {
-            hashMap[hash] = new Array();
-            hashMap[hash].add(key, value);
-            countElements++;
-            return null;
-        }
-        if (hashMap[hash].contains(key)) {
-            String out = hashMap[hash].getValue(key);
-            hashMap[hash].replace(key, value);
+        int bucketID = getBucketID(key, sizeMap);
+        if (hashMap[bucketID] == null) {
+            hashMap[bucketID] = new ListBucket();
+        } else if (hashMap[bucketID].contains(key)) {
+            String out = hashMap[bucketID].getValue(key);
+            hashMap[bucketID].replace(key, value);
             return out;
         }
-        if (!hashMap[hash].add(key, value)) {
-            rehash();
-            return put(key, value);
-        }
+        hashMap[bucketID].add(key, value);
         countElements++;
+        if (countElements > countElementsUp) {
+            rehash(sizeMap * 2);
+        }
         return null;
     }
 
     @Override
     public String remove(String key) {
-        int hash = Math.abs(key.hashCode()) % sizeMap;
-        if (hashMap[hash] == null || !hashMap[hash].contains(key)) {
+        int bucketID = getBucketID(key, sizeMap);
+        if (hashMap[bucketID] == null || !hashMap[bucketID].contains(key)) {
             return null;
         }
         countElements--;
-        return hashMap[hash].remove(key);
+        if (countElements < countElementsDown && sizeMap > START_SIZE) {
+            rehash(sizeMap / 2);
+        }
+        return hashMap[bucketID].remove(key);
     }
 
     @Override
     public void clear() {
-        hashMap = new Array[sizeMap];
+        hashMap = new ListBucket[sizeMap];
         countElements = 0;
     }
 
-    private void rehash() {
-        Array[] newHashMap = new Array[sizeMap * 2];
-        Array[] oldHashMap = hashMap;
-        int oldSizeMap = sizeMap;
-        sizeMap *= 2;
-        hashMap = newHashMap;
-        for (int i = 0; i < oldSizeMap; i++) {
-            if (oldHashMap[i] != null) {
-                String[] keys = oldHashMap[i].getKeys();
-                if (keys != null) {
-                    for (String key : keys) {
-                        int hash = Math.abs(key.hashCode()) % sizeMap;
-                        if (hashMap[hash] == null) {
-                            hashMap[hash] = new Array();
-                        }
-                        hashMap[hash].add(key, oldHashMap[i].getValue(key));
+    private void rehash(int newSizeMap) {
+        ListBucket[] newHashMap = new ListBucket[newSizeMap];
+        for (int i = 0; i < sizeMap; i++) {
+            if (hashMap[i] != null) {
+                for (String key : hashMap[i].getKeys()) {
+                    int bucketID = getBucketID(key, newSizeMap);
+                    if (newHashMap[bucketID] == null) {
+                        newHashMap[bucketID] = new ListBucket();
                     }
+                    newHashMap[bucketID].add(key, hashMap[i].getValue(key));
                 }
             }
         }
+        hashMap = newHashMap;
+        sizeMap = newSizeMap;
+        countElementsUp = (int) (sizeMap * LOAD_FACTOR_UP);
+        countElementsDown = (int) (sizeMap * LOAD_FACTOR_DOWN);
     }
 
-    private class Array {
-        private static final int SIZE = 8;
-        private Node[] bucket = new Node[SIZE];
-        private int count = 0;
+    private int getBucketID(String key, int val) {
+        return Math.abs(key.hashCode()) % val;
+    }
 
-        public boolean add(String key, String value) {
-            if (count >= SIZE) {
-                return false;
-            }
-            for (int i = 0; i < SIZE; i++) {
-                if (bucket[i] == null) {
-                    bucket[i] = new Node(key, value);
-                    count++;
-                    break;
+    private static class ListBucket {
+        private Node headBucket;
+        private Node tailBucket;
+        private int count;
+
+        private Node getNode(String key) {
+            Node currentNode = headBucket;
+            while (currentNode != null) {
+                if (currentNode.key.equals(key)) {
+                    return currentNode;
                 }
+                currentNode = currentNode.next;
             }
-            return true;
+            return null;
+        }
+        public void add(String key, String value) {
+            if (headBucket == null) {
+                headBucket = new Node(key, value);
+                tailBucket = headBucket;
+            } else {
+                tailBucket.next = new Node(key, value);
+                tailBucket.next.prev = tailBucket;
+                tailBucket = tailBucket.next;
+            }
+            count++;
         }
 
         public boolean replace(String key, String newValue) {
-            for (int i = 0; i < SIZE; i++) {
-                if (bucket[i] != null && bucket[i].key.equals(key)) {
-                    bucket[i].value = newValue;
-                    return true;
-                }
+            Node node = getNode(key);
+            if (node != null) {
+                node.value = newValue;
+                return true;
             }
             return false;
         }
         public String remove(String key) {
-            for (int i = 0; i < SIZE; i++) {
-                if (bucket[i] != null && bucket[i].key.equals(key)) {
-                    String out = bucket[i].value;
-                    bucket[i] = null;
-                    count--;
-                    return out;
+            Node node = getNode(key);
+            if (node != null) {
+                if (node.next == null && node.prev == null) {
+                    headBucket = null;
+                    tailBucket = null;
+                } else if (node.next == null) {
+                    tailBucket = tailBucket.prev;
+                    tailBucket.next = null;
+                } else if (node.prev == null) {
+                    headBucket = headBucket.next;
+                    headBucket.prev = null;
+                } else {
+                    node.prev.next = node.next;
+                    node.next.prev = node.prev;
                 }
+                count--;
+                return node.value;
             }
             return null;
         }
 
         public String getValue(String key) {
-            for (int i = 0; i < SIZE; i++) {
-                if (bucket[i] != null && bucket[i].key.equals(key)) {
-                    return bucket[i].value;
-                }
-            }
-            return null;
+            Node node = getNode(key);
+            return node != null ? node.value : null;
         }
 
         public boolean contains(String key) {
-            for (int i = 0; i < SIZE; i++) {
-                if (bucket[i] != null && bucket[i].key.equals(key)) {
-                    return true;
-                }
-            }
-            return false;
+            Node node = getNode(key);
+            return node != null;
         }
 
         public String[] getKeys() {
-            if (count == 0) {
+            if (headBucket == null) {
                 return null;
             }
             String[] out = new String[count];
             int currentIndex = 0;
-            for (int i = 0; i < SIZE; i++) {
-                if (bucket[i] != null) {
-                    out[currentIndex] = bucket[i].key;
-                    currentIndex++;
-                }
+            Node currentNode = headBucket;
+            while (currentNode != null) {
+                out[currentIndex] = currentNode.key;
+                currentNode = currentNode.next;
+                currentIndex++;
             }
             return out;
         }
-        private class Node {
+        private static class Node {
             private String key;
             private String value;
+            private Node next;
+            private Node prev;
             Node(String key, String value) {
                 this.key = key;
                 this.value = value;
