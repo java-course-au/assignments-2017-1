@@ -105,9 +105,11 @@ public class DictionaryImpl implements Dictionary {
     }
 
     private static void clear(ListNode cur) {
-        if (cur != null) {
-            clear(cur.next);
-            cur.next = null;
+        ListNode pred;
+        while (cur != null) {
+            pred = cur;
+            cur = cur.next;
+            pred.next = null;
         }
     }
 
