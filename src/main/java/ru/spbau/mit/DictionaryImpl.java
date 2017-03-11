@@ -95,7 +95,7 @@ public class DictionaryImpl implements Dictionary {
                 ++freeBucketsCount;
             }
             if (2 * freeBucketsCount > capacity) {
-                int newCapacity = (int)(((double) capacity) / MULTIPLIER);
+                int newCapacity = (int) (((double) capacity) / MULTIPLIER);
                 rehash(newCapacity == 0 ? 1 : newCapacity);
             }
         } else {
@@ -142,10 +142,10 @@ public class DictionaryImpl implements Dictionary {
 
     private void rehash(int newCapacity) {
         ListNode[] oldTable = hashTable;
+        hashTable = new ListNode[newCapacity];
+        freeBucketsCount = newCapacity;
         int oldCapacity = capacity;
         capacity = newCapacity;
-        freeBucketsCount = capacity;
-        hashTable = new ListNode[capacity];
         for (int i = 0; i < oldCapacity; ++i) {
             ListNode head = oldTable[i];
             while (head != null) {
