@@ -5,7 +5,7 @@ public class DictionaryImpl implements Dictionary {
     private int capacity;
     private int size;
     private List[] buckets;
-    private final int defaultCapacity = 100;
+    private final int defaultCapacity = 1;
 
     public DictionaryImpl() {
         this.capacity = defaultCapacity;
@@ -25,74 +25,103 @@ public class DictionaryImpl implements Dictionary {
     @Override
     public boolean contains(String key) {
 
-        if (key == null) {
-            return false;
-        }
-
-        int hash = getHash(key);
-
-        return buckets[hash] != null && buckets[hash].contains(key);
+        return getNodeFromArrayByKey(key) != null;
     }
 
     @Override
     public String get(String key) {
 
-        if (contains(key)) {
-            return getBucket(key).find(key);
-        } else {
-            return null;
-        }
+        List.Node node = getNodeFromArrayByKey(key);
+        return node == null ? null : node.value;
     }
 
     @Override
     public String put(String key, String value) {
 
+        String result = putUnbalanced(key, value);
+        handleOverflow();
+        return result;
+    }
+
+    private String putUnbalanced(String key, String value) {
+
         if (key == null) {
             return null;
         }
 
-        if (contains(key)) {
-
-            List bucket = getBucket(key);
-            String prevVal = bucket.remove(key);
-            bucket.push(key, value);
-            return prevVal;
-
-        } else {
-
-            List bucket = getBucket(key);
-            bucket.push(key, value);
-            size++;
-            handleOverflow();
-            return null;
-
+        List bucket = getBucket(key);
+        if (bucket == null) {
+            bucket = createBucket(key);
         }
+
+        List.Node prevVal = bucket.remove(key);
+        bucket.push(key, value);
+
+        if (prevVal == null) {
+            size++;
+            return null;
+        }
+
+        return prevVal.value;
     }
 
     private List getBucket(String key) {
-        int hash = getHash(key);
-        if (buckets[hash] == null) {
-            buckets[hash] = new List();
-        }
-        return buckets[hash];
+
+        int index = getIndex(key);
+        return buckets[index];
+    }
+
+    private List createBucket(String key) {
+
+        int index = getIndex(key);
+        buckets[index] = new List();
+        return buckets[index];
     }
 
     private void handleOverflow() {
-        final int threshold = capacity * 3 / 4;
-        if (size > threshold) {
-            rehash();
+
+        final int upperThreshold = capacity * 3 / 4;
+        final int lowerThreshold = capacity / 8;
+        if (size > upperThreshold) {
+            rehash(capacity * 2);
+        } else if (size < lowerThreshold) {
+            rehash(capacity / 2);
+        }
+    }
+
+    private void rehash(int newCapacity) {
+
+        capacity = newCapacity;
+        List[] prevBuckets = buckets;
+        buckets = new List[capacity];
+        size = 0;
+
+        for (List bucket : prevBuckets) {
+            if (bucket != null) {
+                for (List.Node node = bucket.root; node != null; node = node.next) {
+                    putUnbalanced(node.key, node.value);
+                }
+            }
         }
     }
 
     @Override
     public String remove(String key) {
 
-        if (contains(key)) {
-            size--;
-            return getBucket(key).remove(key);
-        } else {
+        List bucket = getBucket(key);
+
+        if (bucket == null) {
             return null;
         }
+
+        List.Node node = bucket.remove(key);
+
+        if (node != null) {
+            size--;
+            return node.value;
+        }
+
+        return null;
     }
 
     @Override
@@ -103,35 +132,30 @@ public class DictionaryImpl implements Dictionary {
         size = 0;
     }
 
-    private int getHash(String key) {
+    private List.Node getNodeFromArrayByKey(String key) {
+
+        if (key == null) {
+            return null;
+        }
+
+        List bucket = getBucket(key);
+
+        return bucket == null ? null : bucket.getNodeByKey(key);
+    }
+
+    private int getIndex(String key) {
         return Math.abs(key.hashCode() % capacity);
     }
 
-    private void rehash() {
-
-        capacity *= 2;
-        List[] prevBuckets = buckets;
-        buckets = new List[capacity];
-        size = 0;
-
-        for (List bucket : prevBuckets) {
-            if (bucket != null) {
-                for (List.Node node = bucket.root; node != null; node = node.next) {
-                    put(node.key, node.value);
-                }
-            }
-        }
-    }
-
-    private class List {
+    private static class List {
 
         private Node root;
 
-        void push(String key, String value) {
+        private void push(String key, String value) {
             root = new Node(key, value, root);
         }
 
-        String remove(String key) {
+        private Node remove(String key) {
 
             for (Node cur = root, prev = null; cur != null;  prev = cur, cur = cur.next) {
                 if (cur.key.equals(key)) {
@@ -143,21 +167,11 @@ public class DictionaryImpl implements Dictionary {
                         prev.next = cur.next;
                     }
 
-                    return cur.value;
+                    return cur;
                 }
             }
 
             return null;
-        }
-
-        String find(String key) {
-            Node node = getNodeByKey(key);
-            return node == null ? null : node.value;
-        }
-
-        boolean contains(String key) {
-
-            return getNodeByKey(key) != null;
         }
 
         private Node getNodeByKey(String key) {
@@ -169,13 +183,13 @@ public class DictionaryImpl implements Dictionary {
             return null;
         }
 
-        class Node {
+        private static class Node {
 
             private String key;
             private String value;
             private Node next;
 
-            Node(String key, String value, Node next) {
+            private Node(String key, String value, Node next) {
                 this.key = key;
                 this.value = value;
                 this.next = next;
