@@ -14,6 +14,49 @@ public class DictionaryTest {
         assertEquals("cde", dict.get("abc"));
     }
 
+    @Test
+    public void testAll() {
+        Dictionary dict = instance();
+        final String alphabet = "abcdefghijklmnopqrstuvwxyz";
+        int sum = 0;
+        for (int i = 0; i < alphabet.length(); ++i) {
+            for (int j = i; j < alphabet.length(); ++j) {
+                assertNull(dict.put(Integer.toString(i * alphabet.length() + j), alphabet.substring(i, j)));
+                ++sum;
+            }
+        }
+        for (int i = 0; i < alphabet.length(); ++i) {
+            for (int j = i; j < alphabet.length(); ++j) {
+                assertEquals(dict.put(Integer.toString(i * alphabet.length() + j), alphabet.substring(i, j)),
+                        alphabet.substring(i, j));
+            }
+        }
+
+        assertEquals(sum, dict.size());
+        for (int i = 0; i < alphabet.length(); ++i) {
+            for (int j = i; j < alphabet.length(); ++j) {
+                assertEquals(alphabet.substring(i, j), dict.get(Integer.toString(i * alphabet.length() + j)));
+            }
+        }
+        dict.clear();
+        assertEquals(0, dict.size());
+        for (int i = 0; i < alphabet.length(); ++i) {
+            for (int j = i; j < alphabet.length(); ++j) {
+                assertNull(dict.put(Integer.toString(i * alphabet.length() + j), alphabet.substring(i, j)));
+                assertEquals(alphabet.substring(i, j), dict.remove(Integer.toString(i * alphabet.length() + j)));
+            }
+        }
+        assertEquals(0, dict.size());
+
+
+
+    }
+    @Test
+    public void testRemove() {
+        Dictionary dict = instance();
+        dict.put("1", "hello");
+        dict.remove("1");
+    }
     private static Dictionary instance() {
         try {
             return (Dictionary) Class.forName("ru.spbau.mit.DictionaryImpl").newInstance();
