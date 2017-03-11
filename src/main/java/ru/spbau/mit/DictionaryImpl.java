@@ -3,8 +3,8 @@ package ru.spbau.mit;
 public class DictionaryImpl implements Dictionary {
 
     private static final double LOAD_FACTOR = 0.75;
-    private static final int DOUBLED_CAPACITY = 2;
-    private static final int DEFAULT_CAPACITY = 11;
+    private static final int MULTIPLIER = 2;
+    private static final int DEFAULT_CAPACITY = 1;
     private static final class ListNode {
         private ListNode next = null;
         private String key;
@@ -17,6 +17,7 @@ public class DictionaryImpl implements Dictionary {
     }
 
     private int capacity = DEFAULT_CAPACITY;
+    private int freeBucketsCount = capacity;
     private int size = 0;
     private ListNode[] hashTable = new ListNode[capacity];
 
@@ -42,11 +43,12 @@ public class DictionaryImpl implements Dictionary {
     @Override
     public String put(String key, String value) {
         if ((double) size / capacity >= LOAD_FACTOR) {
-            rehash();
+            rehash(MULTIPLIER * capacity);
         }
         int hash = getBucketId(key);
 
         if (hashTable[hash] == null) {
+            --freeBucketsCount;
             ++size;
             hashTable[hash] = new ListNode(key, value);
             return null;
@@ -89,6 +91,13 @@ public class DictionaryImpl implements Dictionary {
         value = cur.value;
         if (pred == cur) {
             hashTable[hash] = cur.next;
+            if (hashTable[hash] == null) {
+                ++freeBucketsCount;
+            }
+            if (2 * freeBucketsCount > capacity) {
+                int newCapacity = (int)(((double) capacity) / MULTIPLIER);
+                rehash(newCapacity == 0 ? 1 : newCapacity);
+            }
         } else {
             pred.next = cur.next;
         }
@@ -102,6 +111,7 @@ public class DictionaryImpl implements Dictionary {
             hashTable[i] = null;
         }
         size = 0;
+        rehash(DEFAULT_CAPACITY);
     }
 
     private static void clear(ListNode cur) {
@@ -130,10 +140,11 @@ public class DictionaryImpl implements Dictionary {
         return res >= 0 ? res : (capacity + res);
     }
 
-    private void rehash() {
+    private void rehash(int newCapacity) {
         ListNode[] oldTable = hashTable;
         int oldCapacity = capacity;
-        capacity = oldCapacity * DOUBLED_CAPACITY;
+        capacity = newCapacity;
+        freeBucketsCount = capacity;
         hashTable = new ListNode[capacity];
         for (int i = 0; i < oldCapacity; ++i) {
             ListNode head = oldTable[i];
@@ -142,6 +153,7 @@ public class DictionaryImpl implements Dictionary {
                 ListNode cur = hashTable[hash];
                 if (cur == null) {
                     hashTable[hash] = new ListNode(head.key, head.value);
+                    --freeBucketsCount;
                 } else {
                     while (cur.next != null) {
                         cur = cur.next;

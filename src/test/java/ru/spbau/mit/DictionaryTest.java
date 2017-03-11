@@ -51,8 +51,12 @@ public class DictionaryTest {
 
 
     }
-//    @Test
-//    public void testRemove()
+    @Test
+    public void testRemove() {
+        Dictionary dict = instance();
+        dict.put("1", "hello");
+        dict.remove("1");
+    }
     private static Dictionary instance() {
         try {
             return (Dictionary) Class.forName("ru.spbau.mit.DictionaryImpl").newInstance();
