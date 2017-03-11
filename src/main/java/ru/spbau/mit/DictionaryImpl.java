@@ -5,12 +5,12 @@ public class DictionaryImpl implements Dictionary {
     private static final double LOAD_FACTOR = 0.75;
     private static final int DOUBLED_CAPACITY = 2;
     private static final int DEFAULT_CAPACITY = 11;
-    private static final class List {
-        private List next = null;
+    private static final class ListNode {
+        private ListNode next = null;
         private String key;
         private String value;
 
-        List(String key, String value) {
+        ListNode(String key, String value) {
             this.key = key;
             this.value = value;
         }
@@ -18,7 +18,7 @@ public class DictionaryImpl implements Dictionary {
 
     private int capacity = DEFAULT_CAPACITY;
     private int size = 0;
-    private List[] hashTable = new List[capacity];
+    private ListNode[] hashTable = new ListNode[capacity];
 
     @Override
     public int size() {
@@ -32,7 +32,7 @@ public class DictionaryImpl implements Dictionary {
 
     @Override
     public String get(String key) {
-        List temp = traverse(key);
+        ListNode temp = traverse(key);
         if (temp == null) {
             return null;
         }
@@ -44,36 +44,31 @@ public class DictionaryImpl implements Dictionary {
         if ((double) size / capacity >= LOAD_FACTOR) {
             rehash();
         }
-        int hash = getHashCode(key);
-        List cur = hashTable[hash];
-        List pred = cur;
-        String oldValue = null;
+        int hash = getBucketId(key);
 
-        if (contains(key)) {
-            while (!key.equals(cur.key)) {
-                pred = cur;
-                cur = cur.next;
-            }
-            oldValue = cur.value;
-            cur.value = value;
-            if (pred == cur) {
-                hashTable[hash] = cur;
-            } else {
-                pred.next = cur;
-            }
-        } else {
+        if (hashTable[hash] == null) {
             ++size;
-            while (cur != null) {
-                pred = cur;
-                cur = cur.next;
-            }
-            if (hashTable[hash] == null) {
-                hashTable[hash] = new List(key, value);
-            } else {
-                pred.next = new List(key, value);
-            }
+            hashTable[hash] = new ListNode(key, value);
+            return null;
         }
+        ListNode cur = hashTable[hash];
+        ListNode pred = null;
+
+        while (cur != null && !key.equals(cur.key)) {
+            pred = cur;
+            cur = cur.next;
+        }
+
+        if (cur == null) {
+            ++size;
+            pred.next = new ListNode(key, value);
+            return null;
+        }
+
+        String oldValue = cur.value;
+        cur.value = value;
         return oldValue;
+
     }
 
     @Override
@@ -82,9 +77,9 @@ public class DictionaryImpl implements Dictionary {
             return null;
         }
         --size;
-        int hash = getHashCode(key);
-        List cur = hashTable[hash];
-        List pred = cur;
+        int hash = getBucketId(key);
+        ListNode cur = hashTable[hash];
+        ListNode pred = cur;
         String value;
 
         while (!key.equals(cur.key)) {
@@ -109,49 +104,49 @@ public class DictionaryImpl implements Dictionary {
         size = 0;
     }
 
-    private static void clear(List cur) {
+    private static void clear(ListNode cur) {
         if (cur != null) {
             clear(cur.next);
             cur.next = null;
         }
     }
 
-    private List traverse(String key) {
-        int hash = getHashCode(key);
+    private ListNode traverse(String key) {
+        int hash = getBucketId(key);
         if (hashTable[hash] == null) {
             return null;
         }
-        List cur = hashTable[hash];
+        ListNode cur = hashTable[hash];
         while (cur != null && !key.equals(cur.key)) {
             cur = cur.next;
         }
         return cur;
     }
 
-    private int getHashCode(String key) {
+    private int getBucketId(String key) {
         int res = key.hashCode() % capacity;
         return res >= 0 ? res : (capacity + res);
     }
 
     private void rehash() {
-        List[] oldTable = hashTable;
+        ListNode[] oldTable = hashTable;
         int oldCapacity = capacity;
         capacity = oldCapacity * DOUBLED_CAPACITY;
-        hashTable = new List[capacity];
+        hashTable = new ListNode[capacity];
         for (int i = 0; i < oldCapacity; ++i) {
-            List head = oldTable[i];
+            ListNode head = oldTable[i];
             while (head != null) {
-                int hash = getHashCode(head.key);
-                List cur = hashTable[hash];
+                int hash = getBucketId(head.key);
+                ListNode cur = hashTable[hash];
                 if (cur == null) {
-                    hashTable[hash] = new List(head.key, head.value);
+                    hashTable[hash] = new ListNode(head.key, head.value);
                 } else {
                     while (cur.next != null) {
                         cur = cur.next;
                     }
-                    cur.next = new List(head.key, head.value);
+                    cur.next = new ListNode(head.key, head.value);
                 }
-                List pred = head;
+                ListNode pred = head;
                 head = head.next;
                 pred.next = null;
             }
