@@ -183,7 +183,7 @@ public class DictionaryImpl implements Dictionary {
             return null;
         }
 
-        private static class Node {
+        private static final class Node {
 
             private String key;
             private String value;
