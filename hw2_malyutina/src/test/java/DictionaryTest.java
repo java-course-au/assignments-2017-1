@@ -83,4 +83,24 @@ public class DictionaryTest {
             Assert.assertNull(dictionary.remove(Integer.toString(i)));
         }
     }
+
+    @Test
+    public void testAbc() {
+        final DictionaryImpl dictionary = new DictionaryImpl();
+        dictionary.put("k", "v");
+        Assert.assertEquals(1, dictionary.size());
+        dictionary.put("k", "v1");
+        Assert.assertEquals(1, dictionary.size());
+        dictionary.put("k", "v2");
+        Assert.assertEquals(1, dictionary.size());
+
+        dictionary.remove("k");
+        Assert.assertEquals(0, dictionary.size());
+
+        Assert.assertNull(dictionary.get("k"));
+        Assert.assertNull(dictionary.remove("k"));
+
+        Assert.assertEquals(0, dictionary.size());
+
+    }
 }

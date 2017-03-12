@@ -1,24 +1,21 @@
 package ru.spbau.mit;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class DictionaryImpl implements Dictionary {
+
     private static final int TABLE_SIZE = 10;
     private static final double LOAD_FACTOR = 0.75;
     private static final int EXPANDING_SIZE = 2;
 
-    private int sizeTable = TABLE_SIZE;
-    private int sizeNotEmptyElem = 0;
-    private LinkedList[] table = new LinkedList[sizeTable];
+    private LinkedList[] table = new LinkedList[TABLE_SIZE];
+    private int size = 0;
 
     public DictionaryImpl() {
-        for (int i = 0; i < sizeTable; i++) {
+        for (int i = 0; i < TABLE_SIZE; i++) {
             table[i] = new LinkedList();
         }
-    }
-
-    private int getHash(@NotNull String key) {
-        return key.hashCode() % sizeTable;
     }
 
     @Override
@@ -28,154 +25,164 @@ public class DictionaryImpl implements Dictionary {
     }
 
     @Override
+    @Nullable
     public String get(@NotNull String key) {
         int index = getHash(key);
         return table[index].find(key);
     }
 
     @Override
+    @Nullable
     public String put(@NotNull String key, @NotNull String value) {
         int index = getHash(key);
-        String oldValue = table[index].find(key);
-        table[index].remove(key);
-        table[index].insert(key, value);
-        sizeNotEmptyElem = sizeNotEmptyElem + 1;
+        String oldValue = table[index].insert(key, value);
+        if (oldValue == null) {
+            size++;
+        }
         rehash();
         return oldValue;
     }
 
     @Override
+    @Nullable
     public String remove(@NotNull String key) {
         int index = getHash(key);
-        String oldValue = table[index].find(key);
-        table[index].remove(key);
-        sizeNotEmptyElem = sizeNotEmptyElem - 1;
+        String oldValue = table[index].remove(key);
+        if (oldValue != null) {
+            size--;
+        }
         return oldValue;
-    }
-
-    private void rehash() {
-        if (sizeNotEmptyElem / sizeTable < LOAD_FACTOR) {
-            return;
-        }
-
-        LinkedList[] oldLists = table;
-
-        sizeTable = sizeTable * EXPANDING_SIZE;
-        table = new LinkedList[sizeTable];
-        sizeNotEmptyElem = 0;
-
-        for (int i = 0; i < sizeTable; i++) {
-            table[i] = new LinkedList();
-        }
-
-        for (int i = 0; i < oldLists.length; i++) {
-            Node current = oldLists[i].getNode();
-            while (current != null) {
-                put(current.keyNode, current.valueNode);
-                current = oldLists[i].getNode();
-            }
-        }
     }
 
     @Override
     public void clear() {
-        sizeNotEmptyElem = 0;
-        for (int i = 0; i < sizeTable; i++) {
+        size = 0;
+        for (int i = 0; i < TABLE_SIZE; i++) {
             table[i] = new LinkedList();
         }
     }
 
     @Override
     public int size() {
-        return sizeNotEmptyElem;
+        return size;
     }
 
-    private class LinkedList {
+    private int getHash(@NotNull String key) {
+        return key.hashCode() % table.length;
+    }
+
+    private void rehash() {
+        if (size / table.length < LOAD_FACTOR) {
+            return;
+        }
+
+        LinkedList[] oldLists = table;
+
+        int newSizeTable = table.length * EXPANDING_SIZE;
+        table = new LinkedList[newSizeTable];
+        size = 0;
+
+        for (int i = 0; i < newSizeTable; i++) {
+            table[i] = new LinkedList();
+        }
+
+        update(oldLists);
+    }
+
+    private void update(@NotNull final LinkedList[] oldLists) {
+        for (int i = 0; i < oldLists.length; i++) {
+            Node current = oldLists[i].root;
+            while (current != null) {
+                put(current.key, current.value);
+                current = current.next;
+            }
+        }
+    }
+
+    private static class LinkedList {
         private Node root;
 
-        LinkedList() {
+        public LinkedList() {
             root = null;
         }
 
-        LinkedList(@NotNull String key, @NotNull String value) {
-            root = new Node(key, value);
-        }
-
-        public void insert(@NotNull String key, @NotNull String value) {
+        @Nullable
+        public String insert(@NotNull String key, @NotNull String value) {
+            String oldValue = null;
             Node nodeInsert = new Node(key, value);
+
             if (root == null) {
                 root = nodeInsert;
-            } else {
-                Node current = root;
-                while (current.next != null) {
-                    current = current.next;
-                }
-                current.next = nodeInsert;
+                return oldValue;
             }
+
+            Node currentNode = root;
+            Node prevNode = null;
+
+            while (currentNode != null) {
+                if (currentNode.key.equals(key)) {
+                    oldValue = currentNode.value;
+                    currentNode = nodeInsert;
+                    return oldValue;
+                }
+                prevNode = currentNode;
+                currentNode = currentNode.next;
+            }
+            prevNode.next = nodeInsert;
+            return oldValue;
         }
 
+        @Nullable
         public String find(@NotNull String key) {
             Node cuurentNode = root;
             while (cuurentNode != null) {
-                if (cuurentNode.keyNode.equals(key)) {
-                    return cuurentNode.valueNode;
+                if (cuurentNode.key.equals(key)) {
+                    return cuurentNode.value;
                 }
                 cuurentNode = cuurentNode.next;
             }
             return null;
         }
 
-        public void remove(@NotNull String key) {
+        @Nullable
+        public String remove(@NotNull String key) {
+            String oldValue = null;
             if (root == null) {
-                return;
+                return oldValue;
             }
-            if (root.keyNode.equals(key)) {
+            if (root.key.equals(key)) {
+                oldValue = root.key;
                 root = root.next;
-                return;
+                return oldValue;
             }
             Node currentNode = root;
             Node prevNode = null;
 
-            while (currentNode != null && !currentNode.keyNode.equals(key)) {
+            while (currentNode != null && !currentNode.key.equals(key)) {
                 prevNode = currentNode;
                 currentNode = currentNode.next;
             }
 
             if (currentNode == null) {
-                return;
+                return oldValue;
             }
+            oldValue = currentNode.value;
             prevNode.next = currentNode.next;
-        }
-
-        public Node getNode() {
-            Node current = root;
-            if (current != null) {
-                root = current.next;
-            } else {
-                root = null;
-            }
-            return current;
+            return oldValue;
         }
     }
 
-    private class Node {
-        private String keyNode;
-        private String valueNode;
+    private static class Node {
+        private String key;
+        private String value;
         private Node next;
 
-        Node() {
-            keyNode = null;
-            valueNode = null;
-            next = null;
-        }
-
-        Node(@NotNull String key, @NotNull String value) {
-            keyNode = key;
-            valueNode = value;
+        public Node(@NotNull String key, @NotNull String value) {
+            this.key = key;
+            this.value = value;
             next = null;
         }
     }
-
 }
 
 
