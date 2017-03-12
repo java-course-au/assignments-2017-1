@@ -2,11 +2,12 @@ package ru.spbau.mit;
 
 public class DictionaryImpl implements Dictionary {
 
-    private static final int DEFAULT_HASH_SIZE = 100;
-    private static final double REHASH_LEVEL = 0.75;
+    private static final int MIN_BUCKET_NUM = 100;
+    private static final double EXPAND_THRESHOLD = 0.75;
+    private static final double SHRINK_THRESHOLD = 0.2;
     private static final double RESIZE_FACTOR = 1.666;
 
-    private Node[] hashes;
+    private Node[] buckets;
     private int size;
     private int bucketNum;
 
@@ -32,55 +33,67 @@ public class DictionaryImpl implements Dictionary {
             return null;
         }
 
-        final String old = remove(key);
-        append(key, value);
-
-        if (old == null && needRehash()) {
-            rehash();
+        final Node oldNode = getNode(key);
+        String oldValue = null;
+        if (oldNode == null) {
+            append(key, value);
+        } else {
+            oldValue = oldNode.value;
+            oldNode.value = value;
         }
-        return old;
+
+        tryRehash();
+        return oldValue;
     }
 
     public String remove(String key) {
-        Node cur = hashes[getIndex(key)];
+        Node cur = buckets[getIndex(key)];
+        Node prev = null;
         if (cur == null) {
             return null;
-        } else if (cur.key.equals(key)) {
-            hashes[getIndex(key)] = cur.next;
-            size -= 1;
-            return cur.value;
         }
 
-        while (cur.next != null) {
-            final Node next = cur.next;
-            if (next.key.equals(key)) {
-                cur.next = next.next;
+        while (cur != null) {
+            if (cur.key.equals(key)) {
+                if (prev == null) {
+                    buckets[getIndex(key)] = cur.next;
+                } else {
+                    prev.next = cur.next;
+                }
                 size -= 1;
-                return next.value;
+                tryRehash();
+                return cur.value;
             }
-            cur = next;
+            prev = cur;
+            cur = cur.next;
         }
 
         return null;
     }
 
     public void clear() {
-        bucketNum = DEFAULT_HASH_SIZE;
-        hashes = new Node[bucketNum];
+        bucketNum = MIN_BUCKET_NUM;
+        buckets = new Node[bucketNum];
         size = 0;
     }
 
-    private boolean needRehash() {
-        return size() > REHASH_LEVEL * bucketNum;
+    private void tryRehash() {
+        if (size() > EXPAND_THRESHOLD * bucketNum) {
+            int newBucketNum = (int) (bucketNum * RESIZE_FACTOR);
+            rehash(newBucketNum);
+        } else if (size() < SHRINK_THRESHOLD * bucketNum) {
+            int newBucketNum = Math.max(MIN_BUCKET_NUM, (int) (bucketNum / RESIZE_FACTOR));
+            rehash(newBucketNum);
+        }
     }
 
-    private void rehash() {
-        final Node[] oldHashes = hashes;
-        bucketNum *= RESIZE_FACTOR;
-        hashes = new Node[bucketNum];
+    private void rehash(int newBucketNum) {
+        final Node[] oldBuckets = buckets;
+        bucketNum = newBucketNum;
+        buckets = new Node[bucketNum];
         size = 0;
 
-        for (Node node : oldHashes) {
+        for (Node node : oldBuckets) {
             while (node != null) {
                 append(node.key, node.value);
                 node = node.next;
@@ -89,11 +102,11 @@ public class DictionaryImpl implements Dictionary {
     }
 
     private int getIndex(String key) {
-        return Math.abs(key.hashCode()) % hashes.length;
+        return Math.abs(key.hashCode()) % buckets.length;
     }
 
     private Node getNode(String key) {
-        Node node = hashes[getIndex(key)];
+        Node node = buckets[getIndex(key)];
         while (node != null && !node.key.equals(key)) {
             node = node.next;
         }
@@ -102,11 +115,11 @@ public class DictionaryImpl implements Dictionary {
 
     private void append(String key, String value) {
         int idx = getIndex(key);
-        hashes[idx] = new Node(hashes[idx], key, value);
+        buckets[idx] = new Node(buckets[idx], key, value);
         size += 1;
     }
 
-    private class Node {
+    private static class Node {
         private Node next;
         private String key;
         private String value;
