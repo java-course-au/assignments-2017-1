@@ -120,11 +120,13 @@ public class DictionaryImpl implements Dictionary {
             Node prevNode = null;
 
             while (currentNode != null) {
+
                 if (currentNode.key.equals(key)) {
                     oldValue = currentNode.value;
-                    currentNode = nodeInsert;
+                    currentNode.value = value;
                     return oldValue;
                 }
+
                 prevNode = currentNode;
                 currentNode = currentNode.next;
             }
