@@ -85,7 +85,7 @@ public class DictionaryTest {
     }
 
     @Test
-    public void testAbc() {
+    public void testRepeatOfKey() {
         final DictionaryImpl dictionary = new DictionaryImpl();
         dictionary.put("k", "v");
         Assert.assertEquals(1, dictionary.size());
