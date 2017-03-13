@@ -16,7 +16,7 @@ public class DictionaryImpl implements Dictionary {
         clear();
     }
 
-    static private int findBucketIndex(String key, int numBuckets) {
+    private static int findBucketIndex(String key, int numBuckets) {
         return Math.abs(key.hashCode()) % numBuckets;
     }
 
