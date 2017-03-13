@@ -167,12 +167,23 @@ public class DictionaryImpl implements Dictionary {
                 return null;
             }
 
-            StringListNode nextNode = head.getNextNode();
             if (head.getKey().equals(key)) {
-                return nextNode;
+                return head.getNextNode();
             }
 
-            head.setNextNode(StringListNode.removeByKey(nextNode, key));
+            StringListNode prevNode = head;
+            StringListNode curNode = head.getNextNode();
+
+            while (curNode != null) {
+                if (curNode.getKey().equals(key)) {
+                    prevNode.setNextNode(curNode.getNextNode());
+                    break;
+                }
+
+                prevNode = curNode;
+                curNode = curNode.getNextNode();
+            }
+
             return head;
         }
 
@@ -182,15 +193,14 @@ public class DictionaryImpl implements Dictionary {
         }
 
         static StringListNode getNodeByKeyOrNull(StringListNode head, String key) {
-            if (head == null) {
-                return null;
+            while (head != null) {
+                if (head.getKey().equals(key)) {
+                    return head;
+                }
+                head = head.getNextNode();
             }
 
-            if (head.getKey().equals(key)) {
-                return head;
-            }
-
-            return getNodeByKeyOrNull(head.getNextNode(), key);
+            return null;
         }
 
         String getKey() {
