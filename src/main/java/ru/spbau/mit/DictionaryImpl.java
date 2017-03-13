@@ -15,6 +15,10 @@ public class DictionaryImpl implements Dictionary {
         clear();
     }
 
+    static private int findBucketIndex(String key, int numBuckets) {
+        return Math.abs(key.hashCode()) % numBuckets;
+    }
+
     /**
      * @return the number of keys
      */
@@ -118,10 +122,6 @@ public class DictionaryImpl implements Dictionary {
         return Math.abs(key.hashCode()) % numberOfBuckets;
     }
 
-    private int findBucketIndex(String key, int numBuckets) {
-        return Math.abs(key.hashCode()) % numBuckets;
-    }
-
     private void growBuckets() {
         int nextNumberOfBuckets = numberOfBuckets * GROW_MAGNITUDE;
         StringListNode[] newBuckets = new StringListNode[nextNumberOfBuckets];
@@ -162,7 +162,7 @@ public class DictionaryImpl implements Dictionary {
          * @param key  The key to be searched for removing.
          * @return A head of the new list with removed element.
          */
-        public static StringListNode removeByKey(StringListNode head, String key) {
+        static StringListNode removeByKey(StringListNode head, String key) {
             if (head == null) {
                 return null;
             }
@@ -176,12 +176,12 @@ public class DictionaryImpl implements Dictionary {
             return head;
         }
 
-        public static StringListNode mergeListWithNode(StringListNode oldHead, StringListNode node) {
+        static StringListNode mergeListWithNode(StringListNode oldHead, StringListNode node) {
             node.setNextNode(oldHead);
             return node;
         }
 
-        public static StringListNode getNodeByKeyOrNull(StringListNode head, String key) {
+        static StringListNode getNodeByKeyOrNull(StringListNode head, String key) {
             if (head == null) {
                 return null;
             }
@@ -193,23 +193,23 @@ public class DictionaryImpl implements Dictionary {
             return getNodeByKeyOrNull(head.getNextNode(), key);
         }
 
-        public String getKey() {
+        String getKey() {
             return key;
         }
 
-        public String getValue() {
+        String getValue() {
             return value;
         }
 
-        public void setValue(String value) {
+        void setValue(String value) {
             this.value = value;
         }
 
-        public StringListNode getNextNode() {
+        StringListNode getNextNode() {
             return nextNode;
         }
 
-        public void setNextNode(StringListNode nextNode) {
+        void setNextNode(StringListNode nextNode) {
             this.nextNode = nextNode;
         }
     }
