@@ -4,6 +4,7 @@ package ru.spbau.mit;
 public class DictionaryImpl implements Dictionary {
     private static final int INITIAL_SIZE = 5;
     private static final double MAX_LOAD_FACTOR = 0.75;
+    private static final double MIN_LOAD_FACTOR = 0.25;
     private static final int GROW_MAGNITUDE = 2;
 
     private int numberOfBuckets;
@@ -78,6 +79,10 @@ public class DictionaryImpl implements Dictionary {
         return null;
     }
 
+    private void growBuckets() {
+        rehash(numberOfBuckets * GROW_MAGNITUDE);
+    }
+
     /**
      * Remove the key-value from the dictionary if it exists there
      *
@@ -94,9 +99,19 @@ public class DictionaryImpl implements Dictionary {
         if (containedValue != null) {
             buckets[bucketIndex] = StringListNode.removeByKey(listHead, key);
             numberOfKeys--;
+
+            if (calcLoadFactor() < MIN_LOAD_FACTOR) {
+                shrinkBuckets();
+            }
         }
 
         return containedValue;
+    }
+
+    private void shrinkBuckets() {
+        int nextNumberOfBuckets = numberOfBuckets / GROW_MAGNITUDE;
+        nextNumberOfBuckets = Math.max(INITIAL_SIZE, nextNumberOfBuckets);
+        rehash(nextNumberOfBuckets);
     }
 
     /**
@@ -122,8 +137,7 @@ public class DictionaryImpl implements Dictionary {
         return Math.abs(key.hashCode()) % numberOfBuckets;
     }
 
-    private void growBuckets() {
-        int nextNumberOfBuckets = numberOfBuckets * GROW_MAGNITUDE;
+    private void rehash(int nextNumberOfBuckets) {
         StringListNode[] newBuckets = new StringListNode[nextNumberOfBuckets];
 
         for (int i = 0; i < numberOfBuckets; i++) {
