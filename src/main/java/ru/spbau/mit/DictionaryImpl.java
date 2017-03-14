@@ -63,19 +63,20 @@ public class DictionaryImpl implements Dictionary {
 
             if (node == null) {
                 return null;
-            } else {
-                String result = node.value;
-                if (node == head) {
-                    head = node.next;
-                } else {
-                    node.prev.next = node.next;
-                    if (node.next != null) {
-                        node.next.prev = node.prev;
-                    }
-                }
-                size--;
-                return result;
             }
+
+            String result = node.value;
+            if (node == head) {
+                head = node.next;
+            } else {
+                node.prev.next = node.next;
+                if (node.next != null) {
+                    node.next.prev = node.prev;
+                }
+            }
+            size--;
+            return result;
+
         }
 
         private String[] getKeys() {
