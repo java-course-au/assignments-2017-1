@@ -1,6 +1,8 @@
 package ru.spbau.mit;
 
-public class StringSetImpl implements StringSet {
+import java.io.*;
+
+public class StringSetImpl implements StringSet, StreamSerializable {
     private final Node root;
 
     public StringSetImpl() {
@@ -77,7 +79,18 @@ public class StringSetImpl implements StringSet {
         return node == null ? 0 : node.getNumStrings();
     }
 
-    private static class Node {
+    @Override
+    public void serialize(OutputStream out) {
+        root.serialize(out);
+    }
+
+    @Override
+    public void deserialize(InputStream in) {
+        root.clear();
+        root.deserialize(in);
+    }
+
+    private static class Node implements StreamSerializable {
         private static final int NUMBER_OF_LETTERS = 52;
         private Node[] nodes = new Node[NUMBER_OF_LETTERS];
         private boolean isEndOfString = false;
@@ -139,6 +152,60 @@ public class StringSetImpl implements StringSet {
 
         private void decreaseNumStrings() {
             numStrings--;
+        }
+
+        private void doSerialize(OutputStream out) throws IOException {
+            DataOutputStream dataOutputStream = new DataOutputStream(out);
+            dataOutputStream.writeInt(numBusyChars);
+            dataOutputStream.writeBoolean(isEndOfString);
+
+            for (int i = 0; i < NUMBER_OF_LETTERS; i++) {
+                final Node node = nodes[i];
+                if (node != null) {
+                    dataOutputStream.writeInt(i);
+                    node.doSerialize(out);
+                }
+            }
+        }
+
+        private int doDeserialize(InputStream in) throws IOException {
+            DataInputStream dataInputStream = new DataInputStream(in);
+            numBusyChars = dataInputStream.readInt();
+            isEndOfString = dataInputStream.readBoolean();
+
+            if (numBusyChars == 0 && isEndOfString) {
+                numStrings = 1;
+                return 1;
+            }
+
+            if (isEndOfString) {
+                numStrings = 1;
+            } else {
+                numStrings = 0;
+            }
+            for (int i = 0; i < numBusyChars; i++) {
+                int charPosition = dataInputStream.readInt();
+                nodes[charPosition] = new Node();
+                numStrings += nodes[charPosition].doDeserialize(in);
+            }
+
+            return numStrings;
+        }
+
+        public void serialize(OutputStream out) {
+            try {
+                doSerialize(out);
+            } catch (IOException e) {
+                throw new SerializationException();
+            }
+        }
+
+        public void deserialize(InputStream in) {
+            try {
+                doDeserialize(in);
+            } catch (IOException e) {
+                throw new SerializationException();
+            }
         }
     }
 }
