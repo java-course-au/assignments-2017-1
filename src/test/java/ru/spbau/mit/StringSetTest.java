@@ -167,6 +167,56 @@ public class StringSetTest {
         assertTrue(newStringSet.contains("cde"));
     }
 
+    @Test
+    public void testComplexSerialization() {
+        StringSet stringSet = instance();
+
+        assertTrue(stringSet.add("A"));
+        assertTrue(stringSet.add("in"));
+        assertTrue(stringSet.add("inn"));
+        assertTrue(stringSet.add("to"));
+        assertTrue(stringSet.add("tea"));
+        assertTrue(stringSet.add("ted"));
+        assertTrue(stringSet.add("ten"));
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ((StreamSerializable) stringSet).serialize(outputStream);
+
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+        StringSet newStringSet = instance();
+        ((StreamSerializable) newStringSet).deserialize(inputStream);
+
+        assertTrue(newStringSet.contains("A"));
+        assertTrue(newStringSet.contains("to"));
+        assertTrue(newStringSet.contains("tea"));
+        assertTrue(newStringSet.contains("ted"));
+        assertTrue(newStringSet.contains("ten"));
+        assertTrue(newStringSet.contains("inn"));
+        assertTrue(newStringSet.contains("in"));
+
+    }
+
+    @Test
+    public void testEmptySerialization() {
+        StringSet stringSet = instance();
+
+        stringSet = serializationIdentity(stringSet);
+        assertFalse(stringSet.contains("i am not here"));
+    }
+
+
+
+    private StringSet serializationIdentity(StringSet stringSet) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ((StreamSerializable) stringSet).serialize(outputStream);
+
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+        StringSet newStringSet = instance();
+        ((StreamSerializable) newStringSet).deserialize(inputStream);
+
+        return newStringSet;
+    }
+
 
     @Test(expected = SerializationException.class)
     public void testSimpleSerializationFails() {

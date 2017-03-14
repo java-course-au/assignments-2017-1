@@ -1,6 +1,8 @@
 package ru.spbau.mit;
 
-public class StringSetImpl implements StringSet {
+import java.io.*;
+
+public class StringSetImpl implements StringSet, StreamSerializable {
 
     private Node root;
 
@@ -110,6 +112,79 @@ public class StringSetImpl implements StringSet {
             return 0;
         }
         return lastNode.howManyStartsWithPrefix;
+    }
+
+    @Override
+    public void serialize(OutputStream out) {
+        DataOutputStream str = new DataOutputStream(out);
+        try {
+            serializeRecursively(root, str);
+        } catch (IOException ex) {
+            throw new SerializationException();
+        }
+
+    }
+
+    @Override
+    public void deserialize(InputStream in) {
+        DataInputStream str = new DataInputStream(in);
+        try {
+            root = deserializeRecursively(str);
+        } catch (IOException ex) {
+            throw new SerializationException();
+        }
+    }
+
+    private void serializeRecursively(Node node, DataOutputStream str) throws IOException {
+        writeNode(node, str);
+        if (node.howManyStartsWithPrefix > 0) {
+            str.writeBoolean(true);
+            for (Node child : node.children) {
+                if (child != null) {
+                    serializeRecursively(child, str);
+                }
+            }
+            final char noMoreChildren = 0;
+            str.writeChar(noMoreChildren);
+        } else {
+            str.writeBoolean(false);
+        }
+    }
+
+    private Node deserializeRecursively(DataInputStream str) throws IOException {
+        Node node = readNode(str);
+        if (node == null) {
+            return null;
+        }
+
+        boolean hasChildren = str.readBoolean();
+        if (hasChildren) {
+            Node child;
+            while ((child = deserializeRecursively(str)) != null) {
+                node.children[getIndexByChar(child.value)] = child;
+                child.parent = node;
+            }
+        }
+        return node;
+    }
+
+    private Node readNode(DataInputStream str) throws IOException {
+        char value = str.readChar();
+        if (value == 0) {
+            return null;
+        }
+
+        Node node = new Node(value);
+        node.howManyStartsWithPrefix = str.readInt();
+        node.isFullWord = str.readBoolean();
+
+        return node;
+    }
+
+    private void writeNode(Node node, DataOutputStream str) throws IOException {
+        str.writeChar(node.value);
+        str.writeInt(node.howManyStartsWithPrefix);
+        str.writeBoolean(node.isFullWord);
     }
 
     class Node {
