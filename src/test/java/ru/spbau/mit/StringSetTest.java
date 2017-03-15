@@ -205,7 +205,6 @@ public class StringSetTest {
     }
 
 
-
     private StringSet serializationIdentity(StringSet stringSet) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ((StreamSerializable) stringSet).serialize(outputStream);
