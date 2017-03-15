@@ -1,9 +1,8 @@
 package ru.spbau.mit;
 
-/**
- * Created by yorov on 21.02.17.
- */
-public class StringSetImpl implements StringSet {
+import java.io.*;
+
+public class StringSetImpl implements StringSet, StreamSerializable {
 
     private static final int ALPHABET_SIZE = 26;
     private static final int CHAR_COUNT = 2 * ALPHABET_SIZE;
@@ -14,12 +13,14 @@ public class StringSetImpl implements StringSet {
         private int count = 0;
     }
 
-    private Vertex root;
-    private int size;
+    private Vertex root = new Vertex();
+    private int size = 0;
 
-    public StringSetImpl() {
-        root = new Vertex();
-        size = 0;
+    private static char indexToChar(int i) {
+        if (0 <= i && i < ALPHABET_SIZE) {
+            return (char) (i + 'A');
+        }
+        return (char) (i - ALPHABET_SIZE + 'a');
     }
 
     private static int index(char i) {
@@ -27,6 +28,78 @@ public class StringSetImpl implements StringSet {
             return ALPHABET_SIZE + (i - 'a');
         }
         return i - 'A';
+    }
+
+    @Override
+    public void serialize(OutputStream out) {
+        try (DataOutputStream ostream = new DataOutputStream(out)) {
+            traverseAndSerialize(root, ostream);
+        } catch (IOException e) {
+            throw new SerializationException(e);
+        }
+    }
+
+    private static void traverseAndSerialize(Vertex cur, DataOutputStream ostream)
+            throws SerializationException {
+        if (cur.isLeaf) {
+            writeChar(ostream, '!');
+        }
+        for (int i = 0; i < CHAR_COUNT; ++i) {
+            if (cur.next[i] != null) {
+                writeChar(ostream, indexToChar(i));
+                traverseAndSerialize(cur.next[i], ostream);
+            }
+        }
+        writeChar(ostream, ')');
+
+    }
+
+    private static void writeChar(DataOutputStream ostream, char value)
+            throws SerializationException {
+        try {
+            ostream.writeChar(value);
+        } catch (IOException e) {
+            throw new SerializationException(e);
+        }
+    }
+
+    @Override
+    public void deserialize(InputStream in) {
+        try (DataInputStream istream = new DataInputStream(in)) {
+            root = new Vertex();
+            traverseAndDeserialize(root, istream);
+            size = root.count;
+        } catch (IOException e) {
+            throw new SerializationException(e);
+        }
+    }
+
+    private static void traverseAndDeserialize(Vertex cur, DataInputStream istream) {
+        try {
+            if (istream.available() == 0) {
+                return;
+            }
+            char c = istream.readChar();
+            if (c == ')') {
+                return;
+            }
+            if (c == '!') {
+                cur.isLeaf = true;
+                cur.count = 1;
+                c = istream.readChar();
+                if (c == ')') {
+                    return;
+                }
+            }
+            int ind = index(c);
+            cur.next[ind] = new Vertex();
+            traverseAndDeserialize(cur.next[ind], istream);
+            cur.count += cur.next[ind].count;
+            traverseAndDeserialize(cur, istream);
+
+        } catch (IOException e) {
+            throw new SerializationException(e);
+        }
     }
 
     @Override

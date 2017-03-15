@@ -25,7 +25,7 @@ public class StringSetTest {
         StringSet stringSet = instance();
 
         assertTrue(stringSet.add("abc"));
-        assertTrue(stringSet.add("cde"));
+        assertTrue(stringSet.add("abd"));
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ((StreamSerializable) stringSet).serialize(outputStream);
@@ -35,9 +35,30 @@ public class StringSetTest {
         ((StreamSerializable) newStringSet).deserialize(inputStream);
 
         assertTrue(newStringSet.contains("abc"));
-        assertTrue(newStringSet.contains("cde"));
+        assertTrue(newStringSet.contains("abd"));
     }
 
+    @Test
+    public void testSerialization() {
+        StringSet stringSet = instance();
+        assertTrue(stringSet.add(""));
+        assertTrue(stringSet.add("abc"));
+        assertTrue(stringSet.add("abd"));
+        assertTrue(stringSet.add("abf"));
+        assertTrue(stringSet.add("abg"));
+        assertTrue(stringSet.add("cdh"));
+        assertTrue(stringSet.add("cde"));
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ((StreamSerializable) stringSet).serialize(outputStream);
+
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+        StringSet newStringSet = instance();
+        ((StreamSerializable) newStringSet).deserialize(inputStream);
+        assertEquals(stringSet.howManyStartsWithPrefix("ab"),
+                newStringSet.howManyStartsWithPrefix("ab"));
+        assertEquals(stringSet.size(), newStringSet.size());
+    }
 
     @Test(expected = SerializationException.class)
     public void testSimpleSerializationFails() {
