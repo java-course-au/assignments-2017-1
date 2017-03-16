@@ -92,7 +92,8 @@ public class DictionaryImpl implements Dictionary {
         }
     }
 
-    private static final float LOAD_FACTOR_RATE = 4 / 3;
+    private static final float LOAD_FACTOR_RATE = 4.0f / 3;
+    private static final float SHRINK_FACTOR = 1.0f / 2;
     private static final int INITIAL_CAPACITY = 11;
 
     private int capacity = INITIAL_CAPACITY;
@@ -108,12 +109,16 @@ public class DictionaryImpl implements Dictionary {
         return hashMap[index];
     }
 
-    private float maxLoadFactor() {
-        return LOAD_FACTOR_RATE * capacity;
+    private boolean needToRehash() {
+        return size >= LOAD_FACTOR_RATE * capacity;
     }
 
-    private void rehash() {
-        capacity *= 2;
+    private boolean needToShrink() {
+        return size <= (SHRINK_FACTOR * capacity) && capacity > INITIAL_CAPACITY;
+    }
+
+    private void rehash(float capacityFactor) {
+        capacity *= capacityFactor;
         DictionaryBucket[] oldHashMap = hashMap;
         hashMap = new DictionaryBucket[capacity];
         size = 0;
@@ -168,8 +173,8 @@ public class DictionaryImpl implements Dictionary {
      */
     @Override
     public String put(String key, String value) {
-        if (size >= maxLoadFactor()) {
-            rehash();
+        if (needToRehash()) {
+            rehash(2);
         }
 
         int index = getBucketIndex(key);
@@ -201,13 +206,17 @@ public class DictionaryImpl implements Dictionary {
 
         if (bucket == null) {
             return null;
-        } else {
-            String result = bucket.remove(key);
-            if (result != null) {
-                size--;
-            }
-            return result;
         }
+
+        String result = bucket.remove(key);
+        if (result != null) {
+            size--;
+            if (needToShrink()) {
+                rehash(1.0f / 2);
+            }
+        }
+
+        return result;
     }
 
     /**
