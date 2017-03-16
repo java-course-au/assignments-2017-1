@@ -1,6 +1,8 @@
 package ru.spbau.mit;
 
-public class StringSetImpl implements StringSet {
+import java.io.*;
+
+public class StringSetImpl implements StringSet, StreamSerializable {
     private static class TrieNode {
         private static final int ALPHABET_SIZE = 52;
         private TrieNode[] children = new TrieNode[ALPHABET_SIZE];
@@ -109,5 +111,53 @@ public class StringSetImpl implements StringSet {
     public int howManyStartsWithPrefix(String prefix) {
         TrieNode prefixNode = find(prefix);
         return prefixNode == null ? 0 : prefixNode.stringsWithPref;
+    }
+
+    private static void serializeNode(DataOutputStream dataOut, TrieNode node) throws IOException {
+        dataOut.writeInt(node.stringsWithPref);
+        dataOut.writeBoolean(node.isWord);
+
+        for (int i = 0; i < TrieNode.ALPHABET_SIZE; i++) {
+            if (node.children[i] != null) {
+                dataOut.writeInt(i);
+                serializeNode(dataOut, node.children[i]);
+            } else {
+                dataOut.writeInt(-1);
+            }
+        }
+    }
+
+    @Override
+    public void serialize(OutputStream out) {
+        try (DataOutputStream dataOut = new DataOutputStream(out)) {
+            serializeNode(dataOut, root);
+        } catch (IOException e) {
+            throw new SerializationException(e);
+        }
+    }
+
+    private TrieNode[] deserializeChildren(DataInputStream dataIn) throws IOException {
+        TrieNode[] children = new TrieNode[TrieNode.ALPHABET_SIZE];
+        for (int i = 0; i < TrieNode.ALPHABET_SIZE; i++) {
+            int index = dataIn.readInt();
+            if (index != -1) {
+                children[i] = new TrieNode();
+                children[i].stringsWithPref = dataIn.readInt();
+                children[i].isWord = dataIn.readBoolean();
+                children[i].children = deserializeChildren(dataIn);
+            }
+        }
+        return children;
+    }
+
+    @Override
+    public void deserialize(InputStream in) {
+        try (DataInputStream dataIn = new DataInputStream(in)) {
+            root.stringsWithPref = dataIn.readInt();
+            root.isWord = dataIn.readBoolean();
+            root.children = deserializeChildren(dataIn);
+        } catch (IOException e) {
+            throw new SerializationException(e);
+        }
     }
 }
