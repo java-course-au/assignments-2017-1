@@ -1,56 +1,29 @@
 package ru.spbau.mit;
 
 
-public class StringSetImpl implements StringSet {
+import java.io.*;
+
+public class StringSetImpl implements StringSet, StreamSerializable {
     private TrieNode trieRoot = new TrieNode();
 
-    private static class TrieNode {
-        private static final int ENGLISH_ALPHABET_SIZE = 26;
+    /**
+     * @param out
+     * @throws SerializationException in case of IOException during serialization
+     */
+    @Override
+    public void serialize(OutputStream out) {
+        trieRoot.serialize(out);
+    }
 
-        private boolean isTerminal = false;
-        private int subtreeCount = 0;
-
-        // Only letters 'a'-'z' 'A'-'Z' are allowed, so jump table has the size twice of the english alphabet.
-        private TrieNode[] nextState = new TrieNode[ENGLISH_ALPHABET_SIZE * 2];
-
-        private static int convertCharToIndex(char character) {
-            if ('a' <= character && character <= 'z') {
-                return character - 'a';
-            }
-            return character - 'A' + ENGLISH_ALPHABET_SIZE;
-        }
-
-        boolean isTerminal() {
-            return isTerminal;
-        }
-
-        void setTerminal(boolean terminal) {
-            isTerminal = terminal;
-        }
-
-        int getSubtreeCount() {
-            return subtreeCount;
-        }
-
-        void addSubtreeCount(int addend) {
-            subtreeCount += addend;
-        }
-
-        void removeNextState(char nextCharacter) {
-            nextState[convertCharToIndex(nextCharacter)] = null;
-        }
-
-        void createNextState(char nextCharacter) {
-            nextState[convertCharToIndex(nextCharacter)] = new TrieNode();
-        }
-
-        TrieNode getNextState(char nextCharacter) {
-            return nextState[convertCharToIndex(nextCharacter)];
-        }
-
-        boolean canJumpTo(char nextCharacter) {
-            return nextState[convertCharToIndex(nextCharacter)] != null;
-        }
+    /**
+     * Replace current state with data from input stream containing serialized data
+     *
+     * @param in
+     * @throws SerializationException in case of IOException during deserialization
+     */
+    @Override
+    public void deserialize(InputStream in) {
+        trieRoot.deserialize(in);
     }
 
     /**
@@ -157,5 +130,109 @@ public class StringSetImpl implements StringSet {
         }
 
         return curState;
+    }
+
+    private static class TrieNode implements StreamSerializable {
+        private static final int ENGLISH_ALPHABET_SIZE = 26;
+        private static final int JUMP_TABLE_SIZE = 2 * ENGLISH_ALPHABET_SIZE;
+
+        private boolean isTerminal = false;
+        private int subtreeCount = 0;
+
+        // Only letters 'a'-'z' 'A'-'Z' are allowed, so jump table has the size twice of the english alphabet.
+        private TrieNode[] nextState = new TrieNode[JUMP_TABLE_SIZE];
+
+        private static int convertCharToIndex(char character) {
+            if ('a' <= character && character <= 'z') {
+                return character - 'a';
+            }
+            return character - 'A' + ENGLISH_ALPHABET_SIZE;
+        }
+
+        boolean isTerminal() {
+            return isTerminal;
+        }
+
+        void setTerminal(boolean terminal) {
+            isTerminal = terminal;
+        }
+
+        int getSubtreeCount() {
+            return subtreeCount;
+        }
+
+        void addSubtreeCount(int addend) {
+            subtreeCount += addend;
+        }
+
+        void removeNextState(char nextCharacter) {
+            nextState[convertCharToIndex(nextCharacter)] = null;
+        }
+
+        void createNextState(char nextCharacter) {
+            nextState[convertCharToIndex(nextCharacter)] = new TrieNode();
+        }
+
+        TrieNode getNextState(char nextCharacter) {
+            return nextState[convertCharToIndex(nextCharacter)];
+        }
+
+        boolean canJumpTo(char nextCharacter) {
+            return nextState[convertCharToIndex(nextCharacter)] != null;
+        }
+
+        /**
+         * @param out
+         * @throws SerializationException in case of IOException during serialization
+         */
+        @Override
+        public void serialize(OutputStream out) {
+            try (DataOutputStream serialWriter = new DataOutputStream(out)) {
+                serialWriter.writeBoolean(isTerminal);
+                serialWriter.writeInt(subtreeCount);
+
+                for (int i = 0; i < JUMP_TABLE_SIZE; i++) {
+                    if (nextState[i] == null) {
+                        serialWriter.writeByte(0);
+                    } else {
+                        serialWriter.writeByte(1);
+                        nextState[i].serialize(out);
+                    }
+                }
+            } catch (IOException e) {
+                SerializationException exc = new SerializationException();
+                exc.initCause(e);
+                throw exc;
+            }
+        }
+
+        /**
+         * Replace current state with data from input stream containing serialized data
+         *
+         * @param in
+         * @throws SerializationException in case of IOException during deserialization
+         */
+        @Override
+        public void deserialize(InputStream in) {
+            try (DataInputStream serialReader = new DataInputStream(in)) {
+                isTerminal = serialReader.readBoolean();
+                subtreeCount = serialReader.readInt();
+
+                for (int i = 0; i < JUMP_TABLE_SIZE; i++) {
+                    int presenceFlag = serialReader.readByte();
+
+                    if (presenceFlag == 0) {
+                        nextState[i] = null;
+                    } else {
+                        nextState[i] = new TrieNode();
+                        nextState[i].deserialize(in);
+                    }
+                }
+            } catch (IOException e) {
+                SerializationException exc = new SerializationException();
+                exc.initCause(e);
+                throw exc;
+            }
+        }
     }
 }
