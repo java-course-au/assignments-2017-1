@@ -55,7 +55,7 @@ public class TrieSerializableTest {
         try {
             trie.serialize(outputStream);
         } catch (IOException ex) {
-            System.out.println(ex.getMessage());
+            Assert.assertEquals("Fail",ex.getMessage());
         }
     }
 }
