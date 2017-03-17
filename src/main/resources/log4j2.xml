@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <Console name="Console">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+        <File name="FileLog" fileName="logs/app.log">
+            <PatternLayout>
+                <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+            </PatternLayout>
+            <Filters>
+                <ThresholdFilter level="error" onMatch="DENY" onMismatch="NEUTRAL"/>
+            </Filters>
+        </File>
+    </Appenders>
+
+    <Loggers>
+        <Root>
+            <AppenderRef ref="Console" level="error"/>
+        </Root>
+        <Logger name="ru.spbau.mit" level="info">
+            <AppenderRef ref="FileLog"/>
+        </Logger>
+    </Loggers>
+</Configuration>
