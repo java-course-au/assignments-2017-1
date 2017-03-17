@@ -157,12 +157,12 @@ public class DictionaryImpl implements Dictionary {
         buckets = newBuckets;
     }
 
-    private static class StringListNode {
+    private static final class StringListNode {
         private String key;
         private String value;
         private StringListNode nextNode;
 
-        StringListNode(String key, String value) {
+        private StringListNode(String key, String value) {
             this.key = key;
             this.value = value;
             nextNode = null;
@@ -176,7 +176,7 @@ public class DictionaryImpl implements Dictionary {
          * @param key  The key to be searched for removing.
          * @return A head of the new list with removed element.
          */
-        static StringListNode removeByKey(StringListNode head, String key) {
+        private static StringListNode removeByKey(StringListNode head, String key) {
             if (head == null) {
                 return null;
             }
@@ -201,12 +201,12 @@ public class DictionaryImpl implements Dictionary {
             return head;
         }
 
-        static StringListNode mergeListWithNode(StringListNode oldHead, StringListNode node) {
+        private static StringListNode mergeListWithNode(StringListNode oldHead, StringListNode node) {
             node.setNextNode(oldHead);
             return node;
         }
 
-        static StringListNode getNodeByKeyOrNull(StringListNode head, String key) {
+        private static StringListNode getNodeByKeyOrNull(StringListNode head, String key) {
             while (head != null) {
                 if (head.getKey().equals(key)) {
                     return head;
@@ -217,23 +217,23 @@ public class DictionaryImpl implements Dictionary {
             return null;
         }
 
-        String getKey() {
+        private String getKey() {
             return key;
         }
 
-        String getValue() {
+        private String getValue() {
             return value;
         }
 
-        void setValue(String value) {
+        private void setValue(String value) {
             this.value = value;
         }
 
-        StringListNode getNextNode() {
+        private StringListNode getNextNode() {
             return nextNode;
         }
 
-        void setNextNode(StringListNode nextNode) {
+        private void setNextNode(StringListNode nextNode) {
             this.nextNode = nextNode;
         }
     }
