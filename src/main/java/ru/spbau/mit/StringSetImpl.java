@@ -4,58 +4,6 @@ public class StringSetImpl implements StringSet {
 
     private static final int LETTER_COUNT = 'Z' - 'A' + 'z' - 'a' + 2;
 
-    private final class Node {
-        private boolean isTerminal;
-        private int size;
-        private Node[] nexts;
-
-        Node() {
-            isTerminal = false;
-            nexts = new Node[LETTER_COUNT];
-            size = 0;
-        }
-
-        int charToIndex(char ch) {
-            if (Character.isLowerCase(ch)) {
-                return ch - 'a';
-            } else {
-                return ch - 'A' + 'z' - 'a' + 1;
-            }
-        }
-
-        Node searchSymbol(char symbol) {
-            return nexts[charToIndex(symbol)];
-        }
-
-        Node addSymbol(char symbol) {
-            Node next = new Node();
-            nexts[charToIndex(symbol)] = next;
-            return next;
-        }
-        void remove(char symbol) {
-            nexts[charToIndex(symbol)] = null;
-        }
-    }
-
-    private final class Trace {
-        private Node node;
-        private int length;
-        private String element;
-
-        Trace(Node node, int length, String element) {
-            this.node = node;
-            this.length = length;
-            this.element = element;
-        }
-
-        boolean found() {
-            return length == element.length();
-        }
-        boolean foundTerminal() {
-            return found() && node.isTerminal;
-        }
-    }
-
     private Node head;
 
     public StringSetImpl() {
@@ -144,6 +92,58 @@ public class StringSetImpl implements StringSet {
                 return;
             }
             cur = next;
+        }
+    }
+
+    private static final class Node {
+        private boolean isTerminal;
+        private int size;
+        private Node[] nexts;
+
+        Node() {
+            isTerminal = false;
+            nexts = new Node[LETTER_COUNT];
+            size = 0;
+        }
+
+        int charToIndex(char ch) {
+            if (Character.isLowerCase(ch)) {
+                return ch - 'a';
+            } else {
+                return ch - 'A' + 'z' - 'a' + 1;
+            }
+        }
+
+        Node searchSymbol(char symbol) {
+            return nexts[charToIndex(symbol)];
+        }
+
+        Node addSymbol(char symbol) {
+            Node next = new Node();
+            nexts[charToIndex(symbol)] = next;
+            return next;
+        }
+        void remove(char symbol) {
+            nexts[charToIndex(symbol)] = null;
+        }
+    }
+
+    private static final class Trace {
+        private Node node;
+        private int length;
+        private String element;
+
+        Trace(Node node, int length, String element) {
+            this.node = node;
+            this.length = length;
+            this.element = element;
+        }
+
+        boolean found() {
+            return length == element.length();
+        }
+        boolean foundTerminal() {
+            return found() && node.isTerminal;
         }
     }
 }
