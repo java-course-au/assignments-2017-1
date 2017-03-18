@@ -1,6 +1,8 @@
 package ru.spbau.mit;
 
-public class StringSetImpl implements StringSet {
+import java.io.*;
+
+public class StringSetImpl implements StringSet, StreamSerializable {
 
     private static final int LETTER_COUNT = 'Z' - 'A' + 'z' - 'a' + 2;
 
@@ -8,6 +10,27 @@ public class StringSetImpl implements StringSet {
 
     public StringSetImpl() {
         head = new Node();
+    }
+
+    public void serialize(OutputStream out) throws SerializationException {
+        final DataOutputStream stream = new DataOutputStream(out);
+        try {
+            serializeNode(head, stream);
+        } catch (IOException e) {
+            throw new SerializationException();
+        }
+    }
+
+    public void deserialize(InputStream in) throws SerializationException {
+        final DataInputStream stream = new DataInputStream(in);
+        final Node newHead = new Node();
+        try {
+            deserializeNode(newHead, stream);
+            // strong exception safety (commit or rollback semantics)
+            head = newHead;
+        } catch (IOException e) {
+            throw new SerializationException();
+        }
     }
 
     public boolean add(String element) {
@@ -49,6 +72,40 @@ public class StringSetImpl implements StringSet {
             return 0;
         }
         return trace.node.size;
+    }
+
+    private void serializeNode(final Node node, final DataOutputStream out) throws IOException {
+        int transitionCount = node.getTransitionCount();
+        out.writeInt(transitionCount);
+        out.writeBoolean(node.isTerminal);
+
+        for (int i = 0; i < node.nexts.length; i++) {
+            final Node next = node.nexts[i];
+            if (next != null) {
+                out.writeInt(i);
+                serializeNode(next, out);
+            }
+        }
+    }
+
+    private void deserializeNode(final Node node, final DataInputStream in)
+            throws IOException, SerializationException {
+        final int transitionCount = in.readInt();
+        node.isTerminal = in.readBoolean();
+        int terminalCount = node.isTerminal ? 1 : 0;
+
+        for (int i = 0; i < transitionCount; i++) {
+            final int transitionSymbol = in.readInt();
+            if (transitionSymbol < 0 || transitionSymbol >= LETTER_COUNT) {
+                throw new SerializationException();
+            }
+
+            final Node next = new Node();
+            deserializeNode(next, in);
+            node.nexts[transitionSymbol] = next;
+            terminalCount += next.size;
+        }
+        node.size = terminalCount;
     }
 
     private Trace search(String element) {
@@ -125,6 +182,16 @@ public class StringSetImpl implements StringSet {
         }
         void remove(char symbol) {
             nexts[charToIndex(symbol)] = null;
+        }
+
+        private int getTransitionCount() {
+            int count = 0;
+            for (Node next: nexts) {
+                if (next != null) {
+                    count += 1;
+                }
+            }
+            return count;
         }
     }
 
