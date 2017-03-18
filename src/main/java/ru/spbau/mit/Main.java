@@ -10,8 +10,8 @@ public class Main {
     public static void main(String[] args) {
 
         LOGGER.trace("trace");
-        LOGGER.info("info");
         LOGGER.debug("debug");
+        LOGGER.info("info");
         LOGGER.warn("warn");
         LOGGER.error("error");
         LOGGER.fatal("fatal");
