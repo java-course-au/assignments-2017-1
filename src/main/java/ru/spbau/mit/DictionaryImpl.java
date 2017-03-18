@@ -35,7 +35,7 @@ public class DictionaryImpl implements Dictionary {
     @Override
     public String put(String key, String value) {
         String result = putUnbalanced(key, value);
-        handleOverflow();
+        handleNumberOfBuckets();
         return result;
     }
 
@@ -71,7 +71,7 @@ public class DictionaryImpl implements Dictionary {
         return buckets[index];
     }
 
-    private void handleOverflow() {
+    private void handleNumberOfBuckets() {
         final int upperThreshold = capacity * 3 / 4;
         final int lowerThreshold = capacity / 8;
         if (size > upperThreshold) {
@@ -108,6 +108,7 @@ public class DictionaryImpl implements Dictionary {
 
         if (node != null) {
             size--;
+            handleNumberOfBuckets();
             return node.value;
         }
 
