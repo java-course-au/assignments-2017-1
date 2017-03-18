@@ -157,11 +157,14 @@ public class StringSetImpl implements StringSet, StreamSerializable {
             return null;
         }
 
+        node.howManyStartsWithPrefix = node.isFullWord ? 1 : 0;
+
         boolean hasChildren = str.readBoolean();
         if (hasChildren) {
             Node child;
             while ((child = deserializeRecursively(str)) != null) {
                 node.children[getIndexByChar(child.value)] = child;
+                node.howManyStartsWithPrefix += child.howManyStartsWithPrefix;
                 child.parent = node;
             }
         }
@@ -175,7 +178,6 @@ public class StringSetImpl implements StringSet, StreamSerializable {
         }
 
         Node node = new Node(value);
-        node.howManyStartsWithPrefix = str.readInt();
         node.isFullWord = str.readBoolean();
 
         return node;
@@ -183,7 +185,6 @@ public class StringSetImpl implements StringSet, StreamSerializable {
 
     private void writeNode(Node node, DataOutputStream str) throws IOException {
         str.writeChar(node.value);
-        str.writeInt(node.howManyStartsWithPrefix);
         str.writeBoolean(node.isFullWord);
     }
 
