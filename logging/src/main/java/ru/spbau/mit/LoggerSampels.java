@@ -11,8 +11,8 @@ public class LoggerSampels {
         LOGGER.error("error");   // console
         LOGGER.fatal("fatal");   // file
         LOGGER.info("info");     // file
-        LOGGER.warn("warn ");    // file
-        LOGGER.debug("debug ");  // not visible
-        LOGGER.trace("trace ");  // not visible
+        LOGGER.warn("warn");     // file
+        LOGGER.debug("debug");   // not visible
+        LOGGER.trace("trace");   // not visible
     }
 }
