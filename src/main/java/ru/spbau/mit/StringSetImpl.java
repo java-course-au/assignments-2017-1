@@ -181,28 +181,49 @@ public class StringSetImpl implements StringSet, StreamSerializable {
             return nextState[convertCharToIndex(nextCharacter)] != null;
         }
 
+        private void doSerialize(OutputStream out) throws IOException {
+            DataOutputStream serialWriter = new DataOutputStream(out);
+
+            serialWriter.writeBoolean(isTerminal);
+
+            for (int i = 0; i < JUMP_TABLE_SIZE; i++) {
+                if (nextState[i] == null) {
+                    continue;
+                }
+                serialWriter.writeByte(i);
+                nextState[i].serialize(out);
+            }
+            serialWriter.writeByte(JUMP_TABLE_SIZE + 1);
+        }
+
         /**
          * @param out
          * @throws SerializationException in case of IOException during serialization
          */
         @Override
         public void serialize(OutputStream out) {
-            try (DataOutputStream serialWriter = new DataOutputStream(out)) {
-                serialWriter.writeBoolean(isTerminal);
-                serialWriter.writeInt(subtreeCount);
-
-                for (int i = 0; i < JUMP_TABLE_SIZE; i++) {
-                    if (nextState[i] == null) {
-                        serialWriter.writeByte(0);
-                    } else {
-                        serialWriter.writeByte(1);
-                        nextState[i].serialize(out);
-                    }
-                }
+            try {
+                doSerialize(out);
             } catch (IOException e) {
                 SerializationException exc = new SerializationException();
                 exc.initCause(e);
                 throw exc;
+            }
+        }
+
+        private void doDeserialize(InputStream in) throws IOException {
+            DataInputStream serialReader = new DataInputStream(in);
+
+            isTerminal = serialReader.readBoolean();
+            subtreeCount = isTerminal ? 1 : 0;
+
+            int nextStateIdx = serialReader.readByte();
+            while (nextStateIdx != JUMP_TABLE_SIZE + 1) {
+                nextState[nextStateIdx] = new TrieNode();
+                nextState[nextStateIdx].doDeserialize(in);
+                subtreeCount += nextState[nextStateIdx].subtreeCount;
+
+                nextStateIdx = serialReader.readByte();
             }
         }
 
@@ -214,20 +235,8 @@ public class StringSetImpl implements StringSet, StreamSerializable {
          */
         @Override
         public void deserialize(InputStream in) {
-            try (DataInputStream serialReader = new DataInputStream(in)) {
-                isTerminal = serialReader.readBoolean();
-                subtreeCount = serialReader.readInt();
-
-                for (int i = 0; i < JUMP_TABLE_SIZE; i++) {
-                    int presenceFlag = serialReader.readByte();
-
-                    if (presenceFlag == 0) {
-                        nextState[i] = null;
-                    } else {
-                        nextState[i] = new TrieNode();
-                        nextState[i].deserialize(in);
-                    }
-                }
+            try {
+                doDeserialize(in);
             } catch (IOException e) {
                 SerializationException exc = new SerializationException();
                 exc.initCause(e);

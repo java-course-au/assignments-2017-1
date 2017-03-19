@@ -1,17 +1,28 @@
 package ru.spbau.mit;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+
+import static org.junit.Assert.*;
 
 public class StringSetTest {
+
+    public static StringSet instance() {
+        try {
+            return (StringSet) Class.forName("ru.spbau.mit.StringSetImpl").newInstance();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        throw new IllegalStateException("Error while class loading");
+    }
 
     private String padLeftString(String unpadded, int length, char pad) {
         String padding = "";
@@ -55,8 +66,9 @@ public class StringSetTest {
 
         assertTrue(newStringSet.contains("abc"));
         assertTrue(newStringSet.contains("cde"));
+        assertEquals(2, newStringSet.howManyStartsWithPrefix(""));
+        assertEquals(1, newStringSet.howManyStartsWithPrefix("ab"));
     }
-
 
     @Test(expected = SerializationException.class)
     public void testSimpleSerializationFails() {
@@ -230,18 +242,5 @@ public class StringSetTest {
         assertTrue(stringSet.add("abc"));
         assertTrue(stringSet.add("Abc"));
         assertEquals(2, stringSet.size());
-    }
-
-    public static StringSet instance() {
-        try {
-            return (StringSet) Class.forName("ru.spbau.mit.StringSetImpl").newInstance();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        throw new IllegalStateException("Error while class loading");
     }
 }
