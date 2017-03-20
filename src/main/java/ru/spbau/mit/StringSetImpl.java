@@ -1,7 +1,6 @@
 package ru.spbau.mit;
 
 import java.io.*;
-import java.util.StringTokenizer;
 import java.util.function.Function;
 
 public class StringSetImpl implements StringSet, StreamSerializable {
@@ -56,98 +55,54 @@ public class StringSetImpl implements StringSet, StreamSerializable {
 
     @Override
     public void serialize(OutputStream out) {
-        PrintWriter pw = new PrintWriter(out);
-        pw.println(size);
-        traverse(root, pw);
-        pw.close();
-        if (pw.checkError()) {
+        try (DataOutputStream data = new DataOutputStream(out)) {
+            data.writeInt(size);
+            traverse(root, data);
+        } catch (IOException e) {
             throw new SerializationException();
         }
     }
 
-    private void traverse(Node n, PrintWriter pw) {
-        pw.print(n.isTerminal ? 1 : 0);
-        pw.print(" ");
-        pw.println(n.terminalsNumber);
+    private void traverse(Node n, DataOutputStream data) throws IOException {
+        data.writeBoolean(n.isTerminal);
+        data.writeInt(n.terminalsNumber);
         for (int i = 0; i < ALPHABET_SIZE; i++) {
             if (n.children[i] != null) {
-                pw.print(i);
-                pw.print(" ");
+                data.writeInt(i);
             }
         }
-        pw.println();
+        data.writeInt(-1);
         for (int i = 0; i < ALPHABET_SIZE; i++) {
             if (n.children[i] != null) {
-                traverse(n.children[i], pw);
+                traverse(n.children[i], data);
             }
         }
     }
 
     @Override
     public void deserialize(InputStream in) {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        size = safeParseInt(safeRead(reader));
-        root = new Node();
-        restore(root, reader);
-    }
-
-    private void restore(Node cur, BufferedReader br) {
-        StringTokenizer tokens = new StringTokenizer(safeRead(br));
-        switch (safeNextToken(tokens)) {
-            case "1":
-                cur.isTerminal = true;
-                break;
-            case "0":
-                cur.isTerminal = false;
-                break;
-            default:
-                throw new SerializationException();
-        }
-        cur.terminalsNumber = safeParseInt(safeNextToken(tokens));
-
-        tokens = new StringTokenizer(safeRead(br));
-        while (tokens.hasMoreTokens()) {
-            int idx = safeParseInt(tokens.nextToken());
-            if (idx < 0 || idx >= ALPHABET_SIZE) {
-                throw new SerializationException();
-            }
-            cur.children[idx] = new Node();
-        }
-
-        for (int i = 0; i < ALPHABET_SIZE; i++) {
-            if (cur.children[i] != null) {
-                restore(cur.children[i], br);
-            }
-        }
-    }
-
-    private String safeRead(BufferedReader br) {
-        try {
-            String s = br.readLine();
-            if (s == null) {
-                throw new SerializationException();
-            }
-            return s;
+        try (DataInputStream data = new DataInputStream(in)) {
+            size = data.readInt();
+            root = new Node();
+            restore(root, data);
         } catch (IOException e) {
             throw new SerializationException();
         }
     }
 
-    private String safeNextToken(StringTokenizer tokenizer) {
-        if (!tokenizer.hasMoreTokens()) {
-            throw new SerializationException();
-        }
-        return tokenizer.nextToken();
-    }
+    private void restore(Node cur, DataInputStream data) throws IOException {
+        cur.isTerminal = data.readBoolean();
+        cur.terminalsNumber = data.readInt();
 
-    private int safeParseInt(String s) {
-        if (s == null) {
-            throw new SerializationException();
+        int idx;
+        while ((idx = data.readInt()) != -1) {
+            cur.children[idx] = new Node();
         }
-        try {
-            return Integer.parseInt(s);
-        } catch (NumberFormatException e) {
-            throw new SerializationException();
+
+        for (int i = 0; i < ALPHABET_SIZE; i++) {
+            if (cur.children[i] != null) {
+                restore(cur.children[i], data);
+            }
         }
     }
 
