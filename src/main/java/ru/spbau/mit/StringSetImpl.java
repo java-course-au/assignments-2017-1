@@ -6,6 +6,8 @@ public class StringSetImpl implements StringSet, StreamSerializable {
 
     private static final int ALPHABET_SIZE = 26;
     private static final int CHAR_COUNT = 2 * ALPHABET_SIZE;
+    private static final char IS_LEAF = '!';
+    private static final char END_OF_BRANCH = ')';
 
     private static final class Vertex {
         private Vertex[] next = new Vertex[CHAR_COUNT];
@@ -40,27 +42,17 @@ public class StringSetImpl implements StringSet, StreamSerializable {
     }
 
     private static void traverseAndSerialize(Vertex cur, DataOutputStream ostream)
-            throws SerializationException {
+        throws IOException {
         if (cur.isLeaf) {
-            writeChar(ostream, '!');
+            ostream.writeChar(IS_LEAF);
         }
         for (int i = 0; i < CHAR_COUNT; ++i) {
             if (cur.next[i] != null) {
-                writeChar(ostream, indexToChar(i));
+                ostream.writeChar(indexToChar(i));
                 traverseAndSerialize(cur.next[i], ostream);
             }
         }
-        writeChar(ostream, ')');
-
-    }
-
-    private static void writeChar(DataOutputStream ostream, char value)
-            throws SerializationException {
-        try {
-            ostream.writeChar(value);
-        } catch (IOException e) {
-            throw new SerializationException(e);
-        }
+        ostream.writeChar(END_OF_BRANCH);
     }
 
     @Override
@@ -74,32 +66,30 @@ public class StringSetImpl implements StringSet, StreamSerializable {
         }
     }
 
-    private static void traverseAndDeserialize(Vertex cur, DataInputStream istream) {
-        try {
-            if (istream.available() == 0) {
-                return;
-            }
-            char c = istream.readChar();
-            if (c == ')') {
-                return;
-            }
-            if (c == '!') {
-                cur.isLeaf = true;
-                cur.count = 1;
-                c = istream.readChar();
-                if (c == ')') {
-                    return;
-                }
-            }
-            int ind = index(c);
-            cur.next[ind] = new Vertex();
-            traverseAndDeserialize(cur.next[ind], istream);
-            cur.count += cur.next[ind].count;
-            traverseAndDeserialize(cur, istream);
+    private static void traverseAndDeserialize(Vertex cur, DataInputStream istream)
+        throws IOException {
 
-        } catch (IOException e) {
-            throw new SerializationException(e);
+        if (istream.available() == 0) {
+            return;
         }
+        char c = istream.readChar();
+        if (c == END_OF_BRANCH) {
+            return;
+        }
+        if (c == IS_LEAF) {
+            cur.isLeaf = true;
+            cur.count = 1;
+            c = istream.readChar();
+            if (c == END_OF_BRANCH) {
+                return;
+            }
+        }
+        int ind = index(c);
+        cur.next[ind] = new Vertex();
+        traverseAndDeserialize(cur.next[ind], istream);
+        cur.count += cur.next[ind].count;
+        traverseAndDeserialize(cur, istream);
+
     }
 
     @Override
