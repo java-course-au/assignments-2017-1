@@ -6,11 +6,11 @@ public class LogTest {
     private static final Logger LOGGER = LogManager.getLogger(LogTest.class.getName());
 
     public static void main(String[] args) {
-        LOGGER.fatal("it's fatal");
-        LOGGER.error("it's error");
-        LOGGER.info("it's info");
-        LOGGER.warn("it's warn");
-        LOGGER.trace("it's trace");
-        LOGGER.debug("it's debug");
+        LOGGER.fatal("it's fatal (Console)");
+        LOGGER.error("it's error (Console)");
+        LOGGER.info("it's info (file)");
+        LOGGER.warn("it's warn (file)");
+        LOGGER.trace("it's trace (ignore)");
+        LOGGER.debug("it's debug (ignore)");
     }
 }

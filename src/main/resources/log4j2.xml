@@ -3,7 +3,7 @@
     <Appenders>
         <RollingFile name="RollingFile" fileName="logs/app.log"
                      filePattern="logs/app-%d{MM-dd-yyyy}.log.gz">
-            <ThresholdFilter level="warn" onMatch="DENY" onMismatch="ACCEPT"/>
+            <ThresholdFilter level="error" onMatch="DENY" onMismatch="ACCEPT"/>
             <PatternLayout>
                 <pattern>%d %p %c{1.} [%t] %m%n</pattern>
             </PatternLayout>
@@ -11,11 +11,10 @@
         </RollingFile>
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
-            <ThresholdFilter level="fatal" onMatch="DENY" onMismatch="ACCEPT"/>
         </Console>
     </Appenders>
     <Loggers>
-        <Logger name="ru.spbau.mit.LogTest" level="all" additivity="false">
+        <Logger name="ru.spbau.mit.LogTest" level="info" additivity="false">
             <AppenderRef ref="RollingFile"/>
             <AppenderRef ref="Console" level="error"/>
         </Logger>
