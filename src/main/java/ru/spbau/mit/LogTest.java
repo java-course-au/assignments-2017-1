@@ -2,9 +2,12 @@ package ru.spbau.mit;
 
 import org.apache.logging.log4j.*;
 
-public class LogTest {
+public final class LogTest {
     private static final Logger LOGGER = LogManager.getLogger(LogTest.class.getName());
 
+    private LogTest() {
+
+    }
     public static void main(String[] args) {
         LOGGER.fatal("it's fatal (Console)");
         LOGGER.error("it's error (Console)");
