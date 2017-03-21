@@ -19,8 +19,9 @@ public final class Cp {
                     new FileInputStream(input), MAX_BUFFER_SIZE);
              BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(
                      new FileOutputStream(output), MAX_BUFFER_SIZE)) {
-            while (bufferedInputStream.read(buffer) != -1) {
-                bufferedOutputStream.write(buffer);
+            int numBytes;
+            while ((numBytes = bufferedInputStream.read(buffer)) != -1) {
+                bufferedOutputStream.write(buffer, 0, numBytes);
             }
         } catch (FileNotFoundException e) {
             System.out.println("File not found.");
