@@ -1,8 +1,6 @@
 package ru.spbau.mit;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
 public class StringSetImpl implements StringSet, StreamSerializable {
     private static class Trie {
@@ -13,10 +11,6 @@ public class StringSetImpl implements StringSet, StreamSerializable {
         private Trie[] nodes = new Trie[SYMBOL_COUNT];
     }
     private static final int START_INDEX = 26;
-    private static final int NULL_NODE_MARKER = 4;
-    private static final int ROOT_MARKER = 3;
-    private static final int TRUE_MARKER = 1;
-    private static final int FALSE_MARKER = 2;
     private static final int SYMBOL_COUNT = 52;
     private Trie root;
     public StringSetImpl() {
@@ -104,83 +98,51 @@ public class StringSetImpl implements StringSet, StreamSerializable {
 
     @Override
     public void serialize(OutputStream out) {
-        try {
-            startSerialize(out, root);
+        try (DataOutputStream dos = new DataOutputStream(out)) {
+            startSerialize(dos, root);
         } catch (IOException e) {
             throw new SerializationException();
         }
     }
-
-    private void startSerialize(OutputStream out, Trie root) throws IOException {
-        if (root == this.root && root.howManyStartsWithPrefix == 0) {
-            return;
-        }
-        if (root == this.root) {
-            writeNode(out, root, ROOT_MARKER);
-        }
-        for (int i = 0; i < SYMBOL_COUNT; i++) {
-            Trie node = root.nodes[i];
-            if (node == null) {
-                writeNode(out, null, NULL_NODE_MARKER);
-            } else {
-                writeNode(out, node, (int) getSymbol(i));
-                startSerialize(out, node);
+    private void startSerialize(DataOutputStream dos, Trie root) throws IOException {
+        dos.writeBoolean(root.isTerminated);
+        int countNotNull = 0;
+        for (Trie node : root.nodes) {
+            if (node != null) {
+                countNotNull++;
             }
         }
-    }
-
-    private static char getSymbol(int index) {
-        if (index < START_INDEX) {
-            return (char) (index + (int) 'A');
+        dos.writeInt(countNotNull);
+        for (int i = 0; i < SYMBOL_COUNT; i++) {
+            if (root.nodes[i] != null) {
+                dos.writeInt(i);
+                startSerialize(dos, root.nodes[i]);
+            }
         }
-        return (char) (index - START_INDEX + (int) 'a');
     }
 
     @Override
     public void deserialize(InputStream in) {
-        try {
+        try (DataInputStream dis = new DataInputStream(in)) {
             clear();
-            startDeserialize(in, root);
+            startDeserialize(dis, root);
         } catch (IOException e) {
             throw new SerializationException();
         }
     }
 
-    private void startDeserialize(InputStream in, Trie root) throws IOException {
-        int iteration = 0;
-        while (iteration < SYMBOL_COUNT) {
-            int symbol = in.read();
-            if (symbol == -1) {
-                break;
-            }
-            if (symbol == NULL_NODE_MARKER) {
-                iteration++;
-                continue;
-            } else if (symbol == ROOT_MARKER) {
-                readNode(in, root);
-                continue;
-
-            } else {
-                int index = getIndex((char) symbol);
-                root.nodes[index] = new Trie();
-                readNode(in, root.nodes[index]);
-                startDeserialize(in, root.nodes[index]);
-            }
-            iteration++;
+    private int startDeserialize(DataInputStream in, Trie root) throws IOException {
+        root.isTerminated = in.readBoolean();
+        if (root.isTerminated) {
+            root.howManyStartsWithPrefix++;
         }
-    }
-
-    private void readNode(InputStream in, Trie node) throws IOException {
-        node.howManyStartsWithPrefix = in.read();
-        node.isTerminated = in.read() == TRUE_MARKER;
-    }
-
-    private void writeNode(OutputStream out, Trie node, int symbol) throws IOException {
-        out.write(symbol);
-        if (node != null) {
-            out.write(node.howManyStartsWithPrefix);
-            out.write(node.isTerminated ? TRUE_MARKER : FALSE_MARKER);
+        int countNodes = in.readInt();
+        for (int i = 0; i < countNodes; i++) {
+            int index = in.readInt();
+            root.nodes[index] = new Trie();
+            root.howManyStartsWithPrefix += startDeserialize(in, root.nodes[index]);
         }
+        return root.howManyStartsWithPrefix;
     }
 
     private void clear() {
