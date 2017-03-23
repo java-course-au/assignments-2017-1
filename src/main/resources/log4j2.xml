@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <File name="file" fileName="LoggerExample.log">
+            <PatternLayout>
+                <Pattern>%d %p %c{1.} [%t] %m %n</Pattern>
+            </PatternLayout>
+        </File>
+        <Console name="STDOUT" target="SYSTEM_OUT">
+            <ThresholdFilter level="FATAL" onMatch="DENY" onMismatch="ACCEPT"/>
+            <PatternLayout pattern="%m%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="all">
+            <AppenderRef ref="file" level="INFO"/>
+            <AppenderRef ref="STDOUT" level="ERROR"/>
+        </Root>
+    </Loggers>
+</Configuration>
