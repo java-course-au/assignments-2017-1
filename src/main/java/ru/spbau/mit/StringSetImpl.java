@@ -114,7 +114,6 @@ public class StringSetImpl implements StringSet, StreamSerializable {
     }
 
     private static void serializeNode(DataOutputStream dataOut, TrieNode node) throws IOException {
-        dataOut.writeInt(node.stringsWithPref);
         dataOut.writeBoolean(node.isWord);
 
         for (int i = 0; i < TrieNode.ALPHABET_SIZE; i++) {
@@ -136,15 +135,30 @@ public class StringSetImpl implements StringSet, StreamSerializable {
         }
     }
 
-    private TrieNode[] deserializeChildren(DataInputStream dataIn) throws IOException {
+    private static int stringsWithPrefInChildren(TrieNode[] children) {
+        int result = 0;
+        for (TrieNode child : children) {
+            if (child != null) {
+                result += child.stringsWithPref;
+            }
+        }
+
+        return result;
+    }
+
+    private static TrieNode[] deserializeChildren(DataInputStream dataIn) throws IOException {
         TrieNode[] children = new TrieNode[TrieNode.ALPHABET_SIZE];
+
         for (int i = 0; i < TrieNode.ALPHABET_SIZE; i++) {
             int index = dataIn.readInt();
             if (index != -1) {
                 children[i] = new TrieNode();
-                children[i].stringsWithPref = dataIn.readInt();
                 children[i].isWord = dataIn.readBoolean();
                 children[i].children = deserializeChildren(dataIn);
+                children[i].stringsWithPref = stringsWithPrefInChildren(children[i].children);
+                if (children[i].isWord) {
+                    children[i].stringsWithPref++;
+                }
             }
         }
         return children;
@@ -153,9 +167,12 @@ public class StringSetImpl implements StringSet, StreamSerializable {
     @Override
     public void deserialize(InputStream in) {
         try (DataInputStream dataIn = new DataInputStream(in)) {
-            root.stringsWithPref = dataIn.readInt();
             root.isWord = dataIn.readBoolean();
             root.children = deserializeChildren(dataIn);
+            root.stringsWithPref = stringsWithPrefInChildren(root.children);
+            if (root.isWord) {
+                root.stringsWithPref++;
+            }
         } catch (IOException e) {
             throw new SerializationException(e);
         }
