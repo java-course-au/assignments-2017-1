@@ -6,8 +6,6 @@ public class StringSetImpl implements StringSet, StreamSerializable {
 
     private static final int ALPHABET_SIZE = 26;
     private static final int CHAR_COUNT = 2 * ALPHABET_SIZE;
-    private static final char IS_LEAF = '!';
-    private static final char END_OF_BRANCH = ')';
 
     private static final class Vertex {
         private Vertex[] next = new Vertex[CHAR_COUNT];
