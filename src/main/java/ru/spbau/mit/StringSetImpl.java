@@ -12,7 +12,8 @@ public class StringSetImpl implements StringSet, StreamSerializable {
     private static final class Vertex {
         private Vertex[] next = new Vertex[CHAR_COUNT];
         private boolean isLeaf = false;
-        private int count = 0;
+        private int prefixCount = 0;
+        private short childCount = 0;
     }
 
     private Vertex root = new Vertex();
@@ -43,53 +44,38 @@ public class StringSetImpl implements StringSet, StreamSerializable {
 
     private static void traverseAndSerialize(Vertex cur, DataOutputStream ostream)
         throws IOException {
-        if (cur.isLeaf) {
-            ostream.writeChar(IS_LEAF);
-        }
+        ostream.writeBoolean(cur.isLeaf);
+        ostream.writeShort(cur.childCount);
         for (int i = 0; i < CHAR_COUNT; ++i) {
             if (cur.next[i] != null) {
                 ostream.writeChar(indexToChar(i));
                 traverseAndSerialize(cur.next[i], ostream);
             }
         }
-        ostream.writeChar(END_OF_BRANCH);
     }
 
     @Override
     public void deserialize(InputStream in) {
         try (DataInputStream istream = new DataInputStream(in)) {
             root = new Vertex();
-            traverseAndDeserialize(root, istream);
-            size = root.count;
+            size = traverseAndDeserialize(root, istream);
         } catch (IOException e) {
             throw new SerializationException(e);
         }
     }
 
-    private static void traverseAndDeserialize(Vertex cur, DataInputStream istream)
+    private static int traverseAndDeserialize(Vertex cur, DataInputStream istream)
         throws IOException {
-
-        if (istream.available() == 0) {
-            return;
+        cur.isLeaf = istream.readBoolean();
+        int prefixCount = cur.isLeaf ? 1 : 0;
+        cur.childCount = istream.readShort();
+        for (int i = 0; i < cur.childCount; ++i) {
+            int ind = index(istream.readChar());
+            cur.next[ind] = new Vertex();
+            prefixCount += traverseAndDeserialize(cur.next[ind], istream);
         }
-        char c = istream.readChar();
-        if (c == END_OF_BRANCH) {
-            return;
-        }
-        if (c == IS_LEAF) {
-            cur.isLeaf = true;
-            cur.count = 1;
-            c = istream.readChar();
-            if (c == END_OF_BRANCH) {
-                return;
-            }
-        }
-        int ind = index(c);
-        cur.next[ind] = new Vertex();
-        traverseAndDeserialize(cur.next[ind], istream);
-        cur.count += cur.next[ind].count;
-        traverseAndDeserialize(cur, istream);
-
+        cur.prefixCount = prefixCount;
+        return prefixCount;
     }
 
     @Override
@@ -102,13 +88,14 @@ public class StringSetImpl implements StringSet, StreamSerializable {
         for (int i = 0; i < element.length(); i++) {
             int ind = index(element.charAt(i));
             if (temp.next[ind] == null) {
+                temp.childCount++;
                 temp.next[ind] = new Vertex();
             }
-            temp.count++;
+            temp.prefixCount++;
             temp = temp.next[ind];
         }
         temp.isLeaf = true;
-        temp.count++;
+        temp.prefixCount++;
         size++;
         return true;
     }
@@ -130,19 +117,21 @@ public class StringSetImpl implements StringSet, StreamSerializable {
         int ind = 0;
         for (int i = 0; i < element.length(); i++) {
             ind = index(element.charAt(i));
-            temp.count--;
+            temp.prefixCount--;
             pred = temp;
             temp = temp.next[ind];
-            if (pred.count == 0) {
+            if (pred.prefixCount == 0) {
+                pred.childCount = 0;
                 pred.next[ind] = null;
             }
         }
 
-        if (temp.count == 1 && temp != pred) {
+        if (temp.prefixCount == 1 && temp != pred) {
+            pred.childCount--;
             pred.next[ind] = null;
         } else {
             temp.isLeaf = false;
-            temp.count--;
+            temp.prefixCount--;
         }
         size--;
         return true;
@@ -156,7 +145,7 @@ public class StringSetImpl implements StringSet, StreamSerializable {
     @Override
     public int howManyStartsWithPrefix(String prefix) {
         Vertex temp = traverse(prefix);
-        return (temp == null) ? 0 : temp.count;
+        return (temp == null) ? 0 : temp.prefixCount;
     }
 
     private Vertex traverse(String str) {
