@@ -113,19 +113,6 @@ public class StringSetImpl implements StringSet, StreamSerializable {
         return prefixNode == null ? 0 : prefixNode.stringsWithPref;
     }
 
-    private static void serializeNode(DataOutputStream dataOut, TrieNode node) throws IOException {
-        dataOut.writeBoolean(node.isWord);
-
-        for (int i = 0; i < TrieNode.ALPHABET_SIZE; i++) {
-            if (node.children[i] != null) {
-                dataOut.writeInt(i);
-                serializeNode(dataOut, node.children[i]);
-            } else {
-                dataOut.writeInt(-1);
-            }
-        }
-    }
-
     @Override
     public void serialize(OutputStream out) {
         try (DataOutputStream dataOut = new DataOutputStream(out)) {
@@ -135,46 +122,42 @@ public class StringSetImpl implements StringSet, StreamSerializable {
         }
     }
 
-    private static int stringsWithPrefInChildren(TrieNode[] children) {
-        int result = 0;
-        for (TrieNode child : children) {
-            if (child != null) {
-                result += child.stringsWithPref;
-            }
-        }
-
-        return result;
-    }
-
-    private static TrieNode[] deserializeChildren(DataInputStream dataIn) throws IOException {
-        TrieNode[] children = new TrieNode[TrieNode.ALPHABET_SIZE];
+    private static void serializeNode(DataOutputStream dataOut, TrieNode node) throws IOException {
+        dataOut.writeBoolean(node.isWord);
 
         for (int i = 0; i < TrieNode.ALPHABET_SIZE; i++) {
-            int index = dataIn.readInt();
-            if (index != -1) {
-                children[i] = new TrieNode();
-                children[i].isWord = dataIn.readBoolean();
-                children[i].children = deserializeChildren(dataIn);
-                children[i].stringsWithPref = stringsWithPrefInChildren(children[i].children);
-                if (children[i].isWord) {
-                    children[i].stringsWithPref++;
-                }
+            if (node.children[i] != null) {
+                dataOut.writeBoolean(false);
+                serializeNode(dataOut, node.children[i]);
+            } else {
+                dataOut.writeBoolean(true);
             }
         }
-        return children;
     }
 
     @Override
     public void deserialize(InputStream in) {
         try (DataInputStream dataIn = new DataInputStream(in)) {
-            root.isWord = dataIn.readBoolean();
-            root.children = deserializeChildren(dataIn);
-            root.stringsWithPref = stringsWithPrefInChildren(root.children);
-            if (root.isWord) {
-                root.stringsWithPref++;
-            }
+            deserializeNode(dataIn, root);
         } catch (IOException e) {
             throw new SerializationException(e);
+        }
+    }
+
+
+    private static void deserializeNode(DataInputStream dataIn, TrieNode node) throws IOException {
+        node.isWord = dataIn.readBoolean();
+        if (node.isWord) {
+            node.stringsWithPref++;
+        }
+
+        for (int i = 0; i < TrieNode.ALPHABET_SIZE; i++) {
+            boolean isChildNull = dataIn.readBoolean();
+            if (!isChildNull) {
+                node.children[i] = new TrieNode();
+                deserializeNode(dataIn, node.children[i]);
+                node.stringsWithPref += node.children[i].stringsWithPref;
+            }
         }
     }
 }
