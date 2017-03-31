@@ -138,6 +138,7 @@ public class StringSetImpl implements StringSet, StreamSerializable {
     @Override
     public void deserialize(InputStream in) {
         try (DataInputStream dataIn = new DataInputStream(in)) {
+            root = new TrieNode();
             deserializeNode(dataIn, root);
         } catch (IOException e) {
             throw new SerializationException(e);
