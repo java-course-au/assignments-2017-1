@@ -127,10 +127,10 @@ public class StringSetImpl implements StringSet, StreamSerializable {
 
         for (int i = 0; i < TrieNode.ALPHABET_SIZE; i++) {
             if (node.children[i] != null) {
-                dataOut.writeBoolean(false);
+                dataOut.writeInt(i);
                 serializeNode(dataOut, node.children[i]);
             } else {
-                dataOut.writeBoolean(true);
+                dataOut.writeInt(-1);
             }
         }
     }
@@ -152,8 +152,8 @@ public class StringSetImpl implements StringSet, StreamSerializable {
         }
 
         for (int i = 0; i < TrieNode.ALPHABET_SIZE; i++) {
-            boolean isChildNull = dataIn.readBoolean();
-            if (!isChildNull) {
+            int index = dataIn.readInt();
+            if (index != -1) {
                 node.children[i] = new TrieNode();
                 deserializeNode(dataIn, node.children[i]);
                 node.stringsWithPref += node.children[i].stringsWithPref;
