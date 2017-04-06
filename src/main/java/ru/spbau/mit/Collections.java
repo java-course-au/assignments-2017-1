@@ -8,7 +8,7 @@ public final class Collections {
     private Collections() {
     }
 
-    public static <F, T> Iterable<T> map(Function1<? super F, T> f, Iterable<F> it) {
+    public static <F, T> Iterable<T> map(Function1<? super F, ? extends T> f, Iterable<F> it) {
         List<T> mapped = new ArrayList<>();
         for (F element : it) {
             mapped.add(f.apply(element));
