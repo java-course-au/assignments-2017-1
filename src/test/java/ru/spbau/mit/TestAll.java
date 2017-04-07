@@ -109,4 +109,28 @@ public class TestAll {
         }
 
     }
+
+    @Test
+    public void testGenerics() {
+        Function2<String, Number, Number> numToStr = new Function2<String, Number, Number>() {
+            @Override
+            String apply(Number num1, Number num2) {
+                return num1.toString() + num2.toString();
+            }
+        };
+
+        Function1<Integer, String> len = new Function1<Integer, String>() {
+            @Override
+            Integer apply(String s) {
+                return s.length();
+            }
+        };
+
+        Assert.assertEquals("11".length(),
+                (int) numToStr.compose(len).apply(1, 1));
+        Assert.assertEquals("hello".length() + 1,
+                (int) len.compose(succ()).apply("hello"));
+        Assert.assertEquals("11".length(),
+                (int) numToStr.bind1(1).compose(len).apply(1));
+    }
 }
