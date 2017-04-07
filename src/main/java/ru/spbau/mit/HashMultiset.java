@@ -26,12 +26,6 @@ public class HashMultiset<E> extends AbstractSet<E> implements Multiset<E> {
         return true;
     }
 
-    /**
-     * Returns the number of occurrences of an element in this multiset
-     * Expected complexity: Same as `contains`
-     *
-     * @param element
-     */
     @Override
     public int count(Object element) {
         EntryImpl<E> val = counter.get(element);
@@ -41,10 +35,6 @@ public class HashMultiset<E> extends AbstractSet<E> implements Multiset<E> {
         return val.getCount();
     }
 
-    /**
-     * Returns the set of distinct elements contained in this multiset.
-     * Expected complexity: O(1)
-     */
     @Override
     public Set<E> elementSet() {
         return liveElements;
@@ -137,13 +127,13 @@ public class HashMultiset<E> extends AbstractSet<E> implements Multiset<E> {
 
         @Override
         public void remove() {
-            curElem.count--;
+            curElem.addCount(-1);
             sz--;
             if (curElem.count == 0) {
                 liveElements.remove(curElem.getElement());
-                addedElements.remove(curElem);
-                counter.get(curElem.getElement()).addCount(-1);
+                it.remove();
             }
+            curCount--;
         }
     }
 }
