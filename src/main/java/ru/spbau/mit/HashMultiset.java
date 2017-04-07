@@ -3,7 +3,7 @@ package ru.spbau.mit;
 import java.util.*;
 
 public class HashMultiset<E> extends AbstractSet<E> implements Multiset<E> {
-    private LinkedHashSet<EntryImpl<E>> addedElements = new LinkedHashSet<>();
+    private MyHashSet<EntryImpl<E>> addedElements = new MyHashSet<>();
     private LinkedHashSet<E> liveElements = new LinkedHashSet<>();
     private LinkedHashMap<E, EntryImpl<E>> counter = new LinkedHashMap<>();
     private int sz = 0;
@@ -40,10 +40,6 @@ public class HashMultiset<E> extends AbstractSet<E> implements Multiset<E> {
         return liveElements;
     }
 
-    /**
-     * @return a read-only set of entries representing the data of this multiset
-     * Expected complexity: O(1)
-     */
     @Override
     public Set<? extends Entry<E>> entrySet() {
         return addedElements;
@@ -57,6 +53,41 @@ public class HashMultiset<E> extends AbstractSet<E> implements Multiset<E> {
     @Override
     public int size() {
         return sz;
+    }
+
+    private class MyHashSet<E> extends LinkedHashSet<E> {
+        @Override
+        public Iterator<E> iterator() {
+            return (Iterator<E>) new EntrySetIterator();
+        }
+
+        public Iterator<E> defaultIterator() {
+            return super.iterator();
+        }
+    }
+
+    private class EntrySetIterator implements Iterator<EntryImpl<E>> {
+        private Iterator<EntryImpl<E>> it = addedElements.defaultIterator();
+        private EntryImpl<E> curElem = null;
+
+        @Override
+        public boolean hasNext() {
+            return it.hasNext();
+        }
+
+        @Override
+        public EntryImpl<E> next() {
+            curElem = it.next();
+            return curElem;
+        }
+
+        @Override
+        public void remove() {
+            sz -= curElem.getCount();
+            curElem.addCount(-curElem.getCount());
+            liveElements.remove(curElem.getElement());
+            it.remove();
+        }
     }
 
     private class EntryImpl<E> implements Entry<E> {
@@ -90,9 +121,8 @@ public class HashMultiset<E> extends AbstractSet<E> implements Multiset<E> {
     }
 
     private class MultisetIterator implements Iterator<E> {
-        private HashMultiset<E> hs;
         private int curCount = 0;
-        private Iterator<EntryImpl<E>> it = addedElements.iterator();
+        private Iterator<EntryImpl<E>> it = addedElements.defaultIterator();
         private EntryImpl<E> curElem = null;
 
         private void upd() {
