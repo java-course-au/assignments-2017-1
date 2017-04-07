@@ -7,7 +7,6 @@ public final class Collections {
     private Collections() {
     }
 
-    ;
 
     public static <A1, R> Iterable<R> map(Function1<? super A1, ? extends R> func, Iterable<A1> collection) {
         List<R> mappedCollection = new ArrayList<>();
