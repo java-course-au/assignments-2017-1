@@ -8,18 +8,6 @@ import java.util.*;
 import static org.junit.Assert.assertEquals;
 
 public class FunctionsAndCollectionsTest {
-    private static <T> Function2<T, List<T>, List<T>> getListAppender() {
-        return new Function2<T, List<T>, List<T>>() {
-            @Override
-            public List<T> apply(T firstArg, List<T> secondArg) {
-                List<T> res = new ArrayList<>();
-                res.add(firstArg);
-                res.addAll(secondArg);
-                return res;
-            }
-        };
-    }
-
     @Test
     public void foldFact() {
         // factorial n = fold{r|l} (*) 1 [1..n]
