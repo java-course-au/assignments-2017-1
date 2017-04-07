@@ -213,7 +213,6 @@ public class HashMultisetTest {
                 result++;
             }
         }
-
         return result;
     }
 
