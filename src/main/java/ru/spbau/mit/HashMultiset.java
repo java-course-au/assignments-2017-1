@@ -8,6 +8,8 @@ public class HashMultiset<E> implements Multiset<E> {
 
     class EntryImpl<V> implements Entry<V> {
 
+        private LinkedList<V> linkedList = new LinkedList<>();
+
         @Override
         public V getElement() {
             return linkedList.getFirst();
@@ -18,7 +20,6 @@ public class HashMultiset<E> implements Multiset<E> {
             return linkedList.size();
         }
 
-        private LinkedList<V> linkedList = new LinkedList<>();
     }
     @Override
     public int count(Object element) {
