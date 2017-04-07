@@ -9,7 +9,7 @@ import java.util.*;
 public interface Multiset<E> extends Collection<E> {
     /**
      * Returns the number of occurrences of an element in this multiset
-     * Expected complexity: Same as `contains`
+     * Expected complexity : Same as `contains`
      */
     int count(Object element);
 
