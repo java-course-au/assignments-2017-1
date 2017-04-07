@@ -120,19 +120,26 @@ public class HashMultiset<E> extends AbstractCollection<E> implements Multiset<E
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
 
             HashSetEntry<?> that = (HashSetEntry<?>) o;
 
-            if (count != that.count) return false;
+            if (count != that.count) {
+                return false;
+            }
             return element != null ? element.equals(that.element) : that.element == null;
         }
 
         @Override
         public int hashCode() {
             int result = count;
-            result = 31 * result + (element != null ? element.hashCode() : 0);
+            final int prime = 31;
+            result = prime * result + (element != null ? element.hashCode() : 0);
             return result;
         }
     }
