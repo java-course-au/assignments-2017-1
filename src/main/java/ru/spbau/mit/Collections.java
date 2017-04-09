@@ -2,7 +2,9 @@ package ru.spbau.mit;
 
 import java.util.*;
 
-public class Collections {
+public final class Collections {
+
+    private Collections() {}
 
     public static <X, T> T foldr(Function2<? super X, ? super T, ? extends T> f, T ini, Iterable<X> xs) {
         return foldrHelper(f, ini, xs.iterator());
