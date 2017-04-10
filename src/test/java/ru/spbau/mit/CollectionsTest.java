@@ -18,7 +18,7 @@ public class CollectionsTest {
         };
 
         Iterable<String> mapped = Collections.map(toStr, Arrays.asList(1, 2, 3, 4));
-        assertTrue(equalsIterables(mapped, Arrays.asList("1", "2", "3", "4")));
+        assertEquals(mapped, Arrays.asList("1", "2", "3", "4"));
     }
 
     @Test
@@ -31,7 +31,7 @@ public class CollectionsTest {
         };
 
         Iterable<Integer> filtered = Collections.filter(mod2, Arrays.asList(1, 2, 3, 4));
-        assertTrue(equalsIterables(filtered, Arrays.asList(2, 4)));
+        assertEquals(filtered, Arrays.asList(2, 4));
     }
 
     @Test
@@ -44,9 +44,10 @@ public class CollectionsTest {
         };
 
         Iterable<Integer> taken = Collections.takeWhile(mod3, Arrays.asList(1, 2, 3, 4));
-        assertTrue(equalsIterables(taken, Arrays.asList(1, 2)));
+        assertEquals(taken, Arrays.asList(1, 2));
 
-        assertTrue(equalsIterables(Collections.takeWhile(Predicate.ALWAYS_TRUE, new ArrayList<Integer>()), new ArrayList<Integer>()));
+        assertEquals(Collections.takeWhile(Predicate.ALWAYS_TRUE,
+                new ArrayList<Integer>()), new ArrayList<Integer>());
     }
 
     @Test
@@ -59,7 +60,7 @@ public class CollectionsTest {
         };
 
         Iterable<Integer> taken = Collections.takeUnless(mod3, Arrays.asList(1, 2, 3, 4));
-        assertTrue(equalsIterables(taken, Arrays.asList(1, 2)));
+        assertEquals(taken, Arrays.asList(1, 2));
     }
 
     @Test
@@ -85,24 +86,5 @@ public class CollectionsTest {
 
         String res = Collections.foldl(f, "$", Arrays.asList(1, 2, 3));
         assertEquals(res, "$-1-2-3");
-    }
-
-    private <T> boolean equalsIterables(Iterable<T> i1, Iterable<T> i2) {
-        Iterator<T> it1 = i1.iterator();
-        Iterator<T> it2 = i2.iterator();
-
-        while (true) {
-            if (it1.hasNext() ^ it2.hasNext()) {
-                return false;
-            }
-            if (!it1.hasNext()) {
-                return true;
-            }
-            T t1 = it1.next();
-            T t2 = it2.next();
-            if (!t1.equals(t2)) {
-                return false;
-            }
-        }
     }
 }

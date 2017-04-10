@@ -25,7 +25,7 @@ public class PredicateTest {
         Predicate<Object> fail = new Predicate<Object>() {
             @Override
             public Boolean apply(Object arg) {
-                throw new AssertionError();
+                throw new AssertionError("fail predicate");
             }
         };
 
