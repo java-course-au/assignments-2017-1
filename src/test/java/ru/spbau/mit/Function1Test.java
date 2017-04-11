@@ -31,13 +31,13 @@ public class Function1Test {
 
     static final int VALUE = 13;
 
-    static final Function1<A, B> INC_FUNC = new Function1<A, B>() {
+    static final Function1<B, A> INC_FUNC = new Function1<B, A>() {
         public A apply(B param) {
             return new B(param.get() + 1);
         }
     };
 
-    static final Function1<B, A> DOUBLE_FUNC = new Function1<B, A>() {
+    static final Function1<A, B> DOUBLE_FUNC = new Function1<A, B>() {
         public B apply(A param) {
             return new B(param.get() * 2);
         }

@@ -7,7 +7,7 @@ import java.util.List;
 public final class Collections {
     private Collections() {}
 
-    public static <R, T> Iterable<R> map(Function1<R, ? super T> f, Iterable<? extends T> a) {
+    public static <R, T> Iterable<R> map(Function1<? super T, R> f, Iterable<? extends T> a) {
         final List<R> processedElements = new ArrayList<R>();
         for (T item : a) {
             processedElements.add(f.apply(item));
@@ -41,7 +41,7 @@ public final class Collections {
         return takeWhile(pred.not(), a);
     }
 
-    public static <T, U> U foldl(Function2<? extends U, ? super U, ? super T> func,
+    public static <T, U> U foldl(Function2<? super U, ? super T, ? extends U> func,
                                  U accum,
                                  Iterable<? extends T> items) {
         for (T item : items) {
@@ -50,13 +50,13 @@ public final class Collections {
         return accum;
     }
 
-    public static <T, U> U foldr(Function2<? extends U,
-                                 ? super T, ? super U> func,
+    public static <T, U> U foldr(Function2<? super T, ? super U, ? extends U
+            > func,
                                  U accum, Iterable<? extends T> items) {
         return foldrIter(func, accum, items.iterator());
     }
 
-    private static <T, U> U foldrIter(Function2<? extends U, ? super T, ? super U> func,
+    private static <T, U> U foldrIter(Function2<? super T, ? super U, ? extends U> func,
                                       U accum,
                                       Iterator<? extends T> iter) {
         if (iter.hasNext()) {

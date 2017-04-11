@@ -1,33 +1,33 @@
 package ru.spbau.mit;
 
-public abstract class Function2<R, T1, T2> {
+public abstract class Function2<T1, T2, R> {
     public abstract R apply(T1 param1, T2 param2);
 
-    public <S> Function2<S, T1, T2> compose(final Function1<S, ? super R> g) {
-        return new Function2<S, T1, T2>() {
+    public <S> Function2<T1, T2, S> compose(final Function1<? super R, S> g) {
+        return new Function2<T1, T2, S>() {
             public S apply(T1 param1, T2 param2) {
                 return g.apply(Function2.this.apply(param1, param2));
             }
         };
     }
 
-    public Function1<R, T2> bind1(T1 param) {
+    public Function1<T2, R> bind1(T1 param) {
         return new Bind1<R, T1, T2>(param, this);
     }
 
-    public Function1<R, T1> bind2(T2 param) {
+    public Function1<T1, R> bind2(T2 param) {
         return new Bind2<R, T1, T2>(param, this);
     }
 
-    public Function1<Function1<R, T2>, T1> curry() {
+    public Function1<T1, Function1<T2, R>> curry() {
         return new CurryBinder<R, T1, T2>(this);
     }
 
-    private static class Bind1<R, T1, T2> extends Function1<R, T2> {
-        private Function2<R, T1, T2> boundFunc;
+    private static class Bind1<R, T1, T2> extends Function1<T2, R> {
+        private Function2<T1, T2, R> boundFunc;
         private T1 boundParam;
 
-        Bind1(T1 param, Function2<R, T1, T2> func) {
+        Bind1(T1 param, Function2<T1, T2, R> func) {
             boundParam = param;
             boundFunc = func;
         }
@@ -37,11 +37,11 @@ public abstract class Function2<R, T1, T2> {
         }
     }
 
-    private static class Bind2<R, T1, T2> extends Function1<R, T1> {
-        private Function2<R, T1, T2> boundFunc;
+    private static class Bind2<R, T1, T2> extends Function1<T1, R> {
+        private Function2<T1, T2, R> boundFunc;
         private T2 boundParam;
 
-        Bind2(T2 param, Function2<R, T1, T2> func) {
+        Bind2(T2 param, Function2<T1, T2, R> func) {
             boundParam = param;
             boundFunc = func;
         }
@@ -51,14 +51,14 @@ public abstract class Function2<R, T1, T2> {
         }
     }
 
-    private static class CurryBinder<R, T1, T2> extends Function1<Function1<R, T2>, T1> {
-        private Function2<R, T1, T2> curryFunc;
+    private static class CurryBinder<R, T1, T2> extends Function1<T1, Function1<T2, R>> {
+        private Function2<T1, T2, R> curryFunc;
 
-        CurryBinder(Function2<R, T1, T2> func) {
+        CurryBinder(Function2<T1, T2, R> func) {
             curryFunc = func;
         }
 
-        public Function1<R, T2> apply(T1 param) {
+        public Function1<T2, R> apply(T1 param) {
             return curryFunc.bind1(param);
         }
     }

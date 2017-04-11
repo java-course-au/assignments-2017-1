@@ -9,7 +9,7 @@ public class Function2Test {
     static final int VALUE1 = 3;
     static final int VALUE2 = 8;
 
-    private static final Function2<A, Integer, B> SUM_FUNC = new Function2<A, Integer, B>() {
+    private static final Function2<Integer, B, A> SUM_FUNC = new Function2<Integer, B, A>() {
         public A apply(Integer param1, B param2) {
             return new A(param1 + param2.get());
         }
@@ -24,7 +24,7 @@ public class Function2Test {
     @Test
     public void testCompose() {
         int resValue = 2 * (VALUE1 + VALUE2);
-        Function2<B, Integer, B> func = SUM_FUNC.compose(DOUBLE_FUNC);
+        Function2<Integer, B, B> func = SUM_FUNC.compose(DOUBLE_FUNC);
         assertTrue(func.apply(VALUE1, new C(VALUE2)).get() == resValue);
     }
 

@@ -5,7 +5,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -18,6 +17,18 @@ public class CollectionsTest {
     private static final Predicate<Number> GT_THRESHOLD_PRED = new Predicate<Number>() {
         public Boolean apply(Number param) {
             return param.intValue() > THRESHOLD_VALUE;
+        }
+    };
+    private static final Function2<Integer, Integer, Integer> MINUS_OP =
+            new Function2<Integer, Integer, Integer>() {
+        public Integer apply(Integer param1, Integer param2) {
+            return param1 - param2;
+        }
+    };
+    private static final Function2<Integer, Integer, Integer> PLUS_OP =
+            new Function2<Integer, Integer, Integer>() {
+        public Integer apply(Integer param1, Integer param2) {
+            return param1 + param2;
         }
     };
     private List<Integer> collection;
@@ -34,50 +45,61 @@ public class CollectionsTest {
 
     @Test
     public void testMap() {
-        Function1<Integer, Number> inc = new Function1<Integer, Number>() {
+        Function1<Number, Integer> inc = new Function1<Number, Integer>() {
             public Integer apply(Number param) {
                 return param.intValue() + 1;
             }
         };
 
         final Integer[] expected = new Integer[] {2, 4, 3, 5, 8, 3, 6};
-        assertTrue(compareArrays(Collections.map(inc, collection), Arrays.asList(expected)));
+        assertEquals(Collections.map(inc, collection), Arrays.asList(expected));
     }
 
     @Test
     public void testFilter() {
         final Integer[] expected = new Integer[] {4, 7, 5};
-        assertTrue(compareArrays(Collections.filter(GT_THRESHOLD_PRED, collection), Arrays.asList(expected)));
+        assertEquals(Collections.filter(GT_THRESHOLD_PRED, collection), Arrays.asList(expected));
     }
 
     @Test
     public void testTakeWhile() {
         final Integer[] expected = new Integer[] {1, 3, 2};
         final Iterable<Integer> res = Collections.takeWhile(GT_THRESHOLD_PRED.not(), collection);
-        assertTrue(compareArrays(res, Arrays.asList(expected)));
+        assertEquals(res, Arrays.asList(expected));
     }
 
     @Test
     public void testTakeUnless() {
         final Integer[] expected = new Integer[] {1, 3, 2};
         Iterable<Integer> res = Collections.takeUnless(GT_THRESHOLD_PRED, collection);
-        assertTrue(compareArrays(res, Arrays.asList(expected)));
+        assertEquals(res, Arrays.asList(expected));
     }
 
-    private static <T> boolean compareArrays(Iterable<T> c1, Iterable<T> c2) {
-        if (c1 == c2) {
-            return true;
+    @Test
+    public void testFold() {
+        int res = 0;
+        for (Integer val : collection) {
+            res += val;
         }
-        if (c1 == null || c2 == null) {
-            return false;
-        }
+        assertEquals(new Integer(res), Collections.foldl(PLUS_OP, 0, collection));
+        assertEquals(new Integer(res), Collections.foldr(PLUS_OP, 0, collection));
+    }
 
-        final Iterator<T> it2 = c2.iterator();
-        for (T item : c1) {
-            if (!it2.hasNext() || !item.equals(it2.next())) {
-                return false;
-            }
+    @Test
+    public void testFoldlAssociativity() {
+        int foldlRes = 0;
+        for (Integer value : TEST_SAMPLE) {
+            foldlRes -= value;
         }
-        return true;
+        assertEquals(new Integer(foldlRes), Collections.foldl(MINUS_OP, 0, collection));
+    }
+
+    @Test
+    public void testFoldrAssociativity() {
+        int foldrRes = 0;
+        for (int idx = TEST_SAMPLE.length - 1; idx >= 0; --idx) {
+            foldrRes = TEST_SAMPLE[idx] - foldrRes;
+        }
+        assertEquals(new Integer(foldrRes), Collections.foldr(MINUS_OP, 0, collection));
     }
 }
