@@ -2,35 +2,29 @@ package ru.spbau.mit;
 
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TestCollections {
-    private static final int COL_SIZE = 10;
 
     @Test
     public void testMap() {
-        final int addend = 10;
         Function1<Integer, Integer> addTen = new Function1<Integer, Integer>() {
             @Override
             public Integer apply(Integer argument) {
-                return argument + addend;
+                return argument + 10;
             }
         };
 
-        List<Integer> collection = new ArrayList<>();
-        for (int i = 0; i < COL_SIZE; i++) {
-            collection.add(i);
-        }
+        Integer[] array = {8, 9, 10, 11, 12};
+        Integer[] correctlyMapped = {18, 19, 20, 21, 22};
 
-        collection = (List) Collections.map(addTen, collection);
+        List<Integer> mapped = (List<Integer>) Collections.map(addTen, Arrays.asList(array));
 
-        for (int i = 0; i < COL_SIZE; i++) {
-            assertEquals(new Integer(i + addend), collection.get(i));
-        }
+        assertEquals(Arrays.asList(correctlyMapped), mapped);
     }
 
     @Test
@@ -42,22 +36,17 @@ public class TestCollections {
             }
         };
 
-        List<Integer> collection = new ArrayList<>();
-        for (int i = 0; i < COL_SIZE; i++) {
-            collection.add(i);
-        }
+        Integer[] array = {8, 9, 10, 11, 12};
+        String[] correctlyMapped = {"8", "9", "10", "11", "12"};
 
-        List<String> newCollection = (List) Collections.map(stringify, collection);
+        List<String> mapped = (List<String>) Collections.map(stringify, Arrays.asList(array));
 
-        for (int i = 0; i < COL_SIZE; i++) {
-            assertEquals(Integer.toString(i), newCollection.get(i));
-        }
+        assertEquals(Arrays.asList(correctlyMapped), mapped);
     }
 
     @Test
     public void testFilter() {
         Integer[] array = {8, 9, 10, 11, 12};
-        final int numberOfElementsMoreThanTen = 2;
 
         Predicate<Integer> moreThanTen = new Predicate<Integer>() {
             @Override
@@ -66,11 +55,10 @@ public class TestCollections {
             }
         };
 
+        Integer[] correctlyFiltered = {11, 12};
         List<Integer> filtered = (List<Integer>) Collections.filter(moreThanTen, Arrays.asList(array));
 
-        assertEquals(filtered.size(), numberOfElementsMoreThanTen);
-        assertEquals(filtered.get(0), array[3]);
-        assertEquals(filtered.get(1), array[4]);
+        assertEquals(Arrays.asList(correctlyFiltered), filtered);
     }
 
     @Test
@@ -79,12 +67,7 @@ public class TestCollections {
 
         List<Integer> filtered = (List<Integer>) Collections.filter(Predicate.ALWAYS_TRUE, Arrays.asList(array));
 
-        assertEquals(filtered.size(), array.length);
-        assertEquals(filtered.get(0), array[0]);
-        assertEquals(filtered.get(1), array[1]);
-        assertEquals(filtered.get(2), array[2]);
-        assertEquals(filtered.get(3), array[3]);
-        assertEquals(filtered.get(4), array[4]);
+        assertEquals(Arrays.asList(array), filtered);
     }
 
     @Test
@@ -93,7 +76,7 @@ public class TestCollections {
 
         List<Integer> filtered = (List<Integer>) Collections.filter(Predicate.ALWAYS_FALSE, Arrays.asList(array));
 
-        assertEquals(filtered.size(), 0);
+        assertTrue(filtered.isEmpty());
     }
 
     @Test
@@ -106,16 +89,16 @@ public class TestCollections {
                 return arg < 10;
             }
         };
+        Integer[] correct = {8, 9};
 
         List<Integer> filtered = (List<Integer>) Collections.takeWhile(lessThanTen, Arrays.asList(array));
 
-        assertEquals(filtered.get(0), array[0]);
-        assertEquals(filtered.get(1), array[1]);
+        assertEquals(Arrays.asList(correct), filtered);
     }
 
     @Test
     public void testTakeUnless() {
-        Integer[] array = {8, 9, 10, 7, 6};
+        Integer[] array = {8, 9, 11, 7, 6};
 
         Predicate<Integer> moreThanTen = new Predicate<Integer>() {
             @Override
@@ -123,11 +106,11 @@ public class TestCollections {
                 return arg > 10;
             }
         };
+        Integer[] correct = {8, 9};
 
         List<Integer> filtered = (List<Integer>) Collections.takeUnless(moreThanTen, Arrays.asList(array));
 
-        assertEquals(filtered.get(0), array[0]);
-        assertEquals(filtered.get(1), array[1]);
+        assertEquals(Arrays.asList(correct), filtered);
     }
 
     @Test
@@ -141,8 +124,48 @@ public class TestCollections {
             }
         };
 
-        Collections.foldl(fun2, 10, Arrays.asList(array));
+        assertEquals(new Integer(25), Collections.foldl(fun2, 10, Arrays.asList(array)));
+    }
 
-        assertEquals(Collections.foldl(fun2, 10, Arrays.asList(array)), new Integer(25));
+    @Test
+    public void testFoldR() {
+        Integer[] array = {1, 2, 3, 4, 5};
+
+        Function2<Integer, Integer, Integer> fun2 = new Function2<Integer, Integer, Integer>() {
+            @Override
+            public Integer apply(Integer arg1, Integer arg2) {
+                return arg1 * arg2;
+            }
+        };
+
+        assertEquals(new Integer(120), Collections.foldl(fun2, 1, Arrays.asList(array)));
+    }
+
+    @Test
+    public void testFoldLNonAssociative() {
+        Integer[] array = {1, 2, 3, 4, 5};
+
+        Function2<Integer, Integer, Integer> fun2 = new Function2<Integer, Integer, Integer>() {
+            @Override
+            public Integer apply(Integer arg1, Integer arg2) {
+                return arg1 - arg2;
+            }
+        };
+
+        assertEquals(new Integer(-15), Collections.foldl(fun2, 0, Arrays.asList(array)));
+    }
+
+    @Test
+    public void testFoldRNonAssociative() {
+        Integer[] array = {1, 2, 3, 4, 5};
+
+        Function2<Integer, Integer, Integer> fun2 = new Function2<Integer, Integer, Integer>() {
+            @Override
+            public Integer apply(Integer arg1, Integer arg2) {
+                return arg1 - arg2;
+            }
+        };
+
+        assertEquals(new Integer(3), Collections.foldr(fun2, 0, Arrays.asList(array)));
     }
 }

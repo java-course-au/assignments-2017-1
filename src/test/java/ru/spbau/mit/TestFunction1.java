@@ -8,7 +8,6 @@ public class TestFunction1 {
 
     @Test
     public void testBasicApply() {
-        final int num = 123;
         Function1<Integer, String> toStringFun = new Function1<Integer, String>() {
             @Override
             public String apply(Integer integer) {
@@ -16,7 +15,7 @@ public class TestFunction1 {
             }
         };
 
-        assertEquals(toStringFun.apply(num), Integer.toString(num));
+        assertEquals("123", toStringFun.apply(123));
     }
 
     @Test
@@ -37,7 +36,7 @@ public class TestFunction1 {
             }
         };
 
-        assertEquals(doubleToStr.compose(strToInt).apply(arg), new Integer(Double.toString(arg).length()));
+        assertEquals(new Integer(Double.toString(arg).length()), doubleToStr.compose(strToInt).apply(arg));
     }
 
     @Test
@@ -56,6 +55,6 @@ public class TestFunction1 {
             }
         };
 
-        assertEquals(strToInt.compose(objectToStr).apply("lorem ipsum"), "11");
+        assertEquals("11", strToInt.compose(objectToStr).apply("lorem ipsum"));
     }
 }

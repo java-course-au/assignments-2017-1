@@ -2,90 +2,153 @@ package ru.spbau.mit;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class TestPredicate {
 
     @Test
     public void testBasicPredicate() {
-        final int value = 10;
-
         Predicate<Integer> moreThanTen = new Predicate<Integer>() {
             @Override
             public Boolean apply(Integer arg) {
-                return arg > value;
+                return arg > 10;
             }
         };
 
-        assertTrue(moreThanTen.apply(value + 1));
-        assertFalse(moreThanTen.apply(value));
-        assertFalse(moreThanTen.apply(value - 1));
+        assertTrue(moreThanTen.apply(11));
+        assertFalse(moreThanTen.apply(10));
+        assertFalse(moreThanTen.apply(9));
     }
 
     @Test
     public void testAndPredicate() {
-        final int value1 = 10;
-        final int value2 = 20;
-        final int diff = 5;
-
         Predicate<Integer> moreThanTen = new Predicate<Integer>() {
             @Override
             public Boolean apply(Integer arg) {
-                return arg > value1;
+                return arg > 10;
             }
         };
 
         Predicate<Integer> lessThanTwenty = new Predicate<Integer>() {
             @Override
             public Boolean apply(Integer arg) {
-                return arg < value2;
+                return arg < 20;
             }
         };
 
-        assertTrue(moreThanTen.and(lessThanTwenty).apply(value2 - diff));
-        assertFalse(moreThanTen.and(lessThanTwenty).apply(value1 - diff));
-        assertFalse(moreThanTen.and(lessThanTwenty).apply(value2 + diff));
+        assertTrue(moreThanTen.and(lessThanTwenty).apply(15));
+        assertFalse(moreThanTen.and(lessThanTwenty).apply(5));
+        assertFalse(moreThanTen.and(lessThanTwenty).apply(25));
     }
 
     @Test
     public void testOrPredicate() {
-        final int value1 = 10;
-        final int value2 = 20;
-        final int diff = 5;
-
         Predicate<Integer> moreThanTen = new Predicate<Integer>() {
             @Override
             public Boolean apply(Integer arg) {
-                return arg > value1;
+                return arg > 10;
             }
         };
 
         Predicate<Integer> moreThanTwenty = new Predicate<Integer>() {
             @Override
             public Boolean apply(Integer arg) {
-                return arg > value2;
+                return arg > 20;
             }
         };
 
-        assertTrue(moreThanTen.or(moreThanTwenty).apply(value2 - diff));
-        assertFalse(moreThanTen.or(moreThanTwenty).apply(value1 - diff));
-        assertTrue(moreThanTen.or(moreThanTwenty).apply(value2 + diff));
+        assertTrue(moreThanTen.or(moreThanTwenty).apply(15));
+        assertFalse(moreThanTen.or(moreThanTwenty).apply(5));
+        assertTrue(moreThanTen.or(moreThanTwenty).apply(25));
     }
 
     @Test
     public void testNotPredicate() {
-        final int value1 = 10;
-
         Predicate<Integer> moreThanTen = new Predicate<Integer>() {
             @Override
             public Boolean apply(Integer arg) {
-                return arg > value1;
+                return arg > 10;
             }
         };
 
-        assertFalse(moreThanTen.not().apply(value1 + 1));
-        assertTrue(moreThanTen.not().apply(value1));
-        assertTrue(moreThanTen.not().apply(value1 - 1));
+        assertFalse(moreThanTen.not().apply(11));
+        assertTrue(moreThanTen.not().apply(10));
+        assertTrue(moreThanTen.not().apply(9));
+    }
+
+    @Test
+    public void testLazyOr() {
+        Predicate<Integer> moreThanTen = new Predicate<Integer>() {
+            @Override
+            public Boolean apply(Integer arg) {
+                return arg > 10;
+            }
+        };
+
+        assertTrue(moreThanTen.or(null).apply(15));
+    }
+
+    @Test
+    public void testLazyOr1() {
+        final int[] indicator = {0};
+        Predicate<Integer> moreThanTen = new Predicate<Integer>() {
+            @Override
+            public Boolean apply(Integer arg) {
+                return arg > 10;
+            }
+        };
+
+        Predicate<Integer> lessThanTwenty = new Predicate<Integer>() {
+            @Override
+            public Boolean apply(Integer arg) {
+                indicator[0] += 1;
+                return arg < 20;
+            }
+        };
+
+        assertTrue(moreThanTen.or(lessThanTwenty).apply(15));
+        assertEquals(0, indicator[0]);
+
+        assertTrue(moreThanTen.or(lessThanTwenty).apply(7));
+        assertEquals(1, indicator[0]);
+
+
+    }
+
+    @Test
+    public void testLazyAnd() {
+        Predicate<Integer> moreThanTen = new Predicate<Integer>() {
+            @Override
+            public Boolean apply(Integer arg) {
+                return arg > 10;
+            }
+        };
+
+        assertFalse(moreThanTen.and(null).apply(7));
+    }
+
+    @Test
+    public void testLazyAnd1() {
+        final int[] indicator = {0};
+        Predicate<Integer> moreThanTen = new Predicate<Integer>() {
+            @Override
+            public Boolean apply(Integer arg) {
+                return arg > 10;
+            }
+        };
+
+        Predicate<Integer> lessThanTwenty = new Predicate<Integer>() {
+            @Override
+            public Boolean apply(Integer arg) {
+                indicator[0] += 1;
+                return arg < 20;
+            }
+        };
+
+        assertFalse(moreThanTen.and(lessThanTwenty).apply(7));
+        assertEquals(0, indicator[0]);
+
+        assertTrue(moreThanTen.and(lessThanTwenty).apply(15));
+        assertEquals(1, indicator[0]);
     }
 }

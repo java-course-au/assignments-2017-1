@@ -4,13 +4,13 @@ public abstract class Predicate<A> extends Function1<A, Boolean> {
     public static final Predicate<Object> ALWAYS_TRUE = new Predicate<Object>() {
         @Override
         public Boolean apply(Object argument) {
-            return Boolean.TRUE;
+            return true;
         }
     };
     public static final Predicate<Object> ALWAYS_FALSE = new Predicate<Object>() {
         @Override
         public Boolean apply(Object argument) {
-            return Boolean.FALSE;
+            return false;
         }
     };
 
@@ -20,11 +20,7 @@ public abstract class Predicate<A> extends Function1<A, Boolean> {
         return new Predicate<A>() {
             @Override
             public Boolean apply(A argument) {
-                if (Predicate.this.apply(argument)) {
-                    return Boolean.TRUE;
-                } else {
-                    return predicate.apply(argument);
-                }
+                return Predicate.this.apply(argument) || predicate.apply(argument);
             }
         };
     }
@@ -33,11 +29,7 @@ public abstract class Predicate<A> extends Function1<A, Boolean> {
         return new Predicate<A>() {
             @Override
             public Boolean apply(A argument) {
-                if (!Predicate.this.apply(argument)) {
-                    return Boolean.FALSE;
-                } else {
-                    return predicate.apply(argument);
-                }
+                return Predicate.this.apply(argument) && predicate.apply(argument);
             }
         };
     }
