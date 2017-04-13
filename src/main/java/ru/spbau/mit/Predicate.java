@@ -1,13 +1,13 @@
 package ru.spbau.mit;
 
 public abstract class Predicate<T> {
-    public static final Predicate ALWAYS_TRUE = new Predicate() {
+    public static final Predicate<Object> ALWAYS_TRUE = new Predicate<Object>() {
         @Override
         public boolean apply(Object obj) {
             return true;
         }
     };
-    public static final Predicate ALWAYS_FALSE = new Predicate() {
+    public static final Predicate<Object> ALWAYS_FALSE = new Predicate<Object>() {
         @Override
         public boolean apply(Object obj) {
             return false;
