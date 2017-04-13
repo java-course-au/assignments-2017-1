@@ -4,14 +4,14 @@ abstract class Predicate<T> extends Function1<T, Boolean> {
 
     public abstract Boolean apply(T t);
 
-    static final Predicate ALWAYS_TRUE = new Predicate() {
+    public static final Predicate<?> ALWAYS_TRUE = new Predicate<Object>() {
         @Override
         public Boolean apply(Object o) {
             return true;
         }
     };
 
-    static final Predicate ALWAYS_FALSE = new Predicate() {
+    public static final Predicate<?> ALWAYS_FALSE = new Predicate<Object>() {
         @Override
         public Boolean apply(Object o) {
             return false;
@@ -31,7 +31,7 @@ abstract class Predicate<T> extends Function1<T, Boolean> {
         return new Predicate<T>() {
             @Override
             public Boolean apply(T t) {
-                return p.apply(t) || Predicate.this.apply(t);
+                return Predicate.this.apply(t) || p.apply(t) ;
             }
         };
     }
@@ -40,7 +40,7 @@ abstract class Predicate<T> extends Function1<T, Boolean> {
         return new Predicate<T>() {
             @Override
             public Boolean apply(T t) {
-                return p.apply(t) && Predicate.this.apply(t);
+                return Predicate.this.apply(t) && p.apply(t) ;
             }
         };
     }

@@ -1,15 +1,12 @@
 package ru.spbau.mit;
 
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
+import java.util.*;
 
 public final class Collections {
 
     public static <T, R>
-    Iterable<R> map(Function1<? super T, R> f, Iterable<T> a) {
-        Collection<R> res = new ArrayList<>();
+    List<R> map(Function1<? super T, R> f, Iterable<T> a) {
+        List<R> res = new ArrayList<>();
         for (T item : a) {
             res.add(f.apply(item));
         }
@@ -17,8 +14,8 @@ public final class Collections {
     }
 
     public static <T>
-    Iterable<T> filter(Predicate<? super T> p, Iterable<T> a) {
-        Collection<T> result = new ArrayList<T>();
+    List<T> filter(Predicate<? super T> p, Iterable<T> a) {
+        List<T> result = new ArrayList<T>();
         for (T item : a) {
             if (p.apply(item)) {
                 result.add(item);
@@ -28,8 +25,8 @@ public final class Collections {
     }
 
     public static <T>
-    Iterable<T> takeWhile(Predicate<? super T> p, Iterable<T> a) {
-        Collection<T> result = new ArrayList<>();
+    List<T> takeWhile(Predicate<? super T> p, Iterable<T> a) {
+        List<T> result = new ArrayList<>();
         for (T element : a) {
             if (!p.apply(element)) {
                 break;
@@ -40,7 +37,7 @@ public final class Collections {
     }
 
     public static <T>
-    Iterable<T> takeUnless(Predicate<? super T> p, Iterable<T> a) {
+    List<T> takeUnless(Predicate<? super T> p, Iterable<T> a) {
         return takeWhile(p.not(), a);
     }
 
