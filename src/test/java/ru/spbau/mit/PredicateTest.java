@@ -5,18 +5,18 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class PredicateTest {
-    private static final Predicate<Integer> first = new Predicate<Integer>() {
+    private static final Predicate<Integer> FIRST = new Predicate<Integer>() {
         @Override
         Boolean apply(Integer s) {
             final int c = 0;
             return s == c;
         }
     };
-    private static final Predicate<Integer> second = new Predicate<Integer>() {
+    private static final Predicate<Integer> SECOND = new Predicate<Integer>() {
         @Override
         Boolean apply(Integer s) {
             final int c = 0;
-            return s / c == 4;
+            return s / c == c;
         }
     };
     @Test
@@ -73,7 +73,7 @@ public class PredicateTest {
 
     @Test
     public void testOrLazy() throws Exception {
-        Predicate<Integer> or = first.or(second);
+        Predicate<Integer> or = FIRST.or(SECOND);
         final Integer check5 = 0;
         assertTrue(or.apply(check5));
     }
@@ -100,9 +100,8 @@ public class PredicateTest {
         assertFalse(u.and(v).apply(""));
     }
     @Test
-    public void testAndLazy() throws Exception
-    {
-        Predicate<Integer> and = first.and(second);
+    public void testAndLazy() throws Exception {
+        Predicate<Integer> and = FIRST.and(SECOND);
         final Integer check5 = 10;
         assertFalse(and.apply(check5));
     }

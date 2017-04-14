@@ -7,7 +7,8 @@ import static org.junit.Assert.*;
 
 public class CollectionsTest {
     private static final Integer[] SAMPLE = new Integer[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    private static final Functional2<Integer, Integer, Integer> u = new Functional2<Integer, Integer, Integer>() {
+    private static final Functional2<Integer, Integer, Integer> FUNC =
+            new Functional2<Integer, Integer, Integer>() {
         @Override
         Integer apply(Integer first, Integer second) {
             return first - second;
@@ -79,13 +80,13 @@ public class CollectionsTest {
 
     @Test
     public void testFoldl() throws Exception {
-        Integer check = -45;
-        assertEquals(Collections.foldl(u, 0, Arrays.asList(SAMPLE)), check);
+        final Integer check = -45;
+        assertEquals(Collections.foldl(FUNC, 0, Arrays.asList(SAMPLE)), check);
     }
 
     @Test
     public void testFoldr() throws Exception {
-        Integer check = -5;
-        assertEquals(Collections.foldr(u, 0, Arrays.asList(SAMPLE)), check);
+        final Integer check = -5;
+        assertEquals(Collections.foldr(FUNC, 0, Arrays.asList(SAMPLE)), check);
     }
 }

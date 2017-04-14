@@ -2,7 +2,6 @@ package ru.spbau.mit;
 
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -88,7 +87,7 @@ public class Functional2Test {
         Functional1<Integer, Functional1<List<Integer>, Integer>> curry = u.curry();
         final int param1 = 10;
         final Functional1<List<Integer>, Integer> func = curry.apply(param1);
-        Integer[] in = new Integer[] {1, 2, 3, 4};
+        final Integer[] in = new Integer[] {1, 2, 3, 4};
         final Integer check = 100;
         assertEquals(func.apply(Arrays.asList(in)), check);
     }
