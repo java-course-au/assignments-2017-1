@@ -5,7 +5,7 @@ public abstract class Predicate<X> extends Function1<X, Boolean> {
             new Predicate<Object>() {
                 @Override
                 Boolean apply(Object o) {
-                    return Boolean.TRUE;
+                    return true;
                 }
             };
 
@@ -13,7 +13,7 @@ public abstract class Predicate<X> extends Function1<X, Boolean> {
             new Predicate<Object>() {
                 @Override
                 Boolean apply(Object o) {
-                    return Boolean.FALSE;
+                    return false;
                 }
             };
 

@@ -13,7 +13,7 @@ import static org.junit.Assert.assertTrue;
 public class FunctionalTest {
     private static final Integer MAX_GEN_NUMBER = 100;
 
-    private Function1<Object, Object> id =
+    private static final Function1<Object, Object> ID =
             new Function1<Object, Object>() {
                 @Override
                 Object apply(Object x) {
@@ -21,7 +21,7 @@ public class FunctionalTest {
                 }
             };
 
-    private Function1<Integer, Integer> sqr =
+    private static final Function1<Integer, Integer> SQR =
             new Function1<Integer, Integer>() {
                 @Override
                 Integer apply(Integer integer) {
@@ -29,7 +29,7 @@ public class FunctionalTest {
                 }
             };
 
-    private Function1<Number, Number> sqrt =
+    private static final Function1<Number, Number> SQRT =
             new Function1<Number, Number>() {
                 @Override
                 Number apply(Number number) {
@@ -37,7 +37,7 @@ public class FunctionalTest {
                 }
             };
 
-    private Function2<Integer, Integer, Integer> integerSum =
+    private static final Function2<Integer, Integer, Integer> INTEGER_SUM =
             new Function2<Integer, Integer, Integer>() {
                 @Override
                 Integer apply(Integer x, Integer y) {
@@ -45,7 +45,7 @@ public class FunctionalTest {
                 }
             };
 
-    private Function2<Number, Number, Number> sum =
+    private static final Function2<Number, Number, Number> SUM =
             new Function2<Number, Number, Number>() {
                 @Override
                 Number apply(Number x, Number y) {
@@ -53,7 +53,7 @@ public class FunctionalTest {
                 }
             };
 
-    private Function2<Integer, Integer, Double> divide =
+    private static final Function2<Integer, Integer, Double> DIVIDE =
             new Function2<Integer, Integer, Double>() {
                 @Override
                 Double apply(Integer x, Integer y) {
@@ -61,37 +61,44 @@ public class FunctionalTest {
                 }
             };
 
+    private static final Predicate<Object> THAT_THROWS = new Predicate<Object>() {
+        @Override
+        Boolean apply(Object o) {
+            throw new RuntimeException("THAT_THROWS predicate was called");
+        }
+    };
+
     private Random random = new Random();
 
     @Test
-    public void simpleTest() {
+    public void testSimple() {
         Integer testValue = random.nextInt();
-        assertEquals((Integer) (testValue * testValue), sqr.apply(testValue));
+        assertEquals((Integer) (testValue * testValue), SQR.apply(testValue));
     }
 
     @Test
-    public void generalityOfFunction1Test() {
-        Function1<Integer, Object> comp1 = sqr.compose(id);
+    public void testGeneralityOfFunction1() {
+        Function1<Integer, Object> comp1 = SQR.compose(ID);
         Integer testValue = Math.abs(random.nextInt(MAX_GEN_NUMBER));
-        assertEquals(sqr.apply(testValue), comp1.apply(testValue));
+        assertEquals(SQR.apply(testValue), comp1.apply(testValue));
 
-        Function1<Integer, Number> comp2 = sqr.compose(sqrt);
+        Function1<Integer, Number> comp2 = SQR.compose(SQRT);
         assertEquals(testValue.doubleValue(), comp2.apply(testValue));
     }
 
     @Test
-    public void generalityOfFunction2Test() {
-        Function2<Integer, Integer, Object> comp1 = integerSum.compose(id);
+    public void testGeneralityOfFunction2() {
+        Function2<Integer, Integer, Object> comp1 = INTEGER_SUM.compose(ID);
         Integer x1 = Math.abs(random.nextInt(MAX_GEN_NUMBER));
         Integer x2 = Math.abs(random.nextInt(MAX_GEN_NUMBER));
-        assertEquals(integerSum.apply(x1, x2), comp1.apply(x1, x2));
+        assertEquals(INTEGER_SUM.apply(x1, x2), comp1.apply(x1, x2));
 
-        Function2<Integer, Integer, Integer> comp2 = integerSum.compose(sqr);
+        Function2<Integer, Integer, Integer> comp2 = INTEGER_SUM.compose(SQR);
         assertEquals((Integer) ((x1 + x2) * (x1 + x2)), comp2.apply(x1, x2));
     }
 
     @Test
-    public void bindTest() {
+    public void testBind() {
         final int length = 100;
         List<Integer> sequence = new ArrayList<>(length);
 
@@ -99,8 +106,8 @@ public class FunctionalTest {
             sequence.add(random.nextInt());
         }
 
-        Function1<Number, Number> sumWithZero1 = sum.bind1(0);
-        Function1<Number, Number> sumWithZero2 = sum.bind2(0);
+        Function1<Number, Number> sumWithZero1 = SUM.bind1(0);
+        Function1<Number, Number> sumWithZero2 = SUM.bind2(0);
 
         for (Integer element : sequence) {
             assertEquals(element.doubleValue(), sumWithZero1.apply(element));
@@ -108,8 +115,8 @@ public class FunctionalTest {
                     sumWithZero2.apply(element));
         }
 
-        Function1<Integer, Double> divideTwoBy1 = divide.bind1(2);
-        Function1<Integer, Double> divideByTwo2 = divide.bind2(2);
+        Function1<Integer, Double> divideTwoBy1 = DIVIDE.bind1(2);
+        Function1<Integer, Double> divideByTwo2 = DIVIDE.bind2(2);
 
         for (Integer element : sequence) {
             assertEquals((Double) (2. / element), divideTwoBy1.apply(element));
@@ -118,7 +125,7 @@ public class FunctionalTest {
     }
 
     @Test
-    public void curryTest() {
+    public void testCurry() {
         Function2<String, String, String> loggerToString =
                 new Function2<String, String, String>() {
                     @Override
@@ -147,13 +154,13 @@ public class FunctionalTest {
     }
 
     @Test
-    public void predicateAlwaysTrueFalseTest() {
+    public void testPredicateAlwaysTrueFalse() {
         assertTrue(Predicate.ALWAYS_TRUE.apply(random.nextInt()));
         assertFalse(Predicate.ALWAYS_FALSE.apply(random.nextInt()));
     }
 
     @Test
-    public void orTest() {
+    public void testOr() {
         assertTrue(Predicate.ALWAYS_TRUE.or(Predicate.ALWAYS_TRUE).apply(
                 random.nextInt()));
         assertTrue(Predicate.ALWAYS_TRUE.or(Predicate.ALWAYS_FALSE).apply(
@@ -165,7 +172,7 @@ public class FunctionalTest {
     }
 
     @Test
-    public void andTest() {
+    public void testAnd() {
         assertTrue(Predicate.ALWAYS_TRUE.and(Predicate.ALWAYS_TRUE).apply(
                 random.nextInt()));
         assertFalse(Predicate.ALWAYS_TRUE.and(Predicate.ALWAYS_FALSE).apply(
@@ -177,8 +184,18 @@ public class FunctionalTest {
     }
 
     @Test
-    public void notTest() {
+    public void testNot() {
         assertTrue(Predicate.ALWAYS_FALSE.not().apply(random.nextInt()));
         assertFalse(Predicate.ALWAYS_TRUE.not().apply(random.nextInt()));
+    }
+
+    @Test
+    public void testLazyAnd() {
+        Predicate.ALWAYS_FALSE.and(THAT_THROWS).apply(random.nextInt());
+    }
+
+    @Test
+    public void testLazyOr() {
+        Predicate.ALWAYS_TRUE.or(THAT_THROWS).apply(random.nextInt());
     }
 }

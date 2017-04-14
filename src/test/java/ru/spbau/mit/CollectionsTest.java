@@ -10,16 +10,67 @@ import java.util.Random;
 import static junitx.framework.Assert.assertEquals;
 
 public class CollectionsTest {
-    private static final int ARRAY_LENGTH = 100;
+    private static final int ARRAY_LENGTH = 10;
     private static final int MAX_RAND_VALUE = 200;
 
-    private Function1<Integer, Integer> sqr =
+    private static final Function1<Integer, Integer> SQR =
             new Function1<Integer, Integer>() {
                 @Override
                 Integer apply(Integer integer) {
                     return integer * integer;
                 }
             };
+
+    private static final Function2<Number, Number, Number> SUM =
+            new Function2<Number, Number, Number>() {
+                @Override
+                Number apply(Number x, Number y) {
+                    return x.doubleValue() + y.doubleValue();
+                }
+            };
+
+    private static final Function2<Integer, Integer, Integer> SUB =
+            new Function2<Integer, Integer, Integer>() {
+                @Override
+                Integer apply(Integer x, Integer y) {
+                    return x - y;
+                }
+            };
+
+    private static final Predicate<Integer> LESS_THAN_ZERO =
+            new Predicate<Integer>() {
+                @Override
+                Boolean apply(Integer integer) {
+                    return integer < 0;
+                }
+            };
+
+    private static final Predicate<Integer> GREATER_THAN_FIVE =
+            new Predicate<Integer>() {
+                @Override
+                Boolean apply(Integer integer) {
+                    final int five = 5;
+                    return integer > five;
+                }
+            };
+
+    private static final Predicate<Integer> LESS_THAN_FIVE =
+            new Predicate<Integer>() {
+                @Override
+                Boolean apply(Integer integer) {
+                    final int five = 5;
+                    return integer < five;
+                }
+            };
+
+    private static final Predicate<Integer> LESS_THAN_ARRAY_LENGTH =
+            new Predicate<Integer>() {
+                @Override
+                Boolean apply(Integer integer) {
+                    return integer < ARRAY_LENGTH;
+                }
+            };
+
 
     private final Random random = new Random();
     private ArrayList<Integer> sequence;
@@ -32,9 +83,15 @@ public class CollectionsTest {
         }
     }
 
+    private void setIdSequence() {
+        for (int i = 0; i < ARRAY_LENGTH; i++) {
+            sequence.set(i, i);
+        }
+    }
+
     @Test
-    public void mapTest() {
-        List<Integer> mappedSequence = Collections.map(sequence, sqr);
+    public void testMap() {
+        List<Integer> mappedSequence = Collections.map(sequence, SQR);
         for (int i = 0; i < ARRAY_LENGTH; i++) {
             assertEquals((Integer) (sequence.get(i) * sequence.get(i)),
                     mappedSequence.get(i));
@@ -42,16 +99,8 @@ public class CollectionsTest {
     }
 
     @Test
-    public void filterTest() {
-        Predicate<Integer> lessThanZero =
-                new Predicate<Integer>() {
-                    @Override
-                    Boolean apply(Integer integer) {
-                        return integer < 0;
-                    }
-                };
-
-        List<Integer> filteredSeq = Collections.filter(sequence, lessThanZero);
+    public void testFilter() {
+        List<Integer> filteredSeq = Collections.filter(sequence, LESS_THAN_ZERO);
 
         ArrayList<Integer> trueFilteredSeq = new ArrayList<>(ARRAY_LENGTH);
         for (Integer element : sequence) {
@@ -66,7 +115,7 @@ public class CollectionsTest {
     }
 
     @Test
-    public void filterAllTest() {
+    public void testFilterAll() {
         List<Integer> filteredSeq = Collections.filter(sequence,
                 Predicate.ALWAYS_TRUE);
 
@@ -79,27 +128,15 @@ public class CollectionsTest {
     }
 
     @Test
-    public void takeWhileTest() {
-        for (int i = 0; i < ARRAY_LENGTH; i++) {
-            sequence.set(i, i);
-        }
-
-        final int fifty = 50;
-
-        Predicate<Integer> lessThanFifty =
-                new Predicate<Integer>() {
-                    @Override
-                    Boolean apply(Integer integer) {
-                        return integer < fifty;
-                    }
-                };
+    public void testTakeWhile() {
+        setIdSequence();
 
         List<Integer> takeWhileSequence =
-                Collections.takeWhile(sequence, lessThanFifty);
+                Collections.takeWhile(sequence, LESS_THAN_FIVE);
 
         ArrayList<Integer> trueTakeWhileSequence = new ArrayList<>(ARRAY_LENGTH);
         for (Integer element : sequence) {
-            if (lessThanFifty.apply(element)) {
+            if (LESS_THAN_FIVE.apply(element)) {
                 break;
             }
             trueTakeWhileSequence.add(element);
@@ -122,26 +159,14 @@ public class CollectionsTest {
     }
 
     @Test
-    public void takeUnlessTest() {
-        for (int i = 0; i < ARRAY_LENGTH; i++) {
-            sequence.set(i, i);
-        }
-
-        final int fifty = 50;
-
-        Predicate<Integer> greaterThanFifty =
-                new Predicate<Integer>() {
-                    @Override
-                    Boolean apply(Integer integer) {
-                        return integer > fifty;
-                    }
-                };
+    public void testTakeUnless() {
+        setIdSequence();
 
         List<Integer> takeUnlessSequence =
-                Collections.takeUnless(sequence, greaterThanFifty);
+                Collections.takeUnless(sequence, GREATER_THAN_FIVE);
         ArrayList<Integer> trueTakeUnlessSequence = new ArrayList<>(ARRAY_LENGTH);
         for (Integer element : sequence) {
-            if (greaterThanFifty.apply(element)) {
+            if (GREATER_THAN_FIVE.apply(element)) {
                 break;
             }
             trueTakeUnlessSequence.add(element);
@@ -152,66 +177,44 @@ public class CollectionsTest {
                     takeUnlessSequence.get(i));
         }
 
-        Predicate<Integer> lessThanMax =
-                new Predicate<Integer>() {
-                    @Override
-                    Boolean apply(Integer integer) {
-                        return integer < ARRAY_LENGTH;
-                    }
-                };
-        takeUnlessSequence = Collections.takeUnless(sequence, lessThanMax);
+        takeUnlessSequence = Collections.takeUnless(sequence, LESS_THAN_ARRAY_LENGTH);
 
         assertEquals(0, takeUnlessSequence.size());
 
-        Predicate<Integer> lessThanMin =
-                new Predicate<Integer>() {
-                    @Override
-                    Boolean apply(Integer integer) {
-                        return integer < 0;
-                    }
-                };
-
-        takeUnlessSequence = Collections.takeUnless(sequence, lessThanMin);
+        takeUnlessSequence = Collections.takeUnless(sequence, LESS_THAN_ZERO);
         for (int i = 0; i < sequence.size(); i++) {
             assertEquals(sequence.get(i), takeUnlessSequence.get(i));
         }
     }
 
     @Test
-    public void foldrTest() {
-        Function2<Number, Number, Number> sum =
-                new Function2<Number, Number, Number>() {
-                    @Override
-                    Number apply(Number x, Number y) {
-                        return x.doubleValue() + y.doubleValue();
-                    }
-                };
-
+    public void testFoldrSum() {
         Integer sumValue = 0;
         for (Integer element : sequence) {
             sumValue += element;
         }
 
-        Number value = Collections.foldr(sequence, sum, 0);
+        Number value = Collections.foldr(sequence, SUM, 0);
         assertEquals(sumValue.doubleValue(), value);
     }
 
     @Test
-    public void foldlTest() {
-        Function2<Number, Number, Number> sum =
-                new Function2<Number, Number, Number>() {
-                    @Override
-                    Number apply(Number x, Number y) {
-                        return x.doubleValue() + y.doubleValue();
-                    }
-                };
+    public void testFoldrSub() {
+        setIdSequence();
 
+        Integer value = Collections.foldr(sequence, SUB, 0);
+        final Integer minusFive = -5;
+        assertEquals(minusFive, value);
+    }
+
+    @Test
+    public void testFoldlSum() {
         Integer sumValue = 0;
         for (Integer element : sequence) {
             sumValue += element;
         }
 
-        Number value = Collections.foldl(sequence, sum, 0);
+        Number value = Collections.foldl(sequence, SUM, 0);
         assertEquals(sumValue.doubleValue(), value);
     }
 }

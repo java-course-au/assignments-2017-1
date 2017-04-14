@@ -7,8 +7,8 @@ import java.util.ListIterator;
 public final class Collections {
     private Collections() {}
 
-    public static <X, Y, Container extends Iterable<X>>
-    List<Y> map(Container container, Function1<? super X, Y> function) {
+    public static <X, Y>
+    List<Y> map(Iterable<X> container, Function1<? super X, Y> function) {
         List<Y> mappedList = new ArrayList<>();
         for (X x : container) {
             mappedList.add(function.apply(x));
@@ -17,8 +17,8 @@ public final class Collections {
         return mappedList;
     }
 
-    public static <X, Container extends Iterable<X>>
-    List<X> filter(Container container, Predicate<? super X> predicate) {
+    public static <X>
+    List<X> filter(Iterable<X> container, Predicate<? super X> predicate) {
         List<X> filteredList = new ArrayList<>();
 
         for (X x : container) {
@@ -30,8 +30,8 @@ public final class Collections {
         return filteredList;
     }
 
-    public static <X, Container extends Iterable<X>>
-    List<X> takeWhile(Container container, Predicate<? super X> predicate) {
+    public static <X>
+    List<X> takeWhile(Iterable<X> container, Predicate<? super X> predicate) {
         List<X> takenList = new ArrayList<>();
 
         for (X x : container) {
@@ -44,13 +44,13 @@ public final class Collections {
         return takenList;
     }
 
-    public static <X, Container extends Iterable<X>>
-    List<X> takeUnless(Container container, Predicate<? super X> predicate) {
+    public static <X>
+    List<X> takeUnless(Iterable<X> container, Predicate<? super X> predicate) {
         return takeWhile(container, predicate.not());
     }
 
-    public static <X, Y, Container extends Iterable<X>>
-    Y foldr(Container container, Function2<? super X, Y, Y> function2,
+    public static <X, Y>
+    Y foldr(Iterable<X> container, Function2<? super X, Y, Y> function2,
             Y initialValue) {
         List<X> tempList = new ArrayList<>();
 
@@ -68,8 +68,8 @@ public final class Collections {
         return partialResult;
     }
 
-    public static <X, Y, Container extends Iterable<X>>
-    Y foldl(Container container, Function2<Y, ? super X, Y> function2,
+    public static <X, Y>
+    Y foldl(Iterable<X> container, Function2<Y, ? super X, Y> function2,
             Y initialValue) {
         Y partialResult = initialValue;
 
