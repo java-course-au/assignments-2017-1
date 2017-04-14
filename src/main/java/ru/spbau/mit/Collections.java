@@ -8,7 +8,7 @@ public final class Collections {
 
     private Collections() {}
 
-    static <T, R> Iterable<R> map(Function1<R, ? super T> f, Iterable<T> collection) {
+    static <T, R> Iterable<R> map(Function1<? super T, R> f, Iterable<T> collection) {
         List<R> res = new ArrayList<>();
         for (T it : collection) {
             res.add(f.apply(it));
@@ -41,12 +41,12 @@ public final class Collections {
         return takeWhile(p.not(), collection);
     }
 
-    static <R, X> R foldr(Function2<R, ? super X, ? super R> f, R initial, Iterable<X> collection) {
-        List<Function1<R, ? super R>> funcList = new ArrayList<>();
+    static <X, R> R foldr(Function2<? super X, ? super R, R> f, R initial, Iterable<X> collection) {
+        List<Function1<? super R, R>> funcList = new ArrayList<>();
         for (X it : collection) {
             funcList.add(f.bind1(it));
         }
-        ListIterator<Function1<R, ? super R>> lit = funcList.listIterator(funcList.size());
+        ListIterator<Function1<? super R, R>> lit = funcList.listIterator(funcList.size());
         R res = initial;
         while (lit.hasPrevious()) {
             res = lit.previous().apply(res);
@@ -54,14 +54,10 @@ public final class Collections {
         return res;
     }
 
-    static <R, X> R foldl(Function2<R, ? super R, ? super X> f, R initial, Iterable<X> collection) {
-        List<Function1<R, ? super R>> funcList = new ArrayList<>();
-        for (X it : collection) {
-            funcList.add(f.bind2(it));
-        }
+    static <X, R> R foldl(Function2<? super R, ? super X, R> f, R initial, Iterable<X> collection) {
         R res = initial;
-        for (Function1<R, ? super R> func : funcList) {
-            res = func.apply(res);
+        for (X it : collection) {
+            res = f.apply(res, it);
         }
         return res;
     }

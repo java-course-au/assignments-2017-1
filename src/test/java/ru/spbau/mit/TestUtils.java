@@ -1,22 +1,8 @@
 package ru.spbau.mit;
 
-import java.util.Iterator;
+public final class TestUtils {
 
-public final class FunctionsForTesting {
-    static final int SIZE = 15;
-
-    private FunctionsForTesting() {}
-
-    static <T> boolean compareCollections(Iterable<T> col1, Iterable<T> col2) {
-        Iterator<T> it1 = col1.iterator();
-        Iterator<T> it2 = col2.iterator();
-        while (it1.hasNext() && it2.hasNext()) {
-            if (!it1.next().equals(it2.next())) {
-                return false;
-            }
-        }
-        return true;
-    }
+    private TestUtils() {}
 
     static Function1<Integer, Integer> succ() {
         return new Function1<Integer, Integer>() {
@@ -32,6 +18,15 @@ public final class FunctionsForTesting {
             @Override
             Integer apply(Integer integer) {
                 return integer * 2;
+            }
+        };
+    }
+
+    static Function1<Integer, Integer> id() {
+        return new Function1<Integer, Integer>() {
+            @Override
+            Integer apply(Integer integer) {
+                return integer;
             }
         };
     }
