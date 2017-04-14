@@ -1,35 +1,33 @@
 package ru.spbau.mit;
 
 import org.junit.Test;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
 public class CollectionsTest {
+    private static final Integer[] SAMPLE = new Integer[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    private static final Functional2<Integer, Integer, Integer> u = new Functional2<Integer, Integer, Integer>() {
+        @Override
+        Integer apply(Integer first, Integer second) {
+            return first - second;
+        }
+    };
+
     @Test
-    public void map() throws Exception {
+    public void testMap() throws Exception {
         Functional1<Integer, Integer> pow = new Functional1<Integer, Integer>() {
             @Override
             Integer apply(Integer integer) {
                 return integer * integer;
             }
         };
-        ArrayList<Integer> list = new ArrayList<>();
-        final int n = 10;
-        for (int i = 0; i < n; i++) {
-            list.add(i);
-        }
-        Iterable<Integer> result = Collections.map(pow, list);
-        Iterator<Integer> it = result.iterator();
-        for (int i = 0; i < n; i++) {
-            int check = it.next();
-            assertEquals(check, i * i);
-        }
+        final Integer[] check = new Integer[] {0, 1, 4, 9, 16, 25, 36, 49, 64, 81};
+        assertEquals(Collections.map(pow, Arrays.asList(SAMPLE)), Arrays.asList(check));
     }
 
     @Test
-    public void filter() throws Exception {
+    public void testFilter() throws Exception {
         Predicate<Integer> f = new Predicate<Integer>() {
             @Override
             Boolean apply(Integer integer) {
@@ -37,21 +35,12 @@ public class CollectionsTest {
                 return integer % d == 0;
             }
         };
-        ArrayList<Integer> list = new ArrayList<>();
-        final int n = 10;
-        for (int i = 0; i < n; i++) {
-            list.add(i);
-        }
-        Iterable<Integer> result = Collections.filter(f, list);
-        Iterator<Integer> it = result.iterator();
-        for (int i = 0; i < n; i = i + 2) {
-            int check = it.next();
-            assertEquals(check, i);
-        }
+        final Integer[] check = new Integer[] {0, 2, 4, 6, 8};
+        assertEquals(Collections.filter(f, Arrays.asList(SAMPLE)), Arrays.asList(check));
     }
 
     @Test
-    public void takeWhile() throws Exception {
+    public void testTakeWhile() throws Exception {
         Predicate<Integer> f = new Predicate<Integer>() {
             @Override
             Boolean apply(Integer integer) {
@@ -59,28 +48,12 @@ public class CollectionsTest {
                 return integer < d;
             }
         };
-        ArrayList<Integer> list = new ArrayList<>();
-        final int n = 10;
-        for (int i = 0; i < n; i++) {
-            list.add(i);
-        }
-        Iterable<Integer> result = Collections.takeWhile(f, list);
-        Iterator<Integer> it = result.iterator();
-        ArrayList<Integer> check = new ArrayList<>();
-        for (int i = 0; i < n / 2; i++) {
-            check.add(i);
-        }
-        int i = 0;
-        while (it.hasNext()) {
-            int val = it.next();
-            int ch = check.get(i);
-            assertEquals(ch, val);
-            i++;
-        }
+        final Integer[] check = new Integer[] {0, 1, 2, 3, 4};
+        assertEquals(Collections.takeWhile(f, Arrays.asList(SAMPLE)), Arrays.asList(check));
     }
 
     @Test
-    public void takeWhileNull() throws Exception {
+    public void testTakeWhileNull() throws Exception {
         Predicate<Integer> f = new Predicate<Integer>() {
             @Override
             Boolean apply(Integer integer) {
@@ -88,77 +61,31 @@ public class CollectionsTest {
                 return integer < d;
             }
         };
-        ArrayList<Integer> list = new ArrayList<>();
-        final int n = 10;
-        for (int i = 0; i < n; i++) {
-            list.add(i);
-        }
-        Iterable<Integer> result = Collections.takeWhile(f, list);
-        assertTrue(!result.iterator().hasNext());
+        assertEquals(Collections.takeWhile(f, Arrays.asList(SAMPLE)), java.util.Collections.emptyList());
     }
 
     @Test
-    public void takeUnless() throws Exception {
+    public void testTakeUnless() throws Exception {
         Predicate<Integer> f = new Predicate<Integer>() {
             @Override
             Boolean apply(Integer integer) {
                 final int d = 5;
-                return integer <= d;
+                return integer > d;
             }
         };
-        ArrayList<Integer> list = new ArrayList<>();
-        final int n = 10;
-        for (int i = 0; i < n; i++) {
-            list.add(i);
-        }
-        Iterable<Integer> result = Collections.takeUnless(f, list);
-        Iterator<Integer> it = result.iterator();
-        ArrayList<Integer> check = new ArrayList<>();
-        for (int i = 0; i < n / 2; i++) {
-            check.add(i);
-        }
-        int index = 0;
-        while (it.hasNext()) {
-            int val = it.next();
-            int ch = check.get(index);
-            index++;
-            assertEquals(ch, val);
-        }
+        final Integer[] check = new Integer[] {0, 1, 2, 3, 4, 5};
+        assertEquals(Collections.takeUnless(f, Arrays.asList(SAMPLE)), Arrays.asList(check));
     }
 
     @Test
-    public void foldl() throws Exception {
-        Functional2<Integer, Integer, Integer> u = new Functional2<Integer, Integer, Integer>() {
-            @Override
-            Integer apply(Integer integer, Integer integer2) {
-                return integer + integer2;
-            }
-        };
-        ArrayList<Integer> in = new ArrayList<>();
-        final int n = 10;
-        for (int i = 0; i < n; i++) {
-            in.add(i);
-        }
-        Integer out = Collections.foldl(u, 0, in);
-        final Integer check = 45;
-        assertEquals(out, check);
+    public void testFoldl() throws Exception {
+        Integer check = -45;
+        assertEquals(Collections.foldl(u, 0, Arrays.asList(SAMPLE)), check);
     }
 
     @Test
-    public void foldr() throws Exception {
-        Functional2<Integer, Integer, Integer> u = new Functional2<Integer, Integer, Integer>() {
-            @Override
-            Integer apply(Integer integer, Integer integer2) {
-                return integer + integer2;
-            }
-        };
-        ArrayList<Integer> in = new ArrayList<>();
-        final int n = 10;
-        for (int i = 0; i < n; i++) {
-            in.add(i);
-        }
-        Integer out = Collections.foldr(u, 0, in);
-        final Integer check = 45;
-        assertEquals(out, check);
+    public void testFoldr() throws Exception {
+        Integer check = -5;
+        assertEquals(Collections.foldr(u, 0, Arrays.asList(SAMPLE)), check);
     }
 }

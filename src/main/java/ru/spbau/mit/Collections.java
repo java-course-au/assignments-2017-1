@@ -39,14 +39,11 @@ final class Collections {
     }
 
     static <X, Y> X foldl(Functional2<? super X, ? super Y, X> f, X start, Iterable<Y> c) {
-        return foldlIterator(f, start, c.iterator());
-    }
-
-    private static <X, Y> X foldlIterator(Functional2<? super X, ? super Y, X> f, X start, Iterator<Y> c) {
-        if (!c.hasNext()) {
-            return start;
+        X out = start;
+        for (Y i : c) {
+            out = f.apply(out, i);
         }
-        return foldlIterator(f, (f.apply(start, c.next())), c);
+        return out;
     }
 
     static <X, Y> Y foldr(Functional2<? super X, ? super Y, Y> f, Y start, Iterable<X> c) {

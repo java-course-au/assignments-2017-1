@@ -6,7 +6,7 @@ import static org.junit.Assert.*;
 
 public class Functional1Test {
     @Test
-    public void apply() throws Exception {
+    public void testApply() throws Exception {
         Functional1<Integer, Integer> v = new Functional1<Integer, Integer>() {
             @Override
             Integer apply(Integer integer) {
@@ -20,7 +20,7 @@ public class Functional1Test {
     }
 
     @Test
-    public void compose() throws Exception {
+    public void testCompose() throws Exception {
         Functional1<Integer, Double> v = new Functional1<Integer, Double>() {
             @Override
             Double apply(Integer i) {

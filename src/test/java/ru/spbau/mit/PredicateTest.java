@@ -5,8 +5,22 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class PredicateTest {
+    private static final Predicate<Integer> first = new Predicate<Integer>() {
+        @Override
+        Boolean apply(Integer s) {
+            final int c = 0;
+            return s == c;
+        }
+    };
+    private static final Predicate<Integer> second = new Predicate<Integer>() {
+        @Override
+        Boolean apply(Integer s) {
+            final int c = 0;
+            return s / c == 4;
+        }
+    };
     @Test
-    public void apply() throws Exception {
+    public void testApply() throws Exception {
         Predicate<String> u = new Predicate<String>() {
             @Override
             Boolean apply(String s) {
@@ -20,7 +34,7 @@ public class PredicateTest {
     }
 
     @Test
-    public void not() throws Exception {
+    public void testNot() throws Exception {
         Predicate<String> u = new Predicate<String>() {
             @Override
             Boolean apply(String s) {
@@ -32,7 +46,7 @@ public class PredicateTest {
     }
 
     @Test
-    public void or() throws Exception {
+    public void testOr() throws Exception {
         Predicate<Integer> u = new Predicate<Integer>() {
             @Override
             Boolean apply(Integer s) {
@@ -58,7 +72,13 @@ public class PredicateTest {
     }
 
     @Test
-    public void and() throws Exception {
+    public void testOrLazy() throws Exception {
+        Predicate<Integer> or = first.or(second);
+        final Integer check5 = 0;
+        assertTrue(or.apply(check5));
+    }
+    @Test
+    public void testAnd() throws Exception {
         Predicate<String> u = new Predicate<String>() {
             @Override
             Boolean apply(String s) {
@@ -79,5 +99,13 @@ public class PredicateTest {
         assertTrue(and.apply("Test string"));
         assertFalse(u.and(v).apply(""));
     }
+    @Test
+    public void testAndLazy() throws Exception
+    {
+        Predicate<Integer> and = first.and(second);
+        final Integer check5 = 10;
+        assertFalse(and.apply(check5));
+    }
+
 
 }

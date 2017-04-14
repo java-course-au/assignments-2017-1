@@ -27,7 +27,7 @@ abstract class Predicate<X> extends Functional1<X, Boolean> {
         return new Predicate<X>() {
             @Override
             Boolean apply(X x) {
-                return g.apply(x) || Predicate.this.apply(x);
+                return Predicate.this.apply(x) || g.apply(x);
             }
         };
     }
@@ -36,7 +36,7 @@ abstract class Predicate<X> extends Functional1<X, Boolean> {
         return new Predicate<X>() {
             @Override
             Boolean apply(X x) {
-                return g.apply(x) && Predicate.this.apply(x);
+                return Predicate.this.apply(x) && g.apply(x);
             }
         };
     }

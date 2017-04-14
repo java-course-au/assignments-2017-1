@@ -3,12 +3,14 @@ package ru.spbau.mit;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
 public class Functional2Test {
     @Test
-    public void apply() throws Exception {
+    public void testApply() throws Exception {
         Functional2<String, String, Integer> v = new Functional2<String, String, Integer>() {
             @Override
             Integer apply(String s, String s2) {
@@ -20,7 +22,7 @@ public class Functional2Test {
     }
 
     @Test
-    public void compose() throws Exception {
+    public void testCompose() throws Exception {
         Functional2<Integer, Integer, Integer> u = new Functional2<Integer, Integer, Integer>() {
             @Override
             Integer apply(Integer integer, Integer integer2) {
@@ -41,7 +43,7 @@ public class Functional2Test {
     }
 
     @Test
-    public void bind1() throws Exception {
+    public void testBind1() throws Exception {
         Functional2<Integer, Integer, Integer> u = new Functional2<Integer, Integer, Integer>() {
             @Override
             Integer apply(Integer integer, Integer integer2) {
@@ -56,7 +58,7 @@ public class Functional2Test {
     }
 
     @Test
-    public void bind2() throws Exception {
+    public void testBind2() throws Exception {
         Functional2<Integer, Integer, Integer> u = new Functional2<Integer, Integer, Integer>() {
             @Override
             Integer apply(Integer integer, Integer integer2) {
@@ -71,11 +73,11 @@ public class Functional2Test {
     }
 
     @Test
-    public void curry() throws Exception {
-        Functional2<Integer, ArrayList<Integer>, Integer> u =
-                new Functional2<Integer, ArrayList<Integer>, Integer>() {
+    public void testCurry() throws Exception {
+        Functional2<Integer, List<Integer>, Integer> u =
+                new Functional2<Integer, List<Integer>, Integer>() {
             @Override
-            Integer apply(Integer integer, ArrayList<Integer> integers) {
+            Integer apply(Integer integer, List<Integer> integers) {
                 Integer sum = 0;
                 for (Integer i : integers) {
                     sum += i * integer;
@@ -83,15 +85,11 @@ public class Functional2Test {
                 return sum;
             }
         };
-        Functional1<Integer, Functional1<ArrayList<Integer>, Integer>> curry = u.curry();
+        Functional1<Integer, Functional1<List<Integer>, Integer>> curry = u.curry();
         final int param1 = 10;
-        final Functional1<ArrayList<Integer>, Integer> func = curry.apply(param1);
-        ArrayList<Integer> in = new ArrayList<>();
-        final int n = 5;
-        for (int i = 1; i < n; i++) {
-            in.add(i);
-        }
+        final Functional1<List<Integer>, Integer> func = curry.apply(param1);
+        Integer[] in = new Integer[] {1, 2, 3, 4};
         final Integer check = 100;
-        assertEquals(func.apply(in), check);
+        assertEquals(func.apply(Arrays.asList(in)), check);
     }
 }
