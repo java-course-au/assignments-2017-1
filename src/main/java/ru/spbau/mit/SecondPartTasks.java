@@ -5,7 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public final class SecondPartTasks {
 
@@ -41,8 +41,8 @@ public final class SecondPartTasks {
     public static double piDividedBy4() {
         final int numberOfExperiments = 3131313;
         Random rand = new Random(31);
-        long inTarget = IntStream.range(0, numberOfExperiments)
-                .mapToObj(i -> new Point(rand.nextDouble() - 0.5, rand.nextDouble() - 0.5))
+        long inTarget = Stream.generate(() -> new Point(rand.nextDouble() - 0.5, rand.nextDouble() - 0.5))
+                .limit(numberOfExperiments)
                 .filter(p -> Math.sqrt(p.x * p.x + p.y * p.y) <= 0.5)
                 .count();
         return (double) inTarget / numberOfExperiments;
