@@ -22,10 +22,11 @@ public final class Collections {
     }
 
     private static <X, T> T foldlHelper(Function2<? super X, ? super T, ? extends T> f, T ini, Iterator<X> it) {
-        if (!it.hasNext()) {
-            return ini;
+        T result = ini;
+        while (it.hasNext()) {
+            result = f.apply(it.next(), result);
         }
-        return foldlHelper(f, f.apply(it.next(), ini), it);
+        return result;
     }
 
     // следующие методы можно реализовать через foldr и foldr, но будем делать через циклы, чтобы без рекурсии
