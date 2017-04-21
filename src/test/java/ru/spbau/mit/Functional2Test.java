@@ -16,8 +16,7 @@ public class Functional2Test {
                 return s.length() + s2.length();
             }
         };
-        final Integer check = 10;
-        assertEquals(check, v.apply("Test", "String"));
+        assertEquals(Integer.valueOf(10), v.apply("Test", "String"));
     }
 
     @Test
@@ -31,14 +30,10 @@ public class Functional2Test {
         Functional1<Integer, Integer> v = new Functional1<Integer, Integer>() {
           @Override
           Integer apply(Integer integer) {
-              final int c = 2;
-              return integer * c;
+              return integer * 2;
           }
         };
-        final Integer check = 100;
-        final Integer param1 = 25;
-        final Integer param2 = 2;
-        assertEquals(u.compose(v).apply(param1, param2), check);
+        assertEquals(u.compose(v).apply(25, 2), Integer.valueOf(100));
     }
 
     @Test
@@ -49,11 +44,8 @@ public class Functional2Test {
                 return integer + integer2;
             }
         };
-        final int param1 = 20;
-        Functional1<Integer, Integer> v = u.bind1(param1);
-        final Integer check = 50;
-        final int param2 = 30;
-        assertEquals(v.apply(param2), check);
+        Functional1<Integer, Integer> v = u.bind1(20);
+        assertEquals(v.apply(30), Integer.valueOf(50));
     }
 
     @Test
@@ -64,11 +56,8 @@ public class Functional2Test {
                 return integer - integer2;
             }
         };
-        final int param2 = 20;
-        Functional1<Integer, Integer> v = u.bind2(param2);
-        final Integer check = 10;
-        final int param1 = 30;
-        assertEquals(v.apply(param1), check);
+        Functional1<Integer, Integer> v = u.bind2(20);
+        assertEquals(v.apply(30), Integer.valueOf(10));
     }
 
     @Test
@@ -85,10 +74,8 @@ public class Functional2Test {
             }
         };
         Functional1<Integer, Functional1<List<Integer>, Integer>> curry = u.curry();
-        final int param1 = 10;
-        final Functional1<List<Integer>, Integer> func = curry.apply(param1);
+        final Functional1<List<Integer>, Integer> func = curry.apply(10);
         final Integer[] in = new Integer[] {1, 2, 3, 4};
-        final Integer check = 100;
-        assertEquals(func.apply(Arrays.asList(in)), check);
+        assertEquals(func.apply(Arrays.asList(in)), Integer.valueOf(100));
     }
 }

@@ -6,8 +6,8 @@ import java.util.Arrays;
 import static org.junit.Assert.*;
 
 public class CollectionsTest {
-    private static final Integer[] SAMPLE = new Integer[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    private static final Functional2<Integer, Integer, Integer> FUNC =
+    private static final Integer[] TEST_SAMPLE = new Integer[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    private static final Functional2<Integer, Integer, Integer> SUBTRACTION =
             new Functional2<Integer, Integer, Integer>() {
         @Override
         Integer apply(Integer first, Integer second) {
@@ -24,7 +24,7 @@ public class CollectionsTest {
             }
         };
         final Integer[] check = new Integer[] {0, 1, 4, 9, 16, 25, 36, 49, 64, 81};
-        assertEquals(Collections.map(pow, Arrays.asList(SAMPLE)), Arrays.asList(check));
+        assertEquals(Collections.map(pow, Arrays.asList(TEST_SAMPLE)), Arrays.asList(check));
     }
 
     @Test
@@ -32,12 +32,11 @@ public class CollectionsTest {
         Predicate<Integer> f = new Predicate<Integer>() {
             @Override
             Boolean apply(Integer integer) {
-                final int d = 2;
-                return integer % d == 0;
+                return integer % 2 == 0;
             }
         };
         final Integer[] check = new Integer[] {0, 2, 4, 6, 8};
-        assertEquals(Collections.filter(f, Arrays.asList(SAMPLE)), Arrays.asList(check));
+        assertEquals(Collections.filter(f, Arrays.asList(TEST_SAMPLE)), Arrays.asList(check));
     }
 
     @Test
@@ -45,12 +44,11 @@ public class CollectionsTest {
         Predicate<Integer> f = new Predicate<Integer>() {
             @Override
             Boolean apply(Integer integer) {
-                final int d = 5;
-                return integer < d;
+                return integer < 5;
             }
         };
         final Integer[] check = new Integer[] {0, 1, 2, 3, 4};
-        assertEquals(Collections.takeWhile(f, Arrays.asList(SAMPLE)), Arrays.asList(check));
+        assertEquals(Collections.takeWhile(f, Arrays.asList(TEST_SAMPLE)), Arrays.asList(check));
     }
 
     @Test
@@ -58,11 +56,10 @@ public class CollectionsTest {
         Predicate<Integer> f = new Predicate<Integer>() {
             @Override
             Boolean apply(Integer integer) {
-                final int d = 0;
-                return integer < d;
+                return integer < 0;
             }
         };
-        assertEquals(Collections.takeWhile(f, Arrays.asList(SAMPLE)), java.util.Collections.emptyList());
+        assertEquals(Collections.takeWhile(f, Arrays.asList(TEST_SAMPLE)), java.util.Collections.emptyList());
     }
 
     @Test
@@ -70,23 +67,20 @@ public class CollectionsTest {
         Predicate<Integer> f = new Predicate<Integer>() {
             @Override
             Boolean apply(Integer integer) {
-                final int d = 5;
-                return integer > d;
+                return integer > 5;
             }
         };
         final Integer[] check = new Integer[] {0, 1, 2, 3, 4, 5};
-        assertEquals(Collections.takeUnless(f, Arrays.asList(SAMPLE)), Arrays.asList(check));
+        assertEquals(Collections.takeUnless(f, Arrays.asList(TEST_SAMPLE)), Arrays.asList(check));
     }
 
     @Test
     public void testFoldl() throws Exception {
-        final Integer check = -45;
-        assertEquals(Collections.foldl(FUNC, 0, Arrays.asList(SAMPLE)), check);
+        assertEquals(Collections.foldl(SUBTRACTION, 0, Arrays.asList(TEST_SAMPLE)), Integer.valueOf(-45));
     }
 
     @Test
     public void testFoldr() throws Exception {
-        final Integer check = -5;
-        assertEquals(Collections.foldr(FUNC, 0, Arrays.asList(SAMPLE)), check);
+        assertEquals(Collections.foldr(SUBTRACTION, 0, Arrays.asList(TEST_SAMPLE)), Integer.valueOf(-5));
     }
 }

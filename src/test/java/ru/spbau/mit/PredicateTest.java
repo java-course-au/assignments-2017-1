@@ -8,15 +8,13 @@ public class PredicateTest {
     private static final Predicate<Integer> FIRST = new Predicate<Integer>() {
         @Override
         Boolean apply(Integer s) {
-            final int c = 0;
-            return s == c;
+            return s == 0;
         }
     };
     private static final Predicate<Integer> SECOND = new Predicate<Integer>() {
         @Override
         Boolean apply(Integer s) {
-            final int c = 0;
-            return s / c == c;
+            return s / 0 == 0;
         }
     };
     @Test
@@ -50,32 +48,26 @@ public class PredicateTest {
         Predicate<Integer> u = new Predicate<Integer>() {
             @Override
             Boolean apply(Integer s) {
-                final int c = 10;
-                return s == c;
+                return s == 10;
             }
         };
         Predicate<Integer> v = new Predicate<Integer>() {
             @Override
             Boolean apply(Integer s) {
-                final int c = 5;
-                return s == c;
+                return s == 5;
             }
         };
         Predicate<Integer> or = u.or(v);
-        final Integer check5 = 5;
-        assertTrue(or.apply(check5));
-        final Integer check10 = 10;
-        assertTrue(or.apply(check10));
-        final Integer check6 = 6;
-        assertFalse(or.apply(check6));
+        assertTrue(or.apply(5));
+        assertTrue(or.apply(10));
+        assertFalse(or.apply(6));
 
     }
 
     @Test
     public void testOrLazy() throws Exception {
         Predicate<Integer> or = FIRST.or(SECOND);
-        final Integer check5 = 0;
-        assertTrue(or.apply(check5));
+        assertTrue(or.apply(0));
     }
     @Test
     public void testAnd() throws Exception {
@@ -88,8 +80,7 @@ public class PredicateTest {
         Predicate<String> v = new Predicate<String>() {
             @Override
             Boolean apply(String s) {
-                final int l = 11;
-                return s.length() <= l;
+                return s.length() <= 11;
             }
         };
         Predicate<String> and = u.and(v);
@@ -102,8 +93,7 @@ public class PredicateTest {
     @Test
     public void testAndLazy() throws Exception {
         Predicate<Integer> and = FIRST.and(SECOND);
-        final Integer check5 = 10;
-        assertFalse(and.apply(check5));
+        assertFalse(and.apply(10));
     }
 
 
