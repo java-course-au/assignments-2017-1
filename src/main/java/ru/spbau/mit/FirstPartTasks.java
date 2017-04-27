@@ -39,7 +39,9 @@ public final class FirstPartTasks {
     public static List<Album> sortedFavorites(Stream<Album> s) {
         final int threshold = 95;
         return s
-                .filter(album -> album.getTracks().stream().filter(track -> track.getRating() > threshold).count() > 0)
+                .filter(album -> album.getTracks()
+                        .stream()
+                        .filter(track -> track.getRating() > threshold).count() > 0)
                 .sorted(Comparator.comparing(Album::getName))
                 .collect(Collectors.toList());
     }
