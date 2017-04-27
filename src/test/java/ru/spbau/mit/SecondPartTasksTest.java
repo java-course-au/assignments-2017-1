@@ -10,12 +10,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
-import static org.junit.Assert.fail;
-import static ru.spbau.mit.SecondPartTasks.findQuotes;
-import static ru.spbau.mit.SecondPartTasks.piDividedBy4;
+import static ru.spbau.mit.SecondPartTasks.*;
 
 public class SecondPartTasksTest {
     private static Path fileFirst = Paths.get("testFindQuotesFirst");
@@ -68,11 +65,35 @@ public class SecondPartTasksTest {
 
     @Test
     public void testFindPrinter() {
-        fail();
+        Map<String, List<String>> authorToBook = new HashMap<>();
+        authorToBook.put("Pushkin", Arrays.asList("Moy dyada", "samix chestnix pravil",
+                ", kogda ne v shutku" +
+                        "zanemog", "on uvazhat sebya zastavil", "i luchshe vidumat ne mog"));
+        authorToBook.put("Tolstoy", Arrays.asList("THIS IS VOINA I MIR",
+                "THIS IS VOINA I MIR", "THIS IS VOINA I MIR", "THIS IS VOINA I MIR",
+                "THIS IS VOINA I MIR", "THIS IS VOINA I MIR", "THIS IS VOINA I MIR",
+                "THIS IS VOINA I MIR", "THIS IS VOINA I MIR", "THIS IS VOINA I MIR",
+                "very long"));
+        authorToBook.put("Sokolov-prbizhelsky vtoroy", Collections.emptyList());
+        Assert.assertEquals("Tolstoy", findPrinter(authorToBook));
     }
 
     @Test
     public void testCalculateGlobalOrder() {
-        fail();
+        Map<String, Integer> firstShop = new HashMap<>();
+        firstShop.put("moloko", 4);
+        firstShop.put("butter", 6);
+
+        Map<String, Integer> secondShop = new HashMap<>();
+        secondShop.put("moloko", 5);
+        secondShop.put("bread", 1);
+
+        Map<String, Integer> answerMerged = new HashMap<>();
+        answerMerged.put("moloko", 9);
+        answerMerged.put("butter", 6);
+        answerMerged.put("bread", 1);
+
+        Map<String, Integer> mergedMap = calculateGlobalOrder(Arrays.asList(firstShop, secondShop));
+        Assert.assertEquals(answerMerged, mergedMap);
     }
 }

@@ -2,9 +2,10 @@ package ru.spbau.mit;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,21 +36,38 @@ public final class SecondPartTasks {
         // Point (x, y) lies within target if
         // (x - 0.5)^2 + (y - 0.5)^2 <= 0.25
         final int doublesLength = 10050000;
-        final double targetCenter = 0.5;
-        return rnd.doubles(doublesLength).map(x -> Math.pow(x - targetCenter, 2))
-                .map(x -> Math.pow(rnd.nextDouble() - targetCenter, 2) + x)
-                .filter(s -> s <= 0.25).count() / (double) doublesLength;
+        final double targetRadius = 0.5;
+        return rnd.doubles(doublesLength).map(x -> Math.pow(x - targetRadius, 2))
+                .map(x -> Math.pow(rnd.nextDouble() - targetRadius, 2) + x)
+                .filter(s -> s <= Math.pow(targetRadius, 2)).count() / (double) doublesLength;
     }
 
     // Дано отображение из имени автора в список с содержанием его произведений.
     // Надо вычислить, чья общая длина произведений наибольшая.
     public static String findPrinter(Map<String, List<String>> compositions) {
-        throw new UnsupportedOperationException();
+        return compositions.entrySet().stream().max(Comparator.comparing(entry ->
+                entry.getValue().stream().collect(Collectors.summarizingInt(String::length)).getSum()))
+                .orElseThrow(RuntimeException::new).getKey();
     }
 
     // Вы крупный поставщик продуктов. Каждая торговая сеть делает вам заказ в виде Map<Товар, Количество>.
     // Необходимо вычислить, какой товар и в каком количестве надо поставить.
     public static Map<String, Integer> calculateGlobalOrder(List<Map<String, Integer>> orders) {
-        throw new UnsupportedOperationException();
+        BinaryOperator<Map<String, Integer>> merger = (m1, m2) -> {
+            for (Map.Entry<String, Integer> e : m2.entrySet()) {
+                m1.merge(e.getKey(), e.getValue(), Integer::sum);
+            }
+            return m1;
+        };
+        BiConsumer<Map<String, Integer>, Map<String, Integer>> updater = (m1, m2) -> {
+            for (Map.Entry<String, Integer> e : m2.entrySet()) {
+                m1.merge(e.getKey(), e.getValue(), Integer::sum);
+            }
+        };
+        return orders.stream().collect(Collector.of(
+                HashMap::new,
+                updater,
+                merger
+        ));
     }
 }
