@@ -34,10 +34,11 @@ public final class SecondPartTasks {
     public static double piDividedBy4() {
         Random random = new Random();
         final int numExperiments = 1000000;
-        double x0 = 0.5;
-        double y0 = 0.5;
+        final double x0 = 0.5;
+        final double y0 = 0.5;
 
-        Stream<Double> experiments = Stream.generate(() -> sqrt(pow(random.nextDouble() - x0, 2) + pow(random.nextDouble() - y0, 2)));
+        Stream<Double> experiments = Stream.generate(() -> sqrt(pow(random.nextDouble() - x0, 2)
+                + pow(random.nextDouble() - y0, 2)));
         return (double) experiments.limit(numExperiments).filter(s -> s <= 1.0 / 2.0).count() / numExperiments;
     }
 
