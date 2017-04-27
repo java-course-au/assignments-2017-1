@@ -1,0 +1,3 @@
+Second file for testing FindQuotes.
+String, Integer, Double
+Telephone, internet.
