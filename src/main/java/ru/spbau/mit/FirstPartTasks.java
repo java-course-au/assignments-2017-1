@@ -1,14 +1,10 @@
 package ru.spbau.mit;
 
-
-import java.text.CollationElementIterator;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static java.util.function.Function.identity;
 
 public final class FirstPartTasks {
 
