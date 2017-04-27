@@ -33,9 +33,9 @@ public final class FirstPartTasks {
     }
 
     // Список альбомов, в которых есть хотя бы один трек с рейтингом более 95, отсортированный по названию
-    public static List<Album> sortedFavorites(Stream<Album> s) {
+    public static List<Album> sortedFavorites(Stream<Album> albums) {
         final int rating = 95;
-        return s
+        return albums
                 .filter(a -> a.getTracks().stream().anyMatch(tr -> tr.getRating() > rating))
                 .sorted(Comparator.comparing(Album::getName))
                 .collect(Collectors.toList());
@@ -67,27 +67,26 @@ public final class FirstPartTasks {
     // Альбом в котором максимум рейтинга минимален
     // (если в альбоме нет ни одного трека, считать, что максимум рейтинга в нем --- 0)
     public static Optional<Album> minMaxRating(Stream<Album> albums) {
-        return albums.min(Comparator.comparing(album ->
-                album.getTracks().isEmpty() ? 0 : album
+        return albums.min(Comparator.comparing(album -> album
                         .getTracks()
                         .stream()
                         .mapToInt(Track::getRating)
                         .max()
-                        .getAsInt()
+                        .orElse(0)
         ));
     }
 
     // Список альбомов, отсортированный по убыванию среднего рейтинга его треков (0, если треков нет)
     public static List<Album> sortByAverageRating(Stream<Album> albums) {
         return albums
-                .sorted(Comparator.comparing(album ->
-                        album.getTracks().isEmpty() ? 0 : -album
-                                .getTracks()
-                                .stream()
-                                .mapToInt(Track::getRating)
-                                .average()
-                                .getAsDouble())
-                ).collect(Collectors.toList());
+                .sorted(Comparator.comparing(album -> -album
+                        .getTracks()
+                        .stream()
+                        .mapToInt(Track::getRating)
+                        .average()
+                        .orElse(0))
+                )
+                .collect(Collectors.toList());
     }
 
     // Произведение всех чисел потока по модулю 'modulo'
@@ -101,7 +100,7 @@ public final class FirstPartTasks {
     // Вернуть строку, состояющую из конкатенаций переданного массива, и окруженную строками "<", ">"
     // см. тесты
     public static String joinTo(String... strings) {
-        return "<" + Stream.of(strings).collect(Collectors.joining(", "))  + ">";
+        return Stream.of(strings).collect(Collectors.joining(", ", "<", ">"));
     }
 
     // Вернуть поток из объектов класса 'clazz'

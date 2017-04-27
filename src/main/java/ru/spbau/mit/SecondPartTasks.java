@@ -3,8 +3,12 @@ package ru.spbau.mit;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.stream.IntStream;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
 public final class SecondPartTasks {
@@ -13,16 +17,18 @@ public final class SecondPartTasks {
 
     // Найти строки из переданных файлов, в которых встречается указанная подстрока.
     public static List<String> findQuotes(List<String> paths, CharSequence sequence) {
-        List<String> result = new ArrayList<>();
-        paths.forEach(path -> {
-            try (Stream<String> stream = Files.lines(Paths.get(path))) {
-                stream.filter(str -> str.contains(sequence)).forEach(result::add);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        });
 
-        return result;
+        return paths
+                .stream()
+                .flatMap(path -> {
+                    try {
+                        return Files.lines(Paths.get(path));
+                    } catch (IOException ex) {
+                        return Stream.empty();
+                    }
+                })
+                .filter(str -> str.contains(sequence))
+                .collect(Collectors.toList());
     }
 
 
@@ -32,8 +38,11 @@ public final class SecondPartTasks {
     // какова вероятность попасть в мишень.
     public static double piDividedBy4() {
         final int numberOfTries = 1000000;
-        double numberOfSuccesses = IntStream.range(0, numberOfTries).mapToDouble(e -> getShootResult()).sum();
-        return numberOfSuccesses / numberOfTries;
+        return DoubleStream
+                .generate(SecondPartTasks::getShootResult)
+                .limit(numberOfTries)
+                .average()
+                .orElse(0);
     }
 
     private static Double getShootResult() {
@@ -58,8 +67,13 @@ public final class SecondPartTasks {
     // Вы крупный поставщик продуктов. Каждая торговая сеть делает вам заказ в виде Map<Товар, Количество>.
     // Необходимо вычислить, какой товар и в каком количестве надо поставить.
     public static Map<String, Integer> calculateGlobalOrder(List<Map<String, Integer>> orders) {
-        Map<String, Integer> result = new HashMap<>();
-        orders.forEach(map -> map.forEach((good, quantity) -> result.merge(good, quantity, Integer::sum)));
-        return result;
+
+        return orders
+                .stream()
+                .flatMap(order -> order.entrySet().stream())
+                .collect(
+                        Collectors.groupingBy(Map.Entry::getKey,
+                        Collectors.mapping(Map.Entry::getValue, Collectors.summingInt(i -> i)))
+                );
     }
 }
