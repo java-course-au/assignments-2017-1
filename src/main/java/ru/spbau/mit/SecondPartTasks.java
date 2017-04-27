@@ -42,8 +42,9 @@ public final class SecondPartTasks {
         final long trials = 6666666;
         final double radius = 0.5;
 
-        return Stream.generate(() -> Math.pow(Math.random() - radius, 2) +
-                Math.pow(Math.random() - radius, 2) <= Math.pow(radius, 2))
+        return Stream
+                .generate(() -> Math.pow(Math.random() - radius, 2)
+                        + Math.pow(Math.random() - radius, 2) <= Math.pow(radius, 2))
                 .limit(trials)
                 .filter(a -> a)
                 .count() / (double) trials;
@@ -62,7 +63,8 @@ public final class SecondPartTasks {
     // Вы крупный поставщик продуктов. Каждая торговая сеть делает вам заказ в виде Map<Товар, Количество>.
     // Необходимо вычислить, какой товар и в каком количестве надо поставить.
     public static Map<String, Integer> calculateGlobalOrder(List<Map<String, Integer>> orders) {
-        return orders.stream()
+        return orders
+                .stream()
                 .flatMap(map -> map.entrySet().stream())
                 .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.summingInt(Map.Entry::getValue)));
     }
