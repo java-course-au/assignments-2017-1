@@ -32,10 +32,10 @@ public class SecondPartTasksTest {
     @Test
     public void testFindPrinter() {
         Map<String, List<String>> compositions = new HashMap<>();
-        compositions.put("author_1", Arrays.asList("a", "b"));
-        compositions.put("author_2", Arrays.asList("aa", "bb"));
+        compositions.put("author_1", Arrays.asList("aaaaaaaaa"));
+        compositions.put("author_2", Arrays.asList("aaaa", "bb"));
         compositions.put("author_3", Arrays.asList("aaaa", "bbbbb"));
-        compositions.put("author_4", Arrays.asList("aaaaaaaaa", "bbbbb"));
+        compositions.put("author_4", Arrays.asList("aaaaa", "bbbbb"));
         compositions.put("author_5", Collections.emptyList());
 
         Assert.assertEquals("author_4", SecondPartTasks.findPrinter(compositions));

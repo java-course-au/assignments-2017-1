@@ -58,8 +58,7 @@ public final class SecondPartTasks {
                                 .getValue()
                                 .stream()
                                 .mapToInt(String::length)
-                                .max()
-                                .orElse(0)))
+                                .sum()))
                 .get()
                 .getKey();
     }
