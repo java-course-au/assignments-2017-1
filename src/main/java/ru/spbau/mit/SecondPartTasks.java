@@ -22,8 +22,7 @@ public final class SecondPartTasks {
                 .flatMap(path -> {
                     try {
                         return Files.lines(Paths.get(path));
-                    }
-                    catch (IOException e) {
+                    } catch (IOException e) {
                         throw new UncheckedIOException(e);
                     }
                 })
