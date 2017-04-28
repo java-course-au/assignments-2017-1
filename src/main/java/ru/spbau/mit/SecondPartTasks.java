@@ -53,9 +53,9 @@ public final class SecondPartTasks {
         return compositions.entrySet().stream()
             .map(p -> new AbstractMap.SimpleEntry<String, Integer>(p.getKey(), p.getValue()
                     .stream()
-                    .mapToInt(xs -> xs.length())
+                    .mapToInt(String::length)
                     .sum())
-            ).max(Comparator.comparing(p -> p.getValue()))
+            ).max(Comparator.comparing(AbstractMap.SimpleEntry<String, Integer>::getValue))
             .get().getKey();
     }
 
