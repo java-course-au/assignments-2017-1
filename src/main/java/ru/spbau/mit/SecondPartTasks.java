@@ -2,10 +2,10 @@ package ru.spbau.mit;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
-import java.util.stream.Collector;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -53,21 +53,7 @@ public final class SecondPartTasks {
     // Вы крупный поставщик продуктов. Каждая торговая сеть делает вам заказ в виде Map<Товар, Количество>.
     // Необходимо вычислить, какой товар и в каком количестве надо поставить.
     public static Map<String, Integer> calculateGlobalOrder(List<Map<String, Integer>> orders) {
-        BinaryOperator<Map<String, Integer>> merger = (m1, m2) -> {
-            for (Map.Entry<String, Integer> e : m2.entrySet()) {
-                m1.merge(e.getKey(), e.getValue(), Integer::sum);
-            }
-            return m1;
-        };
-        BiConsumer<Map<String, Integer>, Map<String, Integer>> updater = (m1, m2) -> {
-            for (Map.Entry<String, Integer> e : m2.entrySet()) {
-                m1.merge(e.getKey(), e.getValue(), Integer::sum);
-            }
-        };
-        return orders.stream().collect(Collector.of(
-                HashMap::new,
-                updater,
-                merger
-        ));
+        return orders.stream().flatMap(map -> map.entrySet().stream())
+                .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.summingInt(Map.Entry::getValue)));
     }
 }
