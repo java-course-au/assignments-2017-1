@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -46,26 +47,23 @@ public final class FirstPartTasks {
 
     // Число повторяющихся альбомов в потоке
     public static long countAlbumDuplicates(Stream<Album> albums) {
-        return albums.collect(Collectors.groupingBy(a -> a, Collectors.counting())).entrySet().
+        return albums.collect(Collectors.groupingBy(Function.identity(), Collectors.counting())).entrySet().
                 stream().filter(e -> e.getValue() > 1).count();
     }
 
     // Альбом в котором максимум рейтинга минимален
     // (если в альбоме нет ни одного трека, считать, что максимум рейтинга в нем --- 0)
     public static Optional<Album> minMaxRating(Stream<Album> albums) {
-        return albums.collect(Collectors.toMap(
-                a -> a,
-                a -> a.getTracks().stream().map(Track::getRating).max(Integer::compare).orElse(0)
-        )).entrySet().stream().min(Comparator.comparing(Map.Entry::getValue)).map(Map.Entry::getKey);
+        return albums.min(Comparator.comparing(a -> a.getTracks().stream().
+                mapToInt(Track::getRating).max().orElse(0)));
     }
+
 
     // Список альбомов, отсортированный по убыванию среднего рейтинга его треков (0, если треков нет)
     public static List<Album> sortByAverageRating(Stream<Album> albums) {
-        return albums.collect(Collectors.toMap(
-                a -> a,
-                a -> a.getTracks().stream().mapToDouble(Track::getRating).average().orElse(0)
-        )).entrySet().stream().sorted((e1, e2) -> Double.compare(e2.getValue(), e1.getValue())).
-                map(Map.Entry::getKey).collect(Collectors.toList());
+        return albums.sorted(Comparator.comparing((Album a) -> a.getTracks().stream().
+                mapToDouble(Track::getRating).average().orElse(0)).
+                reversed()).collect(Collectors.toList());
     }
 
     // Произведение всех чисел потока по модулю 'modulo'
@@ -81,7 +79,8 @@ public final class FirstPartTasks {
     }
 
     // Вернуть поток из объектов класса 'clazz'
+    @SuppressWarnings("unchecked")
     public static <R> Stream<R> filterIsInstance(Stream<?> s, Class<R> clazz) {
-        return s.filter(clazz::isInstance).map(clazz::cast);
+        return (Stream<R>) s.filter(clazz::isInstance);
     }
 }
