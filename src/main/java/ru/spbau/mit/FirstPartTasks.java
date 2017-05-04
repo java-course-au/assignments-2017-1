@@ -107,9 +107,8 @@ public final class FirstPartTasks {
     }
 
     // Вернуть поток из объектов класса 'clazz'
+    @SuppressWarnings("unchecked")
     public static <R> Stream<R> filterIsInstance(Stream<?> s, Class<R> clazz) {
-        return s
-            .filter(p -> clazz.isAssignableFrom(p.getClass()))
-            .map(p -> (R) p);
+        return (Stream<R>) s.filter(p -> clazz.isAssignableFrom(p.getClass()));
     }
 }
