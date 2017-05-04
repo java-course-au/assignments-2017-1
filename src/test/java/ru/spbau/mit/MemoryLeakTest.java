@@ -15,9 +15,10 @@ public class MemoryLeakTest {
 
     @Test
     public void memTest() {
+        final int bigNumber = 10000000;
         leak.limit(1);
 
-        for (Integer i = 0; i < 10000000; i++) {
+        for (Integer i = 0; i < bigNumber; i++) {
             vec.add(i);
         }
     }

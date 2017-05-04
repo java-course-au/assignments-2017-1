@@ -8,7 +8,8 @@ public class MemoryLeakLimit implements TestRule {
     private long memLimit;
 
     public void limit(long mb) {
-        memLimit = mb * 1024 * 1024;
+        final int twoInTen = 1024;
+        memLimit = mb * twoInTen * twoInTen;
     }
 
     @Override
