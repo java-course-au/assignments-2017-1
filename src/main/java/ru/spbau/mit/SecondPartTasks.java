@@ -38,17 +38,18 @@ public final class SecondPartTasks {
     // какова вероятность попасть в мишень.
     public static double piDividedBy4() {
         final int numberOfTries = 1000000;
+        final Random randomGen = new Random();
         return DoubleStream
-                .generate(SecondPartTasks::getShootResult)
+                .generate(() -> getShootResult(randomGen))
                 .limit(numberOfTries)
                 .average()
                 .orElse(0);
     }
 
-    private static Double getShootResult() {
+    private static Double getShootResult(Random randomGen) {
         final double radius = 0.5;
-        double xVal = new Random().nextDouble() - radius;
-        double yVal = new Random().nextDouble() - radius;
+        double xVal = randomGen.nextDouble() - radius;
+        double yVal = randomGen.nextDouble() - radius;
         double distFromCenter = Math.sqrt(xVal * xVal + yVal * yVal);
         return distFromCenter < radius ? 1.0 : 0.0;
     }

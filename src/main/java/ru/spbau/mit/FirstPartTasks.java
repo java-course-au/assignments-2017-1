@@ -1,6 +1,7 @@
 package ru.spbau.mit;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -57,7 +58,7 @@ public final class FirstPartTasks {
     // Число повторяющихся альбомов в потоке
     public static long countAlbumDuplicates(Stream<Album> albums) {
         return albums
-                .collect(Collectors.groupingBy(e -> e))
+                .collect(Collectors.groupingBy(Function.identity()))
                 .entrySet()
                 .stream()
                 .filter(entry -> entry.getValue().size() > 1)
@@ -67,7 +68,8 @@ public final class FirstPartTasks {
     // Альбом в котором максимум рейтинга минимален
     // (если в альбоме нет ни одного трека, считать, что максимум рейтинга в нем --- 0)
     public static Optional<Album> minMaxRating(Stream<Album> albums) {
-        return albums.min(Comparator.comparing(album -> album
+        return albums.min(
+                Comparator.comparing(album -> album
                         .getTracks()
                         .stream()
                         .mapToInt(Track::getRating)
@@ -105,6 +107,6 @@ public final class FirstPartTasks {
 
     // Вернуть поток из объектов класса 'clazz'
     public static <R> Stream<R> filterIsInstance(Stream<?> s, Class<R> clazz) {
-        return s.filter(clazz::isInstance).map(clazz::cast);
+        return (Stream<R>) s.filter(clazz::isInstance);
     }
 }
