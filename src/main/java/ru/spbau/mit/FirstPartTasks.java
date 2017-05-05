@@ -26,7 +26,7 @@ public final class FirstPartTasks {
     // Список треков, отсортированный лексикографически по названию, включающий все треки альбомов из 'albums'
     public static List<String> allTracksSorted(Stream<Album> albums) {
         return albums
-                .flatMap((album) -> album.getTracks().stream())
+                .flatMap(album -> album.getTracks().stream())
                 .map(Track::getName)
                 .sorted()
                 .collect(Collectors.toList());
@@ -98,15 +98,12 @@ public final class FirstPartTasks {
     // Вернуть строку, состояющую из конкатенаций переданного массива, и окруженную строками "<", ">"
     // см. тесты
     public static String joinTo(String... strings) {
-        return "<".concat(
-                Arrays.stream(strings)
-                    .collect(Collectors.joining(", "))
-                    .concat(">"));
+        return Arrays.stream(strings)
+                     .collect(Collectors.joining(", ", "<", ">"));
     }
 
     // Вернуть поток из объектов класса 'clazz'
     public static <R> Stream<R> filterIsInstance(Stream<?> s, Class<R> clazz) {
-        return s.filter(clazz::isInstance)
-                .map(clazz::cast);
+        return (Stream<R>) s.filter(clazz::isInstance);
     }
 }
