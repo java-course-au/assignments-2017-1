@@ -6,6 +6,7 @@ import org.junit.runners.model.Statement;
 
 public class MemoryLeakLimit implements TestRule {
 
+    private static final long MB_TO_BYTES = 1024 * 1024;
     private long limit;
 
     @Override
@@ -28,6 +29,6 @@ public class MemoryLeakLimit implements TestRule {
     }
 
     public void limit(long mb) {
-        limit = mb;
+        limit = mb * MB_TO_BYTES;
     }
 }

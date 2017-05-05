@@ -12,15 +12,10 @@ public class MemoryLeakLimitTest {
     public final MemoryLeakLimit memoryLeakLimit = new MemoryLeakLimit();
 
 
-    @Test()
-    public void test1() {
+    @Test
+    public void testFailed() {
         memoryLeakLimit.limit(1);
-        buf = new int[1024];
+        buf = new int[2 * 1024 * 1024];
     }
 
-    @Test()
-    public void test2() {
-        memoryLeakLimit.limit(1000);
-        buf = new int[10];
-    }
 }
