@@ -146,7 +146,7 @@ public class CollectionTest {
             public Boolean apply(Object object) {
                 return null;
             }
-        }, new ArrayList<Integer>());
+        },java.util.Collections.emptyList());
     }
 
     @Test
@@ -156,7 +156,7 @@ public class CollectionTest {
             public Boolean apply(Object object) {
                 return null;
             }
-        }, new ArrayList<Integer>());
+        }, java.util.Collections.emptyList());
     }
 
     @Test
@@ -166,7 +166,7 @@ public class CollectionTest {
             public Integer apply(Object o, Object o2) {
                 return null;
             }
-        }, new Integer(1), new ArrayList<Integer>());
+        }, new Integer(1), java.util.Collections.emptyList());
 
         res = Collections.foldr(new Function2<Object, Object, Integer>() {
 
@@ -174,7 +174,7 @@ public class CollectionTest {
             public Integer apply(Object o, Object o2) {
                 return null;
             }
-        }, new Integer(1), new ArrayList<Integer>());
+        }, new Integer(1),java.util.Collections.emptyList());
     }
 
 }
