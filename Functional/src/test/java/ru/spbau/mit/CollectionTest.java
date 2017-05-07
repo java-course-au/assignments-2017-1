@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -53,12 +54,9 @@ public class CollectionTest {
             }
         };
 
-        ArrayList<String> str = new ArrayList<>();
-        str.add("bbbb");
-        str.add("aaa");
-        str.add("ccc");
+        List<String> str = Arrays.asList("bbbb", "aaa", "ccc");
 
-        ArrayList<String> res = new ArrayList<>();
+        List<String> res = new ArrayList<>();
         for (String s : str) {
             if (s.contains("a")) {
                 res.add(s);
@@ -138,7 +136,7 @@ public class CollectionTest {
             public Boolean apply(Object object) {
                 return null;
             }
-        }, new ArrayList<Integer>());
+        }, java.util.Collections.emptyList());
     }
 
     @Test

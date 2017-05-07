@@ -28,7 +28,7 @@ public class Function1Test {
         for (int i = value, n = 0; n < 20; i++, n++) {
             Assert.assertTrue(i + 1 == f.apply(i));
             Assert.assertTrue(i - 1 == g.apply(i));
-            Assert.assertTrue(i == f.compose(g).apply(i));
+            Assert.assertEquals(new Integer(i), f.compose(g).apply(i));
         }
     }
 

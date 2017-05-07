@@ -42,6 +42,17 @@ public class PredicateTest {
 
 
     @Test
+    public void PredicateAlwaysTrueTest() {
+        Assert.assertTrue(Predicate.ALWAYS_TRUE.apply(null));
+    }
+
+    @Test
+    public void PredicateAlwaysFasleTest() {
+        Assert.assertFalse(Predicate.ALWAYS_FALSE.apply(null));
+    }
+
+
+    @Test
     public void PredicateApplyTest() {
         Predicate<Integer> p = new Predicate<Integer>() {
             @Override
