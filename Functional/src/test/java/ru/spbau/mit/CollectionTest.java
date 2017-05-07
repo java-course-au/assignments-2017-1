@@ -146,7 +146,7 @@ public class CollectionTest {
             public Boolean apply(Object object) {
                 return null;
             }
-        },java.util.Collections.emptyList());
+        }, java.util.Collections.emptyList());
     }
 
     @Test
@@ -174,7 +174,7 @@ public class CollectionTest {
             public Integer apply(Object o, Object o2) {
                 return null;
             }
-        }, new Integer(1),java.util.Collections.emptyList());
+        }, new Integer(1), java.util.Collections.emptyList());
     }
 
 }
