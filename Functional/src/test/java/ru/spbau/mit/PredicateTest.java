@@ -44,11 +44,13 @@ public class PredicateTest {
     @Test
     public void PredicateAlwaysTrueTest() {
         Assert.assertTrue(Predicate.ALWAYS_TRUE.apply(null));
+        Assert.assertTrue(Predicate.ALWAYS_TRUE.apply(new Object()));
     }
 
     @Test
     public void PredicateAlwaysFasleTest() {
         Assert.assertFalse(Predicate.ALWAYS_FALSE.apply(null));
+        Assert.assertFalse(Predicate.ALWAYS_FALSE.apply(new Object()));
     }
 
 

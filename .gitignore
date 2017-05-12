@@ -1,7 +1,6 @@
 *.class
 
 # Package Files #
-*.jar
 *.war
 *.ear
 
@@ -10,5 +9,7 @@
 *.ipr
 *.iws
 .idea/
+.gradle/
 
 target/**
+build/
