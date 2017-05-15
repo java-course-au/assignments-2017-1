@@ -21,4 +21,15 @@ public class MemoryLeakTest {
             data.add(new int[1024]);
         }
     }
+
+    // supposed to fail
+    @Test(expected = RuntimeException.class)
+    public void testMemoryLeakWithException() {
+        limit.limit(1);
+        data = new ArrayList<>();
+        for (int i = 0; i < 1e4; i++) {
+            data.add(new int[1024]);
+        }
+        throw new RuntimeException();
+    }
 }
