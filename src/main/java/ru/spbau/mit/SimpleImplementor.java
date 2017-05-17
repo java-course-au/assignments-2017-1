@@ -53,6 +53,9 @@ public class SimpleImplementor implements Implementor {
 
     private void generateCode(Class<?> clazz) throws ImplementorException {
         try {
+            if (Modifier.isFinal(clazz.getModifiers())) {
+                throw new ImplementorException("Can't extend final class");
+            }
             File outputFile = getOutputFile(clazz.getCanonicalName());
             PrintWriter writer;
             try {
