@@ -109,6 +109,7 @@ public class SimpleImplementor implements Implementor {
                 writer.println(declaration.toString() + " {");
                 writer.println("throw new UnsupportedOperationException();");
                 writer.println("}");
+                writer.println();
             }
 
             writer.println("}");
