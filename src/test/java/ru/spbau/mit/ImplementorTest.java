@@ -76,8 +76,8 @@ public class ImplementorTest {
     }
 
     @Test
-    public void implementOtherClass() throws Exception {
-        checkInterfaceImplementationFromStandardLibrary("ru.spbau.mit.test.OtherClass");
+    public void implementCloneable() throws Exception {
+        checkInterfaceImplementationFromStandardLibrary("java.lang.Cloneable");
     }
 
     private void checkInterfaceImplementationFromFolder(String className) throws Exception {
@@ -114,7 +114,7 @@ public class ImplementorTest {
         final Class<?> outputClass = compileAndLoadClass(implClassName);
         checkExtendsAbstractClass(className, outputClass);
     }
-    
+
     private void checkExtendsAbstractClass(String className, Class<?> outputClass) {
         assertThat(outputClass.getSuperclass().getCanonicalName(), is(className));
     }
@@ -128,7 +128,8 @@ public class ImplementorTest {
     }
 
     private void checkImplementsInterface(String className, Class<?> aClass) {
-        assertThat(aClass.getInterfaces(), arrayWithSize(0));
+        assertThat(aClass.getInterfaces(), arrayWithSize(1));
+        assertThat(aClass.getInterfaces()[0].getCanonicalName(), is(className));
     }
 
     private void checkIsNotAbstract(Class<?> aClass) {

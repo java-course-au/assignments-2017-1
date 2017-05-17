@@ -45,7 +45,7 @@ public class SimpleImplementor implements Implementor {
         try {
             Class<?> clazz = ClassLoader.getSystemClassLoader().loadClass(className);
             generateCode(clazz, null);
-            return className + "Impl";
+            return clazz.getSimpleName() + "Impl";
         } catch (ClassNotFoundException e) {
             throw new ImplementorException(e.getMessage(), e);
         }
@@ -56,7 +56,7 @@ public class SimpleImplementor implements Implementor {
             if (Modifier.isFinal(clazz.getModifiers())) {
                 throw new ImplementorException("Can't extend final class");
             }
-            File outputFile = pack == null ? new File(outputDir) : getOutputFile(clazz.getCanonicalName());
+            File outputFile = pack == null ? new File(outputDir + "/" + clazz.getSimpleName() + "Impl.java") : getOutputFile(clazz.getCanonicalName());
             PrintWriter writer;
             try {
                 writer = new PrintWriter(outputFile);
