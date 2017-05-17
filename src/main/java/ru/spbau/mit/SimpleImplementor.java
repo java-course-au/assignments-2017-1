@@ -97,9 +97,9 @@ public class SimpleImplementor implements Implementor {
                 declaration.append("(");
                 for (int i = 0; i < m.getParameterCount(); i++) {
                     if (i != 0) {
-                        writer.print(", ");
+                        declaration.append(", ");
                     }
-                    writer.print(m.getParameterTypes()[i].getCanonicalName() + " a" + i);
+                    declaration.append(m.getParameterTypes()[i].getCanonicalName() + " a" + i);
                 }
                 declaration.append(")");
                 if (printedMethods.contains(declaration.toString())) {
