@@ -83,21 +83,30 @@ public class SimpleImplementor implements Implementor {
                 cur = cur.getSuperclass();
             }
 
+            Set<String> printedMethods = new HashSet<>();
+
             for (Method m : allMethods) {
                 int mods = m.getModifiers();
                 if (!Modifier.isAbstract(mods)) {
                     continue;
                 }
 
-                writer.print("public " + m.getReturnType().getCanonicalName() + " " + m.getName());
-                writer.print("(");
+                StringBuilder declaration = new StringBuilder();
+
+                declaration.append("public " + m.getReturnType().getCanonicalName() + " " + m.getName());
+                declaration.append("(");
                 for (int i = 0; i < m.getParameterCount(); i++) {
                     if (i != 0) {
                         writer.print(", ");
                     }
                     writer.print(m.getParameterTypes()[i].getCanonicalName() + " a" + i);
                 }
-                writer.println(") {");
+                declaration.append(")");
+                if (printedMethods.contains(declaration.toString())) {
+                    continue;
+                }
+                printedMethods.add(declaration.toString());
+                writer.println(declaration.toString() + " {");
                 writer.println("throw new UnsupportedOperationException();");
                 writer.println("}");
             }
@@ -117,9 +126,5 @@ public class SimpleImplementor implements Implementor {
         }
         file.mkdirs();
         return new File(file, nameParts[nameParts.length - 1] + "Impl.java");
-    }
-
-    public static void main(String[] args) throws ImplementorException {
-        new SimpleImplementor("/home/anton/tmp/gen").implementFromStandardLibrary("ru.spbau.mit.SomeInterface");
     }
 }
