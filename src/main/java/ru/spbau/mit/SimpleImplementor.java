@@ -36,7 +36,7 @@ public class SimpleImplementor implements Implementor {
             throw new ImplementorException(e.getMessage(), e.getCause());
         }
 
-        generateCode(clazz);
+        generateCode(clazz, clazz.getPackage());
         return className + "Impl";
     }
 
@@ -44,14 +44,14 @@ public class SimpleImplementor implements Implementor {
     public String implementFromStandardLibrary(String className) throws ImplementorException {
         try {
             Class<?> clazz = ClassLoader.getSystemClassLoader().loadClass(className);
-            generateCode(clazz);
+            generateCode(clazz, null);
             return className + "Impl";
         } catch (ClassNotFoundException e) {
             throw new ImplementorException(e.getMessage(), e);
         }
     }
 
-    private void generateCode(Class<?> clazz) throws ImplementorException {
+    private void generateCode(Class<?> clazz, Package pack) throws ImplementorException {
         try {
             if (Modifier.isFinal(clazz.getModifiers())) {
                 throw new ImplementorException("Can't extend final class");
@@ -64,7 +64,7 @@ public class SimpleImplementor implements Implementor {
                 throw new ImplementorException(e.getMessage(), e);
             }
 
-            if (clazz.getPackage() != null) {
+            if (pack != null) {
                 writer.println("package " + clazz.getPackage().getName() + ";");
             }
             writer.print("public class " + clazz.getSimpleName() + "Impl ");
