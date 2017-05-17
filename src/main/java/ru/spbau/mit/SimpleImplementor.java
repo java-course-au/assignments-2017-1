@@ -52,52 +52,58 @@ public class SimpleImplementor implements Implementor {
     }
 
     private void generateCode(Class<?> clazz) throws ImplementorException {
-        File outputFile = getOutputFile(clazz.getCanonicalName());
-        PrintWriter writer;
         try {
-            writer = new PrintWriter(outputFile);
-        } catch (FileNotFoundException e) {
+            File outputFile = getOutputFile(clazz.getCanonicalName());
+            PrintWriter writer;
+            try {
+                writer = new PrintWriter(outputFile);
+            } catch (FileNotFoundException e) {
+                throw new ImplementorException(e.getMessage(), e);
+            }
+
+            if (clazz.getPackage() != null) {
+                writer.println("package " + clazz.getPackage().getName() + ";");
+            }
+            writer.print("public class " + clazz.getSimpleName() + "Impl ");
+            if (clazz.isInterface()) {
+                writer.print("implements ");
+            } else {
+                writer.print("extends ");
+            }
+            writer.println(clazz.getCanonicalName() + " {");
+
+            Set<Method> allMethods = new HashSet<>();
+            Class<?> cur = clazz;
+            while (cur != null) {
+                allMethods.addAll(Arrays.asList(cur.getDeclaredMethods()));
+                allMethods.addAll(Arrays.asList(cur.getMethods()));
+                cur = cur.getSuperclass();
+            }
+
+            for (Method m : allMethods) {
+                int mods = m.getModifiers();
+                if (!Modifier.isAbstract(mods)) {
+                    continue;
+                }
+
+                writer.print("public " + m.getReturnType().getCanonicalName() + " " + m.getName());
+                writer.print("(");
+                for (int i = 0; i < m.getParameterCount(); i++) {
+                    if (i != 0) {
+                        writer.print(", ");
+                    }
+                    writer.print(m.getParameterTypes()[i].getCanonicalName() + " a" + i);
+                }
+                writer.println(") {");
+                writer.println("throw new UnsupportedOperationException();");
+                writer.println("}");
+            }
+
+            writer.println("}");
+            writer.close();
+        } catch (Exception e) {
             throw new ImplementorException(e.getMessage(), e);
         }
-
-        writer.println("package " + clazz.getPackage().getName() + ";");
-        writer.print("public class " + clazz.getSimpleName() + "Impl ");
-        if (clazz.isInterface()) {
-            writer.print("implements ");
-        } else {
-            writer.print("extends ");
-        }
-        writer.println(clazz.getCanonicalName() + " {");
-
-        Set<Method> allMethods = new HashSet<>();
-        Class<?> cur = clazz;
-        while (cur != null) {
-            allMethods.addAll(Arrays.asList(cur.getDeclaredMethods()));
-            allMethods.addAll(Arrays.asList(cur.getMethods()));
-            cur = cur.getSuperclass();
-        }
-
-        for (Method m : allMethods) {
-            int mods = m.getModifiers();
-            if (!Modifier.isAbstract(mods)) {
-                continue;
-            }
-
-            writer.print("public " + m.getReturnType().getCanonicalName() + " " + m.getName());
-            writer.print("(");
-            for (int i = 0; i < m.getParameterCount(); i++) {
-                if (i != 0) {
-                    writer.print(", ");
-                }
-                writer.print(m.getParameterTypes()[i].getCanonicalName() + " a" + i);
-            }
-            writer.println(") {");
-            writer.println("throw new UnsupportedOperationException();");
-            writer.println("}");
-        }
-
-        writer.println("}");
-        writer.close();
     }
 
     private File getOutputFile(String className) {
