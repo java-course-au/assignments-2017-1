@@ -114,7 +114,7 @@ public class ImplementorTest {
         final Class<?> outputClass = compileAndLoadClass(implClassName);
         checkExtendsAbstractClass(className, outputClass);
     }
-    
+
     private void checkExtendsAbstractClass(String className, Class<?> outputClass) {
         assertThat(outputClass.getSuperclass().getCanonicalName(), is(className));
     }
