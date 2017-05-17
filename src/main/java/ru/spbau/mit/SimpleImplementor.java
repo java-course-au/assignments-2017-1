@@ -56,7 +56,7 @@ public class SimpleImplementor implements Implementor {
             if (Modifier.isFinal(clazz.getModifiers())) {
                 throw new ImplementorException("Can't extend final class");
             }
-            File outputFile = getOutputFile(clazz.getCanonicalName());
+            File outputFile = pack == null ? new File(outputDir) : getOutputFile(clazz.getCanonicalName());
             PrintWriter writer;
             try {
                 writer = new PrintWriter(outputFile);
