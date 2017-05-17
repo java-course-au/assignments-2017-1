@@ -76,8 +76,8 @@ public class ImplementorTest {
     }
 
     @Test
-    public void implementCloneable() throws Exception {
-        checkInterfaceImplementationFromStandardLibrary("java.lang.Cloneable");
+    public void implementOtherClass() throws Exception {
+        checkInterfaceImplementationFromStandardLibrary("ru.spbau.mit.test.OtherClass");
     }
 
     private void checkInterfaceImplementationFromFolder(String className) throws Exception {
@@ -128,8 +128,7 @@ public class ImplementorTest {
     }
 
     private void checkImplementsInterface(String className, Class<?> aClass) {
-        assertThat(aClass.getInterfaces(), arrayWithSize(1));
-        assertThat(aClass.getInterfaces()[0].getCanonicalName(), is(className));
+        assertThat(aClass.getInterfaces(), arrayWithSize(0));
     }
 
     private void checkIsNotAbstract(Class<?> aClass) {
