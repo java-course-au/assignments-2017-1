@@ -53,7 +53,6 @@ public class SimpleImplementor implements Implementor {
             throw new ImplementorException(e.getMessage(), e);
         }
 
-        System.out.println(implementation);
         return className + "Impl";
     }
 
@@ -82,7 +81,6 @@ public class SimpleImplementor implements Implementor {
             throw new ImplementorException(e.getMessage(), e);
         }
 
-        System.out.println(implementation);
         return simpleClassName + "Impl";
     }
 
