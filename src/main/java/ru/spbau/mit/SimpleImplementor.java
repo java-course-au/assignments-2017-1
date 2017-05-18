@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
@@ -103,35 +102,11 @@ public class SimpleImplementor implements Implementor {
     private void generateClassBody(StringBuilder implementation, Class classToImplement) {
         implementation.append(" {\n\t");
 
-        Constructor<?>[] constructors = classToImplement.getDeclaredConstructors();
-        if (!classToImplement.isInterface() && Stream.of(constructors).
-                noneMatch(c -> c.getParameterCount() == 0)) {
-            generateConstructor(implementation, classToImplement);
-        }
-
         Set<String> methodsImpl = new HashSet<>();
         generateMethodsForClass(methodsImpl, classToImplement);
         implementation.append(String.join("\n\n\t", methodsImpl));
 
         implementation.append("\n}\n");
-    }
-
-    private void generateConstructor(StringBuilder implementation, Class classToImplement) {
-        Constructor<?> constructorWithParams = Stream.of(classToImplement.getDeclaredConstructors()).
-                filter(c -> c.getParameterCount() > 0).
-                findAny().
-                get();
-        List<String> constructorImpl = new ArrayList<>();
-        constructorImpl.add("public");
-        constructorImpl.add(classToImplement.getSimpleName() + "Impl");
-        constructorImpl.add(getParameters(constructorWithParams.getParameters()));
-        constructorImpl.add("{\n\t\tsuper");
-        constructorImpl.add(Stream.of(constructorWithParams.getParameters()).
-                map(Parameter::getName).
-                collect(Collectors.joining(", ", "(", ")")));
-        constructorImpl.add(";\n}\n\t");
-
-        implementation.append(String.join(" ", constructorImpl));
     }
 
     private void generateMethodsForClass(Set<String> methodsImpl, Class classToImplement) {
