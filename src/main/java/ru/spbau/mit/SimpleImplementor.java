@@ -89,7 +89,7 @@ public class SimpleImplementor implements Implementor {
     }
 
     private static Method[] getAllMethods(Class<?> clazz) {
-        Set<Method> methods = new LinkedHashSet<>();
+        List<Method> methods = new ArrayList<>();
         Queue<Class> baseClasses = new LinkedBlockingQueue<>();
 
         for (Class<?> curClass = clazz; curClass != null; curClass = curClass.getSuperclass()) {
@@ -109,6 +109,18 @@ public class SimpleImplementor implements Implementor {
                 ));
             }
         }
+
+        methods = methods.stream()
+                .collect(Collectors.groupingBy(
+                        method ->
+                                Integer.toString(method.getModifiers())
+                                + method.getReturnType().getCanonicalName()
+                                + Arrays.toString(method.getParameters()))
+                )
+                .entrySet()
+                .stream()
+                .map(entry -> entry.getValue().get(0))
+                .collect(Collectors.toList());
 
         Method[] methodsArray = new Method[methods.size()];
         return methods.toArray(methodsArray);
@@ -133,9 +145,14 @@ public class SimpleImplementor implements Implementor {
                         ", ", "(", ")"));
 
         implBuilder.append(parameters).append(" {\n");
-        implBuilder.append("return ");
-        implBuilder.append(getDefaultValueByType(method.getReturnType()));
-        implBuilder.append(";\n}");
+
+        if (method.getReturnType() != void.class) {
+            implBuilder.append("return ");
+            implBuilder.append(getDefaultValueByType(method.getReturnType()));
+            implBuilder.append(";");
+        }
+
+        implBuilder.append("\n}");
 
         return implBuilder.toString();
     }
@@ -145,12 +162,20 @@ public class SimpleImplementor implements Implementor {
             return "false";
         }
 
+        if (clazz == char.class) {
+            return "\'0\'";
+        }
+
         if (clazz == byte.class || clazz == short.class
             || clazz == int.class || clazz == long.class) {
             return "0";
         }
 
-        if (clazz == float.class || clazz == double.class) {
+        if (clazz == float.class) {
+            return "0.f";
+        }
+
+        if (clazz == double.class) {
             return "0.";
         }
 
