@@ -10,7 +10,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
 public class SimpleImplementor implements Implementor {
@@ -50,7 +51,7 @@ public class SimpleImplementor implements Implementor {
         if (clazz.isInterface()) {
             classBuilder.append(" implements ");
         } else if (!Modifier.isFinal(clazz.getModifiers())) {
-            classBuilder.append("extends ");
+            classBuilder.append(" extends ");
         } else {
             throw new ImplementorException("Cannot inherit class "
                     + clazz.getCanonicalName());
@@ -59,8 +60,10 @@ public class SimpleImplementor implements Implementor {
         classBuilder.append(clazz.getCanonicalName());
         classBuilder.append(" {\n");
 
-        for (Method method : clazz.getDeclaredMethods()) {
-            classBuilder.append(createDefaultImpl(method)).append('\n');
+        for (Method method : getAllMethods(clazz)) {
+            if (Modifier.isAbstract(method.getModifiers())) {
+                classBuilder.append(createDefaultImpl(method)).append('\n');
+            }
         }
 
         classBuilder.append("}\n");
@@ -83,6 +86,32 @@ public class SimpleImplementor implements Implementor {
         }
 
         return destinationPackage + "." + derivedClassName;
+    }
+
+    private static Method[] getAllMethods(Class<?> clazz) {
+        Set<Method> methods = new LinkedHashSet<>();
+        Queue<Class> baseClasses = new LinkedBlockingQueue<>();
+
+        for (Class<?> curClass = clazz; curClass != null; curClass = curClass.getSuperclass()) {
+            baseClasses.add(curClass);
+            methods.addAll(Arrays.asList(curClass.getDeclaredMethods()));
+        }
+
+        while (!baseClasses.isEmpty()) {
+            Class<?> curClass = baseClasses.poll();
+
+            for (Class<?> baseClass : curClass.getInterfaces()) {
+                methods.addAll(Arrays.asList(
+                        baseClass.getDeclaredMethods()
+                ));
+                baseClasses.addAll(Arrays.asList(
+                        baseClass.getInterfaces()
+                ));
+            }
+        }
+
+        Method[] methodsArray = new Method[methods.size()];
+        return methods.toArray(methodsArray);
     }
 
     private static String createDefaultImpl(Method method) {
