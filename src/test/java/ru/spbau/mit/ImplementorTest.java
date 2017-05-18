@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.nio.file.Files.move;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsArrayWithSize.arrayWithSize;
 import static org.hamcrest.core.Is.is;
@@ -87,7 +86,8 @@ public class ImplementorTest {
         Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromStrings(
                 filePaths);
         List<String> options = new ArrayList<>();
-        options.addAll(Arrays.asList("-classpath", System.getProperty("java.class.path") + getTestsDirectoryPath()));
+        options.addAll(Arrays.asList("-classpath", System.getProperty("java.class.path") + getTestsDirectoryPath(),
+                "-d", getTestsDirectoryPath()));
         JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnostics, options,
                 null, compilationUnits);
         boolean success = task.call();
@@ -98,16 +98,6 @@ public class ImplementorTest {
             throw new RuntimeException();
         }
         fileManager.close();
-
-        filesToCompile.forEach(path -> {
-            try {
-                move(Paths.get(prefix, path + ".class").toAbsolutePath(),
-                        Paths.get(getTestsDirectoryPath(), "./", path + ".class").toAbsolutePath());
-            } catch (IOException e) {
-                e.printStackTrace();
-                throw new RuntimeException();
-            }
-        });
     }
 
     @After
@@ -142,17 +132,17 @@ public class ImplementorTest {
 
     @Test(expected = ImplementorException.class)
     public void implementFinalClass() throws Exception {
-        checkAbstractClassImplementationFromFolder("FinalClassUtil");
+        checkAbstractClassImplementationFromFolder("ru.spbau.mit.FinalClassUtil");
     }
 
     @Test
     public void implementSomeInterface() throws Exception {
-        checkInterfaceImplementationFromFolder("InterfaceUtil");
+        checkInterfaceImplementationFromFolder("ru.spbau.mit.InterfaceUtil");
     }
 
     @Test
     public void implementSomeAbstractClass() throws Exception {
-        checkAbstractClassImplementationFromFolder("AbstractBaseUtil");
+        checkAbstractClassImplementationFromFolder("ru.spbau.mit.AbstractBaseUtil");
     }
 
     private void checkInterfaceImplementationFromFolder(String className) throws Exception {
