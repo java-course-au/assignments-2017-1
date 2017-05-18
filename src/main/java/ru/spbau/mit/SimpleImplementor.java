@@ -56,7 +56,7 @@ public class SimpleImplementor implements Implementor {
 
     private static String implPackage(final StringBuilder out, final Class<?> cl) {
         final String pkg = getPackage(cl);
-        out.append(pkg.isEmpty() ? pkg.isEmpty() : pkg + ";\n\n");
+        out.append(pkg.isEmpty() ? pkg.isEmpty() : "package " + pkg + ";\n\n");
         return pkg;
     }
 
@@ -122,7 +122,7 @@ public class SimpleImplementor implements Implementor {
     private void write(final StringBuilder out, final Class<?> cl, final String pkg) throws ImplementorException {
         final String[] pkgSplit = pkg.split("\\.");
         final File dirs = Paths.get(outputDirectory, pkgSplit).toFile();
-        final File target = new File(outputDirectory, cl.getSimpleName() + "Impl.java");
+        final File target = new File(dirs, cl.getSimpleName() + "Impl.java");
         dirs.mkdirs();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(target))) {
             writer.append(out.toString());
@@ -138,7 +138,7 @@ public class SimpleImplementor implements Implementor {
         final String pkg = implPackage(out, cl);
         addImpl(out, cl);
         write(out, cl, pkg);
-        return cl.getSimpleName() + "Impl";
+        return cl.getCanonicalName() + "Impl";
     }
 
     @Override
