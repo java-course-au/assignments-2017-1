@@ -37,6 +37,19 @@ public class SimpleImplementor implements Implementor {
         return implement(clazz, clazz.getPackage().getName());
     }
 
+    @Override
+    public String implementFromStandardLibrary(String className) throws ImplementorException {
+        Class<?> clazz;
+        try {
+            clazz = Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            throw new ImplementorException("Cannot load class " + className
+                    + " no such file or directory", e);
+        }
+
+        return implement(clazz, "");
+    }
+
     private String implement(Class<?> clazz, String destinationPackage) throws ImplementorException {
         String derivedClassName = clazz.getSimpleName() + "Impl";
         StringBuilder classBuilder = new StringBuilder();
@@ -113,8 +126,9 @@ public class SimpleImplementor implements Implementor {
         methods = methods.stream()
                 .collect(Collectors.groupingBy(
                         method ->
-                                Integer.toString(method.getModifiers())
+                                Modifier.toString(method.getModifiers())
                                 + method.getReturnType().getCanonicalName()
+                                + method.getName()
                                 + Arrays.toString(method.getParameters()))
                 )
                 .entrySet()
@@ -129,11 +143,10 @@ public class SimpleImplementor implements Implementor {
     private static String createDefaultImpl(Method method) {
         StringBuilder implBuilder = new StringBuilder();
 
-        if (Modifier.isPublic(method.getModifiers())) {
-            implBuilder.append("public ");
-        } else if (Modifier.isProtected(method.getModifiers())) {
-            implBuilder.append("protected ");
-        }
+        implBuilder.append(
+                Modifier.toString(method.getModifiers())
+                        .replace("abstract", "")
+        );
 
         implBuilder.append(method.getReturnType().getCanonicalName()).append(' ');
         implBuilder.append(method.getName());
@@ -180,18 +193,5 @@ public class SimpleImplementor implements Implementor {
         }
 
         return "null";
-    }
-
-    @Override
-    public String implementFromStandardLibrary(String className) throws ImplementorException {
-        Class<?> clazz;
-        try {
-            clazz = Class.forName(className);
-        } catch (ClassNotFoundException e) {
-            throw new ImplementorException("Cannot load class " + className
-                    + " no such file or directory", e);
-        }
-
-        return implement(clazz, "");
     }
 }
