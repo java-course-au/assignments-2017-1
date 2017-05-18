@@ -138,7 +138,7 @@ public class SimpleImplementor implements Implementor {
         final String pkg = implPackage(out, cl);
         addImpl(out, cl);
         write(out, cl, pkg);
-        return cl.getCanonicalName() + "Impl";
+        return cl.getSimpleName() + "Impl";
     }
 
     @Override
