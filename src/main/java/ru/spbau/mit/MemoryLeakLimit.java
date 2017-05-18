@@ -21,7 +21,13 @@ public class MemoryLeakLimit implements TestRule {
                 runtime.gc();
                 long occupiedMemBefore = runtime.totalMemory() - runtime.freeMemory();
 
-                statement.evaluate();
+                Throwable exc = null;
+
+                try {
+                    statement.evaluate();
+                } catch (Throwable err) {
+                    exc = err;
+                }
 
                 runtime.gc();
                 long occupiedMemAfter = runtime.totalMemory() - runtime.freeMemory();
@@ -29,6 +35,10 @@ public class MemoryLeakLimit implements TestRule {
 
                 if (memoryIncreaseBytes > mbLimit * bytesInMb) {
                     throw new Exception("Memory limit violated");
+                }
+
+                if (exc != null) {
+                    throw exc;
                 }
             }
         };
