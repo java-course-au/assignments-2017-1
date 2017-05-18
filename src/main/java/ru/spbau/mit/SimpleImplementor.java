@@ -103,7 +103,7 @@ public class SimpleImplementor implements Implementor {
                 + classImpl.getSimpleName()
                 + "Impl"
                 + (classImpl.isInterface() ? " implements " : " extends ")
-                + classImpl.getSimpleName();
+                + classImpl.getCanonicalName();
     }
 
     private String createMethods(Class<?> classImpl) {
