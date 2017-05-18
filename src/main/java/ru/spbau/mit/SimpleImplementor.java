@@ -4,8 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.net.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -27,11 +26,11 @@ public class SimpleImplementor implements Implementor {
             Class clazz = new URLClassLoader(urls).loadClass(className);
 
             generatePackage(clazz);
-            String name = generateImpl(clazz);
-            Package pack = clazz.getPackage();
+            generateImpl(clazz);
+            String fullName = className + "Impl";
+            String relPath = fullName.replace('.', File.separatorChar) + ".java";
+            Path resFilePath = Paths.get(outputDirectory, relPath);
 
-            String packagePath = (pack == null) ? "" : pack.getName().replace('.', File.separatorChar);
-            Path resFilePath = Paths.get(outputDirectory, packagePath, name + ".java");
             File fd = resFilePath.toFile();
             File parent = fd.getParentFile();
             if (!parent.exists() && !parent.mkdirs()) {
@@ -42,7 +41,7 @@ public class SimpleImplementor implements Implementor {
             fw.write(builder.toString());
             fw.flush();
             fw.close();
-            return name;
+            return fullName;
         } catch (Exception e) {
             throw new ImplementorException(e.toString());
         }
@@ -55,12 +54,14 @@ public class SimpleImplementor implements Implementor {
 
         try {
             Class base = loader.loadClass(className);
-            String name = generateImpl(base);
+            generateImpl(base);
+            String name = base.getSimpleName() + "Impl";
+            File fd = Paths.get(outputDirectory, name + ".java").toFile();
 
-            FileWriter fd = new FileWriter(new File(outputDirectory + File.separator + name + ".java"));
-            fd.write(builder.toString());
-            fd.flush();
-            fd.close();
+            FileWriter fw = new FileWriter(fd);
+            fw.write(builder.toString());
+            fw.flush();
+            fw.close();
             return name;
         } catch (Exception e) {
             throw new ImplementorException(e.toString());
@@ -76,13 +77,13 @@ public class SimpleImplementor implements Implementor {
         }
     }
 
-    private String genHead(Class base) throws ImplementorException {
+    private void generateHead(Class base) throws ImplementorException {
         int modifiers = base.getModifiers();
         if (Modifier.isFinal(modifiers) || Modifier.isPrivate(modifiers)) {
             throw new ImplementorException("Invalid interface/abstract class");
         }
 
-        final String name = base.getSimpleName() + "Impl";
+        String name = base.getSimpleName() + "Impl";
         boolean isInterface = base.isInterface();
 
         builder.append("class ");
@@ -90,49 +91,52 @@ public class SimpleImplementor implements Implementor {
         builder.append(isInterface ? " implements " : " extends ");
         builder.append(base.getCanonicalName());
         builder.append(" {\n");
-        return name;
     }
 
-    private void generateParams(Method method) {
+    private void generateParams(StringBuilder mbuilder, Method method) {
         Class[] params = method.getParameterTypes();
         if (params.length == 0) {
             return;
         }
 
-        builder.append(params[0].getCanonicalName());
-        builder.append(" arg" + Integer.toString(0));
+        mbuilder.append(params[0].getCanonicalName());
+        mbuilder.append(" arg" + Integer.toString(0));
 
-        for (int i = 0; i < params.length; i++) {
-            builder.append(" , ");
-            builder.append(params[i].getCanonicalName());
-            builder.append(" arg" + Integer.toString(i));
+        for (int i = 1; i < params.length; i++) {
+            mbuilder.append(" , ");
+            mbuilder.append(params[i].getCanonicalName());
+            mbuilder.append(" arg" + Integer.toString(i));
         }
     }
 
-    private void generateMethod(Class base, Method method) {
+    private String generateMethod(Class base, Method method) {
         int modifiers = method.getModifiers();
-        builder.append(Modifier.isPublic(modifiers) ? "public " : "protected ");
-        builder.append(method.getReturnType().getCanonicalName());
-        builder.append(' ');
+        StringBuilder mbuilder = new StringBuilder();
 
-        builder.append(method.getName());
-        builder.append("(");
-        generateParams(method);
-        builder.append(" ) {\n");
+        mbuilder.append(Modifier.isPublic(modifiers) ? "public " : "protected ");
+        mbuilder.append(method.getReturnType().getCanonicalName());
+        mbuilder.append(' ');
+
+        mbuilder.append(method.getName());
+        mbuilder.append("(");
+        generateParams(mbuilder, method);
+        mbuilder.append(" ) {\n");
 
         Class retType = method.getReturnType();
         if (retType != Void.TYPE) {
-            builder.append(" return ");
+            mbuilder.append(" return ");
             if (!retType.isPrimitive()) {
-                builder.append(" null ");
+                mbuilder.append(" null ");
             } else if (retType == Boolean.TYPE) {
-                builder.append(" false ");
+                mbuilder.append(" false ");
             } else {
-                builder.append(" 0 ");
+                mbuilder.append(" 0 ");
             }
-            builder.append(";\n");
+            mbuilder.append(";\n");
         }
-        builder.append("}\n");
+        mbuilder.append("}\n");
+
+        return mbuilder.toString();
     }
 
     private void generateMethods(Class base) {
@@ -143,16 +147,17 @@ public class SimpleImplementor implements Implementor {
         while (!cls.isEmpty()) {
             Class clazz = cls.poll();
             for (Method method : clazz.getDeclaredMethods()) {
-                if (methods.contains(method.getName())) {
+                int modifiers = method.getModifiers();
+                if (Modifier.isFinal(modifiers) || Modifier.isStatic(modifiers)) {
                     continue;
                 }
-
-                int modifiers = method.getModifiers();
-                if ((Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers))
-                        && !Modifier.isFinal(modifiers)
-                        && !Modifier.isStatic(modifiers)) {
-                    methods.add(method.getName());
-                    generateMethod(base, method);
+                if (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)) {
+                    String methodBody = generateMethod(base, method);
+                    if (methods.contains(methodBody)) {
+                        continue;
+                    }
+                    methods.add(methodBody);
+                    builder.append(methodBody);
                 }
             }
 
@@ -165,10 +170,11 @@ public class SimpleImplementor implements Implementor {
         }
     }
 
-    private String generateImpl(Class base) throws ImplementorException {
-        String name = genHead(base);
+    private void generateImpl(Class base) throws ImplementorException {
+        generateHead(base);
         generateMethods(base);
         builder.append("}");
-        return name;
+
+        System.out.println(builder.toString());
     }
 }
