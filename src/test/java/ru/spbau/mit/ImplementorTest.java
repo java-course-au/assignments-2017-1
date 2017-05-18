@@ -80,6 +80,17 @@ public class ImplementorTest {
         checkInterfaceImplementationFromStandardLibrary("java.lang.Cloneable");
     }
 
+    @Test
+    public void implementAbstract() throws Exception {
+        checkAbstractClassImplementationFromFolder("ru.spbau.mit.Abstract");
+    }
+
+    private void checkAbstractImplementationFromFolder(String className) throws Exception {
+        Implementor implementor = newImplementor();
+        String implClassName = implementor.implementFromDirectory(getTestsDirectoryPath(), className);
+        compileAndCheckInterfaceImplementation(className, implClassName);
+    }
+
     private void checkInterfaceImplementationFromFolder(String className) throws Exception {
         Implementor implementor = newImplementor();
         String implClassName = implementor.implementFromDirectory(getTestsDirectoryPath(), className);

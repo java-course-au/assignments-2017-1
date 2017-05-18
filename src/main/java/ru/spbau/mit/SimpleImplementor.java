@@ -66,7 +66,7 @@ public class SimpleImplementor implements Implementor {
             }
 
             String packageName = "";
-            if (classImpl.getPackage() != null) {
+            if (classImpl.getPackage() != null && !classImpl.getPackage().getName().isEmpty()) {
                 packageName = "package "
                         + classImpl.getPackage().getName()
                         + ";"
@@ -74,9 +74,8 @@ public class SimpleImplementor implements Implementor {
                         + System.lineSeparator();
             }
 
-            Files.write(pathToImpl, packageName.getBytes());
-            Files.write(pathToImpl, createClass(classImpl).getBytes());
-
+            String res = packageName + createClass(classImpl);
+            Files.write(pathToImpl, res.getBytes());
         } catch (ClassNotFoundException e) {
             throw new ImplementorException("class not found", e);
         } catch (IOException e) {
@@ -92,7 +91,7 @@ public class SimpleImplementor implements Implementor {
             throw new ImplementorException(classImpl.getSimpleName() + " is final");
         }
 
-        return  createClassName(classImpl)
+        return createClassName(classImpl)
                 + " {"
                 + System.lineSeparator()
                 + createMethods(classImpl)
@@ -142,6 +141,7 @@ public class SimpleImplementor implements Implementor {
 
     private String createMethodDeclaration(Method method) {
         return  Modifier.toString(method.getModifiers()).replace("abstract", "")
+                + " "
                 + method.getReturnType().getCanonicalName()
                 + " "
                 + method.getName()
