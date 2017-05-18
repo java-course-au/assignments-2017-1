@@ -118,6 +118,7 @@ public class SimpleImplementor implements Implementor {
 
             Arrays.stream(cur.getInterfaces())
                     .flatMap(c -> Arrays.stream(c.getDeclaredMethods()))
+                    .filter(m -> Modifier.isAbstract(m.getModifiers()))
                     .map(this::createMethod)
                     .forEach(sb::append);
 
