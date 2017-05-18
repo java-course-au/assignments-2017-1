@@ -40,7 +40,8 @@ public class SimpleImplementor implements Implementor {
                 Files.createFile(pathToImpl);
             }
 
-            Files.write(pathToImpl, createClass(classImpl).getBytes());
+            String res = createClass(classImpl, classImpl.getCanonicalName());
+            Files.write(pathToImpl, res.getBytes());
         } catch (ClassNotFoundException e) {
             throw new ImplementorException("class not found", e);
         } catch (IOException e) {
@@ -68,7 +69,7 @@ public class SimpleImplementor implements Implementor {
             }
 
             String packageName = "";
-            if (classImpl.getPackage() != null && !classImpl.getPackage().getName().isEmpty()) {
+            if (classImpl.getPackage() != null) {
                 packageName = "package "
                         + classImpl.getPackage().getName()
                         + ";"
@@ -76,7 +77,7 @@ public class SimpleImplementor implements Implementor {
                         + System.lineSeparator();
             }
 
-            String res = packageName + createClass(classImpl);
+            String res = packageName + createClass(classImpl, classImpl.getSimpleName());
             Files.write(pathToImpl, res.getBytes());
         } catch (ClassNotFoundException e) {
             throw new ImplementorException("class not found", e);
@@ -87,47 +88,51 @@ public class SimpleImplementor implements Implementor {
         return className + "Impl";
     }
 
-    private String createClass(Class<?> classImpl) throws ImplementorException {
+    private static String createClass(Class<?> classImpl, String baseClass)
+            throws ImplementorException {
 
         if (Modifier.isFinal(classImpl.getModifiers())) {
             throw new ImplementorException(classImpl.getSimpleName() + " is final");
         }
 
-        return createClassName(classImpl)
+        return createClassName(classImpl, baseClass)
                 + " {"
                 + System.lineSeparator()
                 + createMethods(classImpl)
                 + "}";
     }
 
-    private String createClassName(Class<?> classImpl) {
+    private static String createClassName(Class<?> classImpl, String baseClass) {
         return "public class "
                 + classImpl.getSimpleName()
                 + "Impl"
                 + (classImpl.isInterface() ? " implements " : " extends ")
-                + classImpl.getCanonicalName();
+                + baseClass;
     }
 
-    private String createMethods(Class<?> classImpl) {
+    private static String createMethods(Class<?> classImpl) {
         List<String> methods = new ArrayList<>();
         Class<?> cur = classImpl;
         while (cur != null) {
             Arrays.stream(cur.getDeclaredMethods())
                     .filter(m -> Modifier.isAbstract(m.getModifiers()))
-                    .map(this::createMethod)
+                    .map(SimpleImplementor::createMethod)
                     .forEach(methods::add);
 
             Arrays.stream(cur.getInterfaces())
                     .flatMap(c -> Arrays.stream(c.getDeclaredMethods()))
-                    .map(this::createMethod)
+                    .map(SimpleImplementor::createMethod)
                     .forEach(methods::add);
 
             cur = cur.getSuperclass();
         }
-        return methods.stream().distinct().collect(Collectors.joining(""));
+        return methods
+                .stream()
+                .distinct()
+                .collect(Collectors.joining(""));
     }
 
-    private String createMethod(Method method) {
+    private static String createMethod(Method method) {
         // compiler will use StringBuilder automatically
         return  "\t"
                 + createMethodDeclaration(method)
@@ -140,22 +145,21 @@ public class SimpleImplementor implements Implementor {
                 + System.lineSeparator();
     }
 
-    private String createMethodDeclaration(Method method) {
+    private static String createMethodDeclaration(Method method) {
         return  Modifier.toString(method.getModifiers()).replace("abstract", "")
-                + " "
                 + method.getReturnType().getCanonicalName()
                 + " "
                 + method.getName()
                 + createMethodParams(method.getParameters());
     }
 
-    private String createMethodParams(Parameter[] params) {
+    private static String createMethodParams(Parameter[] params) {
         return Arrays.stream(params)
                 .map(param -> param.getType().getCanonicalName() + " " + param.getName())
                 .collect(Collectors.joining(", ", "(", ")"));
     }
 
-    private String createReturn(Method method) {
+    private static String createReturn(Method method) {
         Class<?> returnType = method.getReturnType();
         if (returnType.isPrimitive()) {
             if (returnType.equals(boolean.class)) {
