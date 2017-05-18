@@ -147,6 +147,7 @@ public class SimpleImplementor implements Implementor {
 
     private static String createMethodDeclaration(Method method) {
         return  Modifier.toString(method.getModifiers()).replace("abstract", "")
+                + " "
                 + method.getReturnType().getCanonicalName()
                 + " "
                 + method.getName()
