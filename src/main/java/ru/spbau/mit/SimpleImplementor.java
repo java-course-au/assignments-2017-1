@@ -71,19 +71,21 @@ public class SimpleImplementor implements Implementor {
 
     private static void implMethods(final StringBuilder out, final Class<?> cl, final HashSet<String> methods) {
         for (Method method : cl.getDeclaredMethods()) {
-            if (methods.contains(method.getName())) {
-                continue;
-            }
+            StringBuilder tmp = new StringBuilder();
             if (Modifier.isPublic(method.getModifiers()) || Modifier.isProtected(method.getModifiers())) {
-                out.append("\t");
-                out.append(Modifier.isPublic(cl.getModifiers()) ? "public " : "protected ");
-                out.append(method.getReturnType().getCanonicalName()).append(" ");
-                out.append(method.getName()).append(" ");
-                implArgs(out, method);
-                out.append(" {\n");
-                implReturn(out, method.getReturnType());
-                out.append("}\n\n");
-                methods.add(method.getName());
+                tmp.append("\t");
+                tmp.append(Modifier.isPublic(cl.getModifiers()) ? "public " : "protected ");
+                tmp.append(method.getReturnType().getCanonicalName()).append(" ");
+                tmp.append(method.getName()).append(" ");
+                implArgs(tmp, method);
+                tmp.append(" {\n");
+                implReturn(tmp, method.getReturnType());
+                tmp.append("\t}\n\n");
+            }
+            int i = 0;
+            if (!methods.contains(tmp.toString()) && !Modifier.isFinal(method.getModifiers())) {
+                methods.add(tmp.toString());
+                out.append(tmp.toString());
             }
         }
     }
@@ -105,19 +107,16 @@ public class SimpleImplementor implements Implementor {
     }
 
     private static void addImpl(final StringBuilder out, final Class<?> cl) throws ImplementorException {
-        if (Modifier.isFinal(cl.getModifiers())) {
+        if (Modifier.isFinal(cl.getModifiers()) || Modifier.isPrivate(cl.getModifiers())) {
             throw new ImplementorException("Class" + cl.getSimpleName() + "can't be created");
         }
         out.append("public class ");
         out.append(cl.getSimpleName()).append("Impl ");
-        out.append(cl.isInterface() ? "implements " : "extern ");
+        out.append(cl.isInterface() ? "implements " : "extends ");
         out.append(cl.getCanonicalName());
-        out.append(" {\n\t");
-
+        out.append(" {\n");
         implBody(out, cl);
-
         out.append("}\n");
-
     }
 
     private void write(final StringBuilder out, final Class<?> cl, final String pkg) throws ImplementorException {
