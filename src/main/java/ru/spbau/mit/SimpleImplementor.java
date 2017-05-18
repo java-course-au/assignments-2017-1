@@ -9,7 +9,10 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class SimpleImplementor implements Implementor {
@@ -107,25 +110,22 @@ public class SimpleImplementor implements Implementor {
     }
 
     private String createMethods(Class<?> classImpl) {
-        StringBuilder sb = new StringBuilder();
-
+        List<String> methods = new ArrayList<>();
         Class<?> cur = classImpl;
         while (cur != null) {
             Arrays.stream(cur.getDeclaredMethods())
                     .filter(m -> Modifier.isAbstract(m.getModifiers()))
-                    .distinct()
                     .map(this::createMethod)
-                    .forEach(sb::append);
+                    .forEach(methods::add);
 
             Arrays.stream(cur.getInterfaces())
                     .flatMap(c -> Arrays.stream(c.getDeclaredMethods()))
-                    .distinct()
                     .map(this::createMethod)
-                    .forEach(sb::append);
+                    .forEach(methods::add);
 
             cur = cur.getSuperclass();
         }
-        return sb.toString();
+        return methods.stream().distinct().collect(Collectors.joining(""));
     }
 
     private String createMethod(Method method) {
