@@ -34,7 +34,8 @@ public class SimpleImplementor implements Implementor {
                     + " no such file or directory", e);
         }
 
-        return implement(clazz, clazz.getPackage().getName());
+        Package aPackage = clazz.getPackage();
+        return implement(clazz, aPackage == null ? "" : aPackage.getName());
     }
 
     @Override
