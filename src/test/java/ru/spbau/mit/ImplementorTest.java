@@ -14,9 +14,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsArrayWithSize.arrayWithSize;
@@ -78,6 +76,26 @@ public class ImplementorTest {
     @Test
     public void implementCloneable() throws Exception {
         checkInterfaceImplementationFromStandardLibrary("java.lang.Cloneable");
+    }
+
+    @Test
+    public void implementCollection() throws Exception {
+        checkInterfaceImplementationFromStandardLibrary("java.util.Collection");
+    }
+
+    @Test
+    public void implementAbstractCollection() throws Exception {
+        checkAbstractClassImplementationFromStandardLibrary("java.util.AbstractCollection");
+    }
+
+    @Test
+    public void implementImplementor() throws Exception {
+        checkInterfaceImplementationFromFolder("ru.spbau.mit.Implementor");
+    }
+
+    @Test
+    public void implementAbstractImplementor() throws Exception {
+        checkAbstractClassImplementationFromFolder("ru.spbau.mit.AbstractImplementor");
     }
 
     private void checkInterfaceImplementationFromFolder(String className) throws Exception {
