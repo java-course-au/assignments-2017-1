@@ -56,7 +56,7 @@ public class SimpleImplementor implements Implementor {
 
     private static String implPackage(final StringBuilder out, final Class<?> cl) {
         final String pkg = getPackage(cl);
-        out.append(pkg.isEmpty() ? pkg.isEmpty() : "package " + pkg + ";\n\n");
+        out.append(pkg.isEmpty() ? "" : "package " + pkg + ";\n\n");
         return pkg;
     }
 
