@@ -109,7 +109,7 @@ public class SimpleImplementor implements Implementor {
         }
     }
 
-    private String generateMethod(Class base, Method method) {
+    private String generateMethod(Method method) {
         int modifiers = method.getModifiers();
         StringBuilder mbuilder = new StringBuilder();
 
@@ -152,7 +152,7 @@ public class SimpleImplementor implements Implementor {
                     continue;
                 }
                 if (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)) {
-                    String methodBody = generateMethod(base, method);
+                    String methodBody = generateMethod(method);
                     if (methods.contains(methodBody)) {
                         continue;
                     }
@@ -174,7 +174,5 @@ public class SimpleImplementor implements Implementor {
         generateHead(base);
         generateMethods(base);
         builder.append("}");
-
-        System.out.println(builder.toString());
     }
 }
