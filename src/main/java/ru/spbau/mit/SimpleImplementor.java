@@ -113,12 +113,13 @@ public class SimpleImplementor implements Implementor {
         while (cur != null) {
             Arrays.stream(cur.getDeclaredMethods())
                     .filter(m -> Modifier.isAbstract(m.getModifiers()))
+                    .distinct()
                     .map(this::createMethod)
                     .forEach(sb::append);
 
             Arrays.stream(cur.getInterfaces())
                     .flatMap(c -> Arrays.stream(c.getDeclaredMethods()))
-                    .filter(m -> Modifier.isAbstract(m.getModifiers()))
+                    .distinct()
                     .map(this::createMethod)
                     .forEach(sb::append);
 
