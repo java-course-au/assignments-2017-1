@@ -37,6 +37,10 @@ public class SimpleImplementor implements Implementor {
             throw new ImplementorException(e.getMessage(), e);
         }
 
+        if (Modifier.isFinal(classToImplement.getModifiers())) {
+            throw new ImplementorException("Final class can't be extended.");
+        }
+
         implementation = new StringBuilder();
 
         generatePackage(implementation, classToImplement);
@@ -65,6 +69,10 @@ public class SimpleImplementor implements Implementor {
             classToImplement = classLoader.loadClass(className);
         } catch (ClassNotFoundException e) {
             throw new ImplementorException(e.getMessage(), e);
+        }
+
+        if (Modifier.isFinal(classToImplement.getModifiers())) {
+            throw new ImplementorException("Final class can't be extended.");
         }
 
         implementation = new StringBuilder();
