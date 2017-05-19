@@ -41,6 +41,7 @@ public final class Injector {
 
     public static Class<?> getClass(Class<?> cl, ArrayList<Class<?>> implementationClasses)
             throws ImplementationNotFoundException, AmbiguousImplementationException {
+
         boolean flag = false;
         Class<?> out = null;
         for (Class<?> implClass : implementationClasses) {
@@ -49,7 +50,7 @@ public final class Injector {
                 flag = true;
                 out = implClass;
                 count++;
-                if (count > 2) {
+                if (count >= 2) {
                     throw new AmbiguousImplementationException();
                 }
             }
