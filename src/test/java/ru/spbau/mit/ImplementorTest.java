@@ -141,6 +141,11 @@ public class ImplementorTest {
     }
 
     @Test
+    public void implementClassWithProtectedMeths() throws Exception {
+        checkAbstractClassImplementationFromStandardLibrary("java.net.SocketImpl");
+    }
+
+    @Test
     public void implementSomeAbstractClass() throws Exception {
         checkAbstractClassImplementationFromFolder("ru.spbau.mit.testClasses.AbstractBaseUtil");
     }

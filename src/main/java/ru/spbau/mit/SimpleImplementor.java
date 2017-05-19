@@ -10,9 +10,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class SimpleImplementor implements Implementor {
     private String outputDirectory;
@@ -82,6 +80,18 @@ public class SimpleImplementor implements Implementor {
         return loadedClass.isAnonymousClass() || Modifier.isFinal(loadedClass.getModifiers());
     }
 
+    private List<Method> getAllMethods(Class<?> loadedClass) {
+        List<Method> interestingMethods = new ArrayList<>();
+        while (loadedClass != null) {
+            interestingMethods.addAll(Arrays.asList(loadedClass.getDeclaredMethods()));
+            for (Class<?> intrf : loadedClass.getInterfaces()) {
+                interestingMethods.addAll(Arrays.asList(intrf.getDeclaredMethods()));
+            }
+            loadedClass = loadedClass.getSuperclass();
+        }
+        return interestingMethods;
+    }
+
     private String makeClassBody(Class<?> loadedClass, Package desiredPackage, String simpleName) {
         StringBuilder body = new StringBuilder();
 
@@ -100,7 +110,7 @@ public class SimpleImplementor implements Implementor {
         }
         body.append(String.format("class %s %s %s {\n", simpleName, extendAction, loadedClass.getSimpleName()));
 
-        Method[] interestingMethods = loadedClass.getMethods();
+        List<Method> interestingMethods = getAllMethods(loadedClass);
         HashSet<Integer> overridenMethods = new HashSet<>();
 
         for (Method meth : interestingMethods) {
@@ -124,6 +134,8 @@ public class SimpleImplementor implements Implementor {
 
             body.append(returnType.getSimpleName()).append(" ");
             body.append(meth.getName());
+
+
             body.append("(");
             int argIdx = 0;
             for (Class<?> arg : meth.getParameterTypes()) {
@@ -136,7 +148,23 @@ public class SimpleImplementor implements Implementor {
                 body.append(String.format("arg%d", argIdx));
                 argIdx++;
             }
-            body.append(") {\n");
+            body.append(") ");
+
+            Class<?>[] exceptionTypes = meth.getExceptionTypes();
+            if (exceptionTypes.length > 0) {
+                body.append("throws ");
+            }
+            for (int idx = 0; idx < exceptionTypes.length; idx++) {
+                Class<?> exc = exceptionTypes[idx];
+                if (idx > 0) {
+                    body.append(", ");
+                }
+                body.append(exc.getCanonicalName());
+                possibleNeedToImport.add(exc);
+            }
+
+            body.append(" {\n");
+
             if (returnType.isPrimitive()) {
                 if (!returnType.equals(void.class)) {
                     body.append("return 0;\n");
