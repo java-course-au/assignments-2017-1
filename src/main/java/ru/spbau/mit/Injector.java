@@ -2,6 +2,7 @@ package ru.spbau.mit;
 
 import java.lang.reflect.Constructor;
 //import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
@@ -22,7 +23,13 @@ public final class Injector {
         }
 
         Object dfs(String curClassName) throws ImplementationNotFoundException,
-                AmbiguousImplementationException, InjectionCycleException {
+                AmbiguousImplementationException,
+                InjectionCycleException,
+                IllegalAccessException,
+                InvocationTargetException,
+                InstantiationException,
+                ClassNotFoundException {
+
             if (classToObj.containsKey(curClassName)) {
                 if (classToObj.get(curClassName) == null) {
                     throw new InjectionCycleException();
@@ -31,27 +38,19 @@ public final class Injector {
             }
             classToObj.put(curClassName, null);
 
-            Class<?> curClass = null;
-            try {
-                curClass = Class.forName(curClassName);
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
+            Class<?> curClass = Class.forName(curClassName);
+
             if (curClass.isInterface() || Modifier.isAbstract(curClass.getModifiers())) {
                 int index = -1;
                 int count = 0;
                 for (int i = 0; i < implementationClassNames.size(); i++) {
-                    try {
-                        if (curClass.isAssignableFrom(
-                                Class.forName(implementationClassNames.get(i)))) {
-                            index = i;
-                            ++count;
-                            if (count > 1) {
-                                throw new AmbiguousImplementationException();
-                            }
+                    if (curClass.isAssignableFrom(
+                            Class.forName(implementationClassNames.get(i)))) {
+                        index = i;
+                        ++count;
+                        if (count > 1) {
+                            throw new AmbiguousImplementationException();
                         }
-                    } catch (ClassNotFoundException e) {
-                        throw new ImplementationNotFoundException();
                     }
                 }
                 if (index == -1) {
@@ -77,12 +76,7 @@ public final class Injector {
             Class<?>[] types = constructor.getParameterTypes();
             if (types.length == 0) {
                 Object obj;
-                try {
-                    obj = constructor.newInstance();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-//                throw new ImplementationNotFoundException();
-                }
+                obj = constructor.newInstance();
                 classToObj.put(curClassName, obj);
                 return obj;
             }
@@ -100,12 +94,8 @@ public final class Injector {
             }
 
             Object obj;
-            try {
-                obj = constructor.newInstance(objects);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-//                throw new ImplementationNotFoundException();
-            }
+            obj = constructor.newInstance(objects);
+
 
             classToObj.put(curClassName, obj);
             return obj;
