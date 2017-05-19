@@ -5,10 +5,10 @@ import java.util.*;
 
 
 public final class Injector {
+    private static Map<Class, Object> alreadyConstructed;
+
     private Injector() {
     }
-
-    private static Map<Class, Object> alreadyConstructed;
 
     /**
      * Create and initialize object of `rootClassName` class using classes from
@@ -47,7 +47,8 @@ public final class Injector {
         return runInitialize(rootClass, implementationClasses, alreadyUsed);
     }
 
-    private static Object runInitialize(Class root, List<Class> implementationClasses, List<Class> alreadyUsed) throws Exception {
+    private static Object runInitialize(Class root, List<Class> implementationClasses,
+                                        List<Class> alreadyUsed) throws Exception {
         //get constructor
         Constructor[] constructors = root.getDeclaredConstructors();
         Constructor theOnlyOne = constructors[0];
@@ -56,7 +57,9 @@ public final class Injector {
         return runConstructor(theOnlyOne, implementationClasses, alreadyUsed);
     }
 
-    private static Object runConstructor(Constructor constructor, List<Class> implementationClasses, List<Class> alreadyUsed) throws Exception {
+    private static Object runConstructor(Constructor constructor,
+                                         List<Class> implementationClasses,
+                                         List<Class> alreadyUsed) throws Exception {
         Class[] params = constructor.getParameterTypes();
 
         List<Object> implementations = new ArrayList<>();
