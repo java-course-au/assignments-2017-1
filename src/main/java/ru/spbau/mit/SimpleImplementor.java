@@ -68,6 +68,10 @@ public class SimpleImplementor implements Implementor {
             PrintWriter pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream(outputFile)));
             generateClass(pw, cls, pkg);
             pw.close();
+
+            BufferedReader reader = new BufferedReader(new FileReader(outputFile));
+            reader.lines().forEach(System.out::println);
+
         } catch (IOException e) {
             throw new ImplementorException("cannot save generated class");
         }
@@ -93,6 +97,7 @@ public class SimpleImplementor implements Implementor {
 
         Set<Method> methods = new HashSet<>();
         extractMethods(clazz, methods);
+
         methods.stream()
                 .filter(m -> Modifier.isAbstract(m.getModifiers()))
                 .forEach(m -> generateMethod(pw, m));
@@ -141,7 +146,7 @@ public class SimpleImplementor implements Implementor {
             sb.append("public ");
         } else if (Modifier.isProtected(mod)) {
             sb.append("protected ");
-        } else {
+        } else if (Modifier.isPrivate(mod)){
             sb.append("private ");
         }
 
