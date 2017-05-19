@@ -15,7 +15,7 @@ public final class Injector {
      * `implementationClassNames` for concrete dependencies.
      */
     public static Object initialize(String rootClassName, List<String> implementationClassNames) throws Exception {
-        return doGenerate(rootClassName, implementationClassNames, new HashSet<String>());
+        return doGenerate(rootClassName, implementationClassNames, new HashSet<String>()); //
     }
 
     private static Object doGenerate(String rootClassName,
