@@ -40,7 +40,7 @@ public class SimpleImplementor implements Implementor {
         return doGenerate(classToExtend, outputFile, packageNeeded);
     }
 
-    private static void checkClassNotFinal(Class <?> clazz) throws ImplementorException {
+    private static void checkClassNotFinal(Class<?> clazz) throws ImplementorException {
         if (Modifier.isFinal(clazz.getModifiers())) {
             throw new ImplementorException("Class is final.");
         }
