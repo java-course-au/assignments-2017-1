@@ -1,4 +1,4 @@
-package ru.spbau.mit;
+package ru.spbau.mit.testClasses;
 
 import java.math.BigInteger;
 
@@ -7,7 +7,7 @@ abstract public class AbstractBaseUtil {
 
     }
 
-    abstract public void foo();
+    abstract public void foo(BigInteger x);
 
     final protected int finalMethod() {
         return 42;

@@ -75,7 +75,7 @@ public class ImplementorTest {
     @Before
     public void setUp() throws IOException {
         testsDirectory.create();
-        String prefix = "./src/test/java/ru/spbau/mit";
+        String prefix = "./src/test/java/ru/spbau/mit/testClasses";
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null);
@@ -132,17 +132,17 @@ public class ImplementorTest {
 
     @Test(expected = ImplementorException.class)
     public void implementFinalClass() throws Exception {
-        checkAbstractClassImplementationFromFolder("ru.spbau.mit.FinalClassUtil");
+        checkAbstractClassImplementationFromFolder("ru.spbau.mit.testClasses.FinalClassUtil");
     }
 
     @Test
     public void implementSomeInterface() throws Exception {
-        checkInterfaceImplementationFromFolder("ru.spbau.mit.InterfaceUtil");
+        checkInterfaceImplementationFromFolder("ru.spbau.mit.testClasses.InterfaceUtil");
     }
 
     @Test
     public void implementSomeAbstractClass() throws Exception {
-        checkAbstractClassImplementationFromFolder("ru.spbau.mit.AbstractBaseUtil");
+        checkAbstractClassImplementationFromFolder("ru.spbau.mit.testClasses.AbstractBaseUtil");
     }
 
     private void checkInterfaceImplementationFromFolder(String className) throws Exception {

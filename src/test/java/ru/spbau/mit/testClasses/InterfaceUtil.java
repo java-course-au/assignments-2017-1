@@ -1,4 +1,4 @@
-package ru.spbau.mit;
+package ru.spbau.mit.testClasses;
 
 public interface InterfaceUtil extends Comparable<Object> {
     void bar();
