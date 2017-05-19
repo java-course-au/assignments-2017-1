@@ -120,7 +120,7 @@ public class SimpleImplementor implements Implementor {
 
     private void generatePackage(Class<?> classToExtend, Boolean packageNeeded, BufferedWriter output)
             throws IOException {
-        if (packageNeeded) {
+        if (packageNeeded && classToExtend.getPackage() != null) {
             output.write("package " + classToExtend.getPackage().getName() + ";");
             output.newLine();
         }
