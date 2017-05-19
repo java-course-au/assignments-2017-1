@@ -53,8 +53,14 @@ public final class Injector {
         Constructor[] constructors = root.getDeclaredConstructors();
         Constructor theOnlyOne = constructors[0];
 
+        if (alreadyConstructed.containsKey(root)) {
+            return alreadyConstructed.get(root);
+        }
+
         //run constructor
-        return runConstructor(theOnlyOne, implementationClasses, alreadyUsed);
+        Object obj = runConstructor(theOnlyOne, implementationClasses, alreadyUsed);
+        alreadyConstructed.put(root, obj);
+        return obj;
     }
 
     private static Object runConstructor(Constructor constructor,
@@ -69,11 +75,6 @@ public final class Injector {
                 throw new InjectionCycleException();
             }
 
-            if (alreadyConstructed.containsKey(parameter)) {
-                return alreadyConstructed.get(parameter);
-            }
-
-
             List<Class> candidates = getCandidates(parameter, implementationClasses);
             if (candidates.size() == 0) {
                 throw new ImplementationNotFoundException();
@@ -83,13 +84,10 @@ public final class Injector {
                 throw new AmbiguousImplementationException();
             }
 
-
             List<Class> newAlreadyUsed = new ArrayList<>();
             newAlreadyUsed.addAll(alreadyUsed);
             newAlreadyUsed.add(parameter);
             Object parameterImpl = runInitialize(candidates.get(0), implementationClasses, newAlreadyUsed);
-
-            alreadyConstructed.put(parameter, parameterImpl);
 
             implementations.add(parameterImpl);
         }
