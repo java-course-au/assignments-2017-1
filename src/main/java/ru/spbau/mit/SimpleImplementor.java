@@ -40,7 +40,8 @@ public class SimpleImplementor implements Implementor {
         return doGenerate(classToExtend, outputFile, packageNeeded);
     }
 
-    private String doGenerate(Class<?> classToExtend, File outputFile, Boolean packageNeeded) throws ImplementorException {
+    private String doGenerate(Class<?> classToExtend, File outputFile, Boolean packageNeeded)
+            throws ImplementorException {
         try (BufferedWriter output = new BufferedWriter(new FileWriter(outputFile))) {
             generatePackage(classToExtend, packageNeeded, output);
             generateGeneratedWarning(output);
@@ -72,7 +73,8 @@ public class SimpleImplementor implements Implementor {
         generateMethodEnd(output);
     }
 
-    private void generateMethodBegin(BufferedWriter output, Method method) throws IOException, ImplementorException {
+    private void generateMethodBegin(BufferedWriter output, Method method)
+            throws IOException, ImplementorException {
         output.write(TAB);
         if (Modifier.isPublic(method.getModifiers())) {
             output.write(" public ");
@@ -126,7 +128,8 @@ public class SimpleImplementor implements Implementor {
         output.newLine();
     }
 
-    private void generatePackage(Class<?> classToExtend, Boolean packageNeeded, BufferedWriter output) throws IOException {
+    private void generatePackage(Class<?> classToExtend, Boolean packageNeeded, BufferedWriter output)
+            throws IOException {
         if (packageNeeded) {
             output.write("package " + classToExtend.getPackage().getName() + ";");
             output.newLine();
