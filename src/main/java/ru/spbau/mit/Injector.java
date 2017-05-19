@@ -1,7 +1,7 @@
 package ru.spbau.mit;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+//import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +35,7 @@ public final class Injector {
             try {
                 curClass = Class.forName(curClassName);
             } catch (ClassNotFoundException e) {
-                throw new ImplementationNotFoundException();
+                throw new RuntimeException(e);
             }
             if (curClass.isInterface() || Modifier.isAbstract(curClass.getModifiers())) {
                 int index = -1;
@@ -73,16 +73,15 @@ public final class Injector {
                 throw new ImplementationNotFoundException();
             }
 
-            Constructor constructor = curClass.getConstructors()[0];
+            Constructor constructor = curClass.getDeclaredConstructors()[0];
             Class<?>[] types = constructor.getParameterTypes();
             if (types.length == 0) {
                 Object obj;
                 try {
                     obj = constructor.newInstance();
-                } catch (InstantiationException
-                        | IllegalAccessException
-                        | InvocationTargetException e) {
-                    throw new ImplementationNotFoundException();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+//                throw new ImplementationNotFoundException();
                 }
                 classToObj.put(curClassName, obj);
                 return obj;
@@ -103,10 +102,9 @@ public final class Injector {
             Object obj;
             try {
                 obj = constructor.newInstance(objects);
-            } catch (InstantiationException
-                    | IllegalAccessException
-                    | InvocationTargetException e) {
-                throw new ImplementationNotFoundException();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+//                throw new ImplementationNotFoundException();
             }
 
             classToObj.put(curClassName, obj);
