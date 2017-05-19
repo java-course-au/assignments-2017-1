@@ -6,6 +6,7 @@ import java.util.*;
 
 public final class Injector {
     private static Map<Class, Object> alreadyConstructed;
+    private static Class rootClass;
 
     private Injector() {
     }
@@ -25,6 +26,7 @@ public final class Injector {
         Class rootClass;
         try {
             rootClass = loader.loadClass(rootClassName);
+            Injector.rootClass = rootClass;
         } catch (ClassNotFoundException e) {
             throw new ImplementationNotFoundException();
         }
@@ -41,6 +43,7 @@ public final class Injector {
                 throw new ImplementationNotFoundException();
             }
         }
+
 
         List<Class> alreadyUsed = new ArrayList<>();
         return runInitialize(rootClass, implementationClasses, alreadyUsed);
@@ -78,6 +81,10 @@ public final class Injector {
 
         List<Object> implementations = new ArrayList<>();
         for (Class parameter : params) {
+
+            if (parameter == rootClass) {
+                throw new InjectionCycleException();
+            }
 
             List<Class> candidates = getCandidates(parameter, implementationClasses);
             if (candidates.size() == 0) {
