@@ -71,10 +71,17 @@ public final class Injector {
                 }
             }
             if (saveClass == null) {
-                if (parameter.getType().isAssignableFrom(Class.forName(rootClassName))) {
+//                if (parameter.getType().isAssignableFrom(Class.forName(rootClassName))) {
+//                    throw new InjectionCycleException();
+//                }
+                if (flag) {
                     throw new InjectionCycleException();
+                } else {
+                    if (parameter.getType().isAssignableFrom(Class.forName(rootClassName))) {
+                        throw new InjectionCycleException();
+                    }
+                    throw new ImplementationNotFoundException();
                 }
-                throw new InjectionCycleException();
             }
 
             values[idx] = initializeClass(saveClass.getName());
