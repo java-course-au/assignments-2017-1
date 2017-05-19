@@ -8,6 +8,8 @@ import org.junit.runners.model.Statement;
 
 public class MemoryLeakLimit implements TestRule {
 
+
+
     private long limit = 0;
 
     void limit(long mb) {
@@ -23,15 +25,26 @@ public class MemoryLeakLimit implements TestRule {
                 Runtime runtime = Runtime.getRuntime();
 
                 runtime.gc();
-                long freeBefore = runtime.freeMemory();
+                long usedBefore = runtime.totalMemory() - runtime.freeMemory();
 
-                statement.evaluate();
+                Throwable catchedFromEvaluation = null;
+
+                try {
+                    statement.evaluate();
+                } catch (Throwable th) {
+                    catchedFromEvaluation = th;
+                }
+
 
                 runtime.gc();
-                long freeAfter = runtime.freeMemory();
+                long usedAfter = runtime.totalMemory() - runtime.freeMemory();
 
-                if (freeBefore - freeAfter > limit) {
+                if (usedAfter - usedBefore > limit) {
                     throw new AssumptionViolatedException("memory leak limit exceeded");
+                }
+
+                if (catchedFromEvaluation != null) {
+                    throw catchedFromEvaluation;
                 }
             }
         };
