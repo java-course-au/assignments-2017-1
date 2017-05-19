@@ -1,0 +1,4 @@
+interface EmptyInterface {
+
+    EmptyInterface smth();
+}

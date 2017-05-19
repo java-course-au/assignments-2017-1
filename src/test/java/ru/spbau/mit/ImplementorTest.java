@@ -79,7 +79,8 @@ public class ImplementorTest {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null);
-        List<String> filesToCompile = Arrays.asList("AbstractBaseUtil", "FinalClassUtil", "InterfaceUtil");
+        List<String> filesToCompile = Arrays.asList("AbstractBaseUtil", "FinalClassUtil", "InterfaceUtil",
+                "EmptyInterface");
         List<String> filePaths = filesToCompile.stream()
                 .map(path -> Paths.get(prefix, path + ".java")
                         .toAbsolutePath().toString()).collect(Collectors.toList());
