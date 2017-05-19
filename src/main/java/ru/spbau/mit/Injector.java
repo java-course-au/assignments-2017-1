@@ -131,8 +131,8 @@ public final class Injector {
         final Constructor<?> constructor = getConstructor(clazz);
         final Class<?>[] parametrTypes = constructor.getParameterTypes();
         final ArrayList<Class<?>> implementationClasses = loadImplementationClasses(implementationClassNames);
+        checkImplementationNotFound(parametrTypes, implementationClasses);
         checkAmbiguousImplementation(parametrTypes, implementationClasses);
-//        checkImplementationNotFound(parametrTypes, implementationClasses);
         root = clazz;
         return run(clazz, implementationClasses);
     }
