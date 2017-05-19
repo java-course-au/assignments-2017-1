@@ -17,6 +17,7 @@ public final class Injector {
         ClassLoader loader = Injector.class.getClassLoader();
         Map<String, Object> initialized = new HashMap<>();
         Set<String> roots = new HashSet<>();
+        roots.add(rootClassName);
 
         List<Class<?>> implementations = implementationClassNames.stream().map(s -> {
             try {
@@ -28,7 +29,6 @@ public final class Injector {
         }).collect(Collectors.toList());
 
         Class root = loader.loadClass(rootClassName);
-
         Constructor<?> rootConstructor = root.getConstructors()[0];
         Class<?>[] dependencies = rootConstructor.getParameterTypes();
         List<Object> parameters = new ArrayList<>();
@@ -44,6 +44,7 @@ public final class Injector {
             if (realisations.size() > 1) {
                 throw new AmbiguousImplementationException();
             }
+
             initializeChildren(initialized, realisations.get(0), implementationClassNames, roots);
             parameters.add(initialized.get(realisations.get(0)));
         }
@@ -52,12 +53,17 @@ public final class Injector {
     }
 
     private static void initializeChildren(Map<String, Object> initialized,
-                                           String rootClassName,
+                                           String initMe,
                                            List<String> implementationClassNames,
                                            Set<String> roots) throws Exception {
 
+        if (initialized.containsKey(initMe)) {
+            return;
+        }
+
         ClassLoader loader = Injector.class.getClassLoader();
-        roots.add(rootClassName);
+        roots.add(initMe);
+
         List<Class<?>> implementations = implementationClassNames.stream().map(s -> {
             try {
                 return loader.loadClass(s);
@@ -67,7 +73,7 @@ public final class Injector {
             return null;
         }).collect(Collectors.toList());
 
-        Class root = loader.loadClass(rootClassName);
+        Class root = loader.loadClass(initMe);
 
         Constructor<?> rootConstructor = root.getConstructors()[0];
         Class<?>[] dependencies = rootConstructor.getParameterTypes();
@@ -90,9 +96,9 @@ public final class Injector {
 
             initializeChildren(initialized, realisations.get(0), implementationClassNames, roots);
             parameters.add(initialized.get(realisations.get(0)));
-            roots.remove(realisations.get(0));
         }
 
-        initialized.putIfAbsent(rootClassName, rootConstructor.newInstance(parameters.toArray()));
+        roots.remove(initMe);
+        initialized.put(initMe, rootConstructor.newInstance(parameters.toArray()));
     }
 }
