@@ -36,7 +36,14 @@ public class SimpleImplementor implements Implementor {
 
     private String implement(Class<?> classToExtend, boolean packageNeeded) throws ImplementorException {
         File outputFile = createOutputFile(classToExtend, packageNeeded);
+        checkClassNotFinal(classToExtend);
         return doGenerate(classToExtend, outputFile, packageNeeded);
+    }
+
+    private static void checkClassNotFinal(Class <?> clazz) throws ImplementorException {
+        if (Modifier.isFinal(clazz.getModifiers())) {
+            throw new ImplementorException("Class is final.");
+        }
     }
 
     private String doGenerate(Class<?> classToExtend, File outputFile, Boolean packageNeeded)
@@ -47,6 +54,13 @@ public class SimpleImplementor implements Implementor {
             generateClassBegin(classToExtend, output);
             for (Method method : classToExtend.getMethods()) {
                 if (!Modifier.isStatic(method.getModifiers()) && !Modifier.isFinal(method.getModifiers())) {
+                    generateMethod(output, method);
+                }
+            }
+            for (Method method : classToExtend.getDeclaredMethods()) {
+                if (Modifier.isProtected(method.getModifiers())
+                        && !Modifier.isStatic(method.getModifiers())
+                        && !Modifier.isFinal(method.getModifiers())) {
                     generateMethod(output, method);
                 }
             }
