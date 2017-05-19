@@ -7,7 +7,9 @@ import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 
@@ -68,9 +70,6 @@ public class SimpleImplementor implements Implementor {
             PrintWriter pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream(outputFile)));
             generateClass(pw, cls, pkg);
             pw.close();
-
-            BufferedReader reader = new BufferedReader(new FileReader(outputFile));
-            reader.lines().forEach(System.out::println);
         } catch (IOException e) {
             throw new ImplementorException("cannot save generated class");
         }
@@ -94,12 +93,29 @@ public class SimpleImplementor implements Implementor {
                 clazz.isInterface() ? "implements" : "extends",
                 clazz.getCanonicalName()));
 
-        Arrays.stream(clazz.getMethods())
+        List<Method> methods = new ArrayList<>();
+        extractMethods(clazz, methods);
+        methods.stream()
                 .filter(m -> Modifier.isAbstract(m.getModifiers()))
                 .forEach(m -> generateMethod(pw, m));
 
         pw.println("}");
 
+    }
+
+    private void extractMethods(Class cls, List<Method> methods) {
+
+        if (cls == null) {
+            return;
+        }
+
+        methods.addAll(Arrays.asList(cls.getMethods()));
+        methods.addAll(Arrays.asList(cls.getDeclaredMethods()));
+        extractMethods(cls.getSuperclass(), methods);
+
+        for (Class interf : cls.getInterfaces()) {
+            extractMethods(interf, methods);
+        }
     }
 
     private void generateMethod(PrintWriter pw, Method method) {
