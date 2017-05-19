@@ -1,19 +1,16 @@
 package ru.spbau.mit;
 
 
-import com.sun.xml.internal.bind.v2.runtime.reflect.Lister;
-
 import java.io.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-/**
- * Created by boris on 17.05.17.
- */
+
 public class SimpleImplementor implements Implementor {
 
     private String outputDirectory;
@@ -31,30 +28,41 @@ public class SimpleImplementor implements Implementor {
             URL[] urls = new URL[]{url};
             ClassLoader loader = new URLClassLoader(urls);
             Class cls = loader.loadClass(className);
+            if (Modifier.isFinal(cls.getModifiers())) {
+                throw new ImplementorException("cannot extend final class");
+            }
             Package pkg = cls.getPackage();
-            return implement(cls, pkg);
-        } catch (ClassNotFoundException | IOException e) {
-            e.printStackTrace();
-            return null;
+            implement(cls, pkg);
+            return generateImplementedName(cls, pkg);
+        } catch (ClassNotFoundException ex) {
+            throw new ImplementorException("class cannot be loaded", ex);
+        } catch (MalformedURLException e) {
+            throw new ImplementorException("error while creating url", e);
         }
     }
 
     @Override
     public String implementFromStandardLibrary(String className) throws ImplementorException {
         ClassLoader loader = ClassLoader.getSystemClassLoader();
+        Class cls;
         try {
-            Class cls = loader.loadClass(className);
-            return implement(cls, null);
+            cls = loader.loadClass(className);
         } catch (ClassNotFoundException e) {
             throw new ImplementorException("no such class", e);
         }
+
+        implement(cls, null);
+
+        return generateImplementedName(cls, null);
     }
 
-    private String implement(Class cls, Package pkg) {
-
+    private void implement(Class cls, Package pkg) throws ImplementorException {
         try {
-            String classImplName = (pkg != null ? cls.getCanonicalName() : cls.getSimpleName()) + "Impl";
-            File outputFile = new File(outputDirectory + "/" + (pkg != null ? nameToDir(cls.getCanonicalName()) : cls.getName()) + "Impl.java");
+            String outputFilePath =
+                    outputDirectory + "/"
+                            + (pkg != null ? nameToDir(cls.getCanonicalName()) : cls.getSimpleName())
+                            + "Impl.java";
+            File outputFile = new File(outputFilePath);
             outputFile.getParentFile().mkdirs();
             outputFile.createNewFile();
             PrintWriter pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream(outputFile)));
@@ -63,13 +71,14 @@ public class SimpleImplementor implements Implementor {
 
             BufferedReader reader = new BufferedReader(new FileReader(outputFile));
             reader.lines().forEach(System.out::println);
-
-            return classImplName;
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new ImplementorException("cannot save generated class");
         }
-        return null;
+    }
 
+    private String generateImplementedName(Class cls, Package pkg) {
+        String classImplName = (pkg != null ? cls.getCanonicalName() : cls.getSimpleName()) + "Impl";
+        return classImplName;
     }
 
     private String nameToDir(String fullName) {
@@ -85,16 +94,15 @@ public class SimpleImplementor implements Implementor {
                 clazz.isInterface() ? "implements" : "extends",
                 clazz.getCanonicalName()));
 
-        Arrays.stream(clazz.getMethods())
+        Arrays.stream(clazz.getDeclaredMethods())
                 .filter(m -> Modifier.isAbstract(m.getModifiers()))
-                .forEach(m -> printMethod(pw, m));
+                .forEach(m -> generateMethod(pw, m));
 
         pw.println("}");
 
     }
 
-    private void printMethod(PrintWriter pw, Method method) {
-
+    private void generateMethod(PrintWriter pw, Method method) {
         String mods = getMethodModifiersString(method);
         String returnType = method.getReturnType().getCanonicalName();
         String name = method.getName();
