@@ -33,13 +33,20 @@ public class MemoryLeakLimitTest {
         buffer = new byte[BUFFER_SIZE];
     }
 
-    @Test(expected = Exception.class)
-    public void memoryLeakException() throws Exception {
+    @Test
+    public void memoryLeakExceptionTest() throws Exception {
         mlt.limit(1);
         buffer = new byte[BUFFER_SIZE];
         for(Integer i = 0; i < 10000; i++) {
             listBuffer.add(i);
         }
         throw new Exception();
+    }
+
+    @Test
+    public void memoryLeakNonExceptionTest() throws Exception {
+        mlt.limit(10);
+        buffer = new byte[1024];
+        throw new Exception("test");
     }
 }
