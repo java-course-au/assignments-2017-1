@@ -69,9 +69,6 @@ public class SimpleImplementor implements Implementor {
             generateClass(pw, cls, pkg);
             pw.close();
 
-            BufferedReader reader = new BufferedReader(new FileReader(outputFile));
-            reader.lines().forEach(System.out::println);
-
         } catch (IOException e) {
             throw new ImplementorException("cannot save generated class");
         }
@@ -112,7 +109,6 @@ public class SimpleImplementor implements Implementor {
             return;
         }
 
-        methods.addAll(Arrays.asList(cls.getMethods()));
         methods.addAll(Arrays.asList(cls.getDeclaredMethods()));
         extractMethods(cls.getSuperclass(), methods);
 
