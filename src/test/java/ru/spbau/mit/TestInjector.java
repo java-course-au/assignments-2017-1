@@ -17,6 +17,14 @@ public class TestInjector {
                 Collections.<String>emptyList());
         assertTrue(object instanceof ClassWithoutDependencies);
     }
+//    @Test
+//    public void testCycle()
+//            throws Exception {
+//        Object object = Injector.initialize(
+//                "ru.spbau.mit.testClasses.Cycle1",
+//                Arrays.asList("ru.spbau.mit.testClasses.Cycle2", "ru.spbau.mit.testClasses.Cycle3"));
+//        assertTrue(object instanceof Cycle1);
+//    }
 
     @Test
     public void injectorShouldInitializeClassWithOneClassDependency()
