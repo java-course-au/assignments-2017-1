@@ -13,7 +13,6 @@ public final class Injector {
 
     private static HashSet<Class<?>> classVisited = new HashSet<>();
     private static HashMap<Class<?>, Object> classToObject = new HashMap<>();
-    private static Class<?> root = null;
 
     private Injector(){}
 
@@ -39,41 +38,6 @@ public final class Injector {
     public static Constructor<?> getConstructor(final Class<?> cl) {
         Constructor<?>[] constructors = cl.getConstructors();
         return constructors[0];
-    }
-
-    public static void checkAmbiguousImplementation(final Class<?>[] types,
-                                                    final ArrayList<Class<?>> implementationClasses)
-            throws AmbiguousImplementationException {
-        for (Class<?> type : types) {
-            int count = 0;
-            for (Class<?> implClass : implementationClasses) {
-                if (type.isAssignableFrom(implClass)) {
-                    count++;
-                }
-            }
-            if (count > 2) {
-                throw new AmbiguousImplementationException();
-            }
-        }
-    }
-
-    public static void checkImplementationNotFound(final Class<?>[] types,
-                                                   final ArrayList<Class<?>> implementationClasses)
-            throws ImplementationNotFoundException {
-        final boolean[] check = new boolean[types.length];
-        for (int i = 0; i < types.length; i++) {
-            for (Class<?> implClass : implementationClasses) {
-                if (types[i].isAssignableFrom(implClass)) {
-                    check[i] = true;
-                    break;
-                }
-            }
-        }
-        for (boolean i : check) {
-            if (!i) {
-                throw new ImplementationNotFoundException();
-            }
-        }
     }
 
     public static Class<?> getClass(Class<?> cl, ArrayList<Class<?>> implementationClasses)
@@ -103,29 +67,21 @@ public final class Injector {
             InvocationTargetException,
             InstantiationException,
             ImplementationNotFoundException, AmbiguousImplementationException {
-        if (classToObject.containsKey(current)) {
-            return classToObject.get(current);
-        }
-        if (classVisited.contains(current)) {
-            throw new InjectionCycleException();
-        } else {
-            classVisited.add(current);
-        }
-        if (Modifier.isInterface(current.getModifiers()) || Modifier.isAbstract(current.getModifiers())) {
-            current = getClass(current, implementationClasses);
-        }
-        Class<?>[] parameterTypes = current.getConstructors()[0].getParameterTypes();
-        if (parameterTypes.length == 0) {
-            return current.getConstructors()[0].newInstance();
-        }
-        Object[] params = new Object[parameterTypes.length];
-        for (int i = 0; i < parameterTypes.length; i++) {
-            if (parameterTypes[i].equals(root)) {
+        classVisited.add(current);
+        final Class<?>[] parameters = current.getConstructors()[0].getParameterTypes();
+        final Object[] constructorArgs = new Object[parameters.length];
+        for (int i = 0; i < parameters.length; i++) {
+            Class<?> implClass = getClass(parameters[i], implementationClasses);
+            if (classVisited.contains(implClass) && !classToObject.containsKey(implClass)) {
                 throw new InjectionCycleException();
             }
-            params[i] = run(parameterTypes[i], implementationClasses);
+            if (classToObject.containsKey(implClass)) {
+                constructorArgs[i] = classToObject.get(implClass);
+                continue;
+            }
+            constructorArgs[i] = run(implClass, implementationClasses);
         }
-        classToObject.put(current, current.getConstructors()[0].newInstance(params));
+        classToObject.put(current, getConstructor(current).newInstance(constructorArgs));
         return classToObject.get(current);
     }
 
@@ -139,12 +95,7 @@ public final class Injector {
 
         clear();
         final Class<?> clazz = loadClass(rootClassName);
-        final Constructor<?> constructor = getConstructor(clazz);
-        final Class<?>[] parametrTypes = constructor.getParameterTypes();
         final ArrayList<Class<?>> implementationClasses = loadImplementationClasses(implementationClassNames);
-//        checkImplementationNotFound(parametrTypes, implementationClasses);
-//        checkAmbiguousImplementation(parametrTypes, implementationClasses);
-        root = clazz;
         return run(clazz, implementationClasses);
     }
 }
