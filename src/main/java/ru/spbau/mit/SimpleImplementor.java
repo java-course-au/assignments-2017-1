@@ -165,13 +165,7 @@ public class SimpleImplementor implements Implementor {
 
             body.append(" {\n");
 
-            if (returnType.isPrimitive()) {
-                if (!returnType.equals(void.class)) {
-                    body.append("return 0;\n");
-                }
-            } else {
-                body.append("return null;\n");
-            }
+            body.append("throw new UnsupportedOperationException();\n");
             body.append("}\n");
         }
 
@@ -180,6 +174,9 @@ public class SimpleImplementor implements Implementor {
         for (Class<?> clsToImport : possibleNeedToImport) {
             if (clsToImport.isPrimitive()) {
                 continue;
+            }
+            while (clsToImport.isArray()) {
+                clsToImport = clsToImport.getComponentType();
             }
             bodyWithImports.append("import ").append(clsToImport.getCanonicalName()).append(";\n");
         }
