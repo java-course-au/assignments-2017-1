@@ -36,7 +36,6 @@ public class SimpleImplementor implements Implementor {
 
     private String implement(Class<?> classToExtend, boolean packageNeeded) throws ImplementorException {
         File outputFile = createOutputFile(classToExtend, packageNeeded);
-        checkInputClass(classToExtend);
         return doGenerate(classToExtend, outputFile, packageNeeded);
     }
 
@@ -56,15 +55,6 @@ public class SimpleImplementor implements Implementor {
             throw new ImplementorException("Cannot write to output file.", ex);
         }
         return getGeneratedClassName(classToExtend, packageNeeded);
-    }
-
-    private void checkInputClass(Class<?> classToExtend) throws ImplementorException {
-        if (!Modifier.isPublic(classToExtend.getModifiers())) {
-            throw new ImplementorException("Input class is not public.");
-        }
-        if (!classToExtend.isInterface() && !Modifier.isAbstract(classToExtend.getModifiers())) {
-            throw new ImplementorException("Input is not interface or abstract.");
-        }
     }
 
     private void generateMethod(BufferedWriter output, Method method) throws IOException, ImplementorException {

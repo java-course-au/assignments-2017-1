@@ -105,8 +105,70 @@ public class ImplementorTest {
     }
 
     @Test
+    public void implementEmptyInterface() throws Exception {
+        String packageFolder = String.join(File.separator, new String[]{"ru", "au", "java"});
+        File dir = new File(getTestsDirectoryPath(), packageFolder);
+        dir.mkdirs();
+        File interfaze = new File(dir, "EmptyInterface.java");
+        interfaze.createNewFile();
+
+        try (BufferedWriter output = new BufferedWriter(new FileWriter(interfaze))) {
+            output.write("package ru.au.java;");
+            output.newLine();
+            output.write("public interface EmptyInterface {");
+            output.newLine();
+            output.write("}");
+            output.newLine();
+        }
+        compileFile(interfaze.getAbsolutePath());
+        checkInterfaceImplementationFromFolder("ru.au.java.EmptyInterface");
+    }
+
+    @Test
+    public void implementAbstractClassExtendingInterface() throws Exception {
+        String packageFolder = String.join(File.separator, new String[]{"ru", "au", "java"});
+        File dir = new File(getTestsDirectoryPath(), packageFolder);
+        dir.mkdirs();
+        File interfaze = new File(dir, "AnInterface.java");
+        interfaze.createNewFile();
+
+        try (BufferedWriter output = new BufferedWriter(new FileWriter(interfaze))) {
+            output.write("package ru.au.java;");
+            output.newLine();
+            output.write("public interface AnInterface {");
+            output.newLine();
+            output.write("int someMethod();");
+            output.newLine();
+            output.write("}");
+            output.newLine();
+        }
+        compileFile(interfaze.getAbsolutePath());
+
+        File abstractClass = new File(dir, "AbstractClass.java");
+        abstractClass.createNewFile();
+
+        try (BufferedWriter output = new BufferedWriter(new FileWriter(abstractClass))) {
+            output.write("package ru.au.java;");
+            output.newLine();
+            output.write("public abstract class AbstractClass implements AnInterface {");
+            output.newLine();
+            output.write("public abstract int someOtherMethod();");
+            output.newLine();
+            output.write("}");
+            output.newLine();
+        }
+        compileFile(abstractClass.getAbsolutePath());
+        checkAbstractClassImplementationFromFolder("ru.au.java.AbstractClass");
+    }
+
+    @Test
     public void implementAbstractMap() throws Exception {
         checkAbstractClassImplementationFromStandardLibrary("java.util.AbstractMap");
+    }
+
+    @Test
+    public void implementSocket() throws Exception {
+        checkAbstractClassImplementationFromStandardLibrary("java.net.Socket");
     }
 
     @Test
