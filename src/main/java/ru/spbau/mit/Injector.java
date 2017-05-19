@@ -17,7 +17,6 @@ public final class Injector {
 
     private Injector(){}
 
-    
     /**
      * Create and initialize object of `rootClassName` class using classes from
      * `implementationClassNames` for concrete dependencies.
