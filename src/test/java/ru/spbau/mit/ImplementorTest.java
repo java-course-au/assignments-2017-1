@@ -6,9 +6,12 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import javax.tools.*;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -78,6 +81,38 @@ public class ImplementorTest {
     @Test
     public void implementCloneable() throws Exception {
         checkInterfaceImplementationFromStandardLibrary("java.lang.Cloneable");
+    }
+
+    @Test
+    public void implementSimpleInterface() throws Exception {
+        String packageFolder = String.join(File.separator, new String[] {"ru", "au", "java"});
+        File dir = new File(getTestsDirectoryPath(), packageFolder);
+        dir.mkdirs();
+        File interfaze = new File(dir, "AnInterface.java");
+        interfaze.createNewFile();
+
+        try(BufferedWriter output = new BufferedWriter(new FileWriter(interfaze))) {
+            output.write("package ru.au.java;");
+            output.newLine();
+            output.write("public interface AnInterface {");
+            output.newLine();
+            output.write("int someMethod();");
+            output.newLine();
+            output.write("}");
+            output.newLine();
+        }
+        compileFile(interfaze.getAbsolutePath());
+        checkInterfaceImplementationFromFolder("ru.au.java.AnInterface");
+    }
+
+    @Test
+    public void implementAbstractMap() throws Exception {
+        checkAbstractClassImplementationFromStandardLibrary("java.util.AbstractMap");
+    }
+
+    @Test
+    public void implementMap() throws Exception {
+        checkInterfaceImplementationFromStandardLibrary("java.util.Map");
     }
 
     private void checkInterfaceImplementationFromFolder(String className) throws Exception {
@@ -153,7 +188,7 @@ public class ImplementorTest {
         Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromStrings(
                 Arrays.asList(absolutePath));
         List<String> options = new ArrayList<>();
-        options.addAll(Arrays.asList("-classpath", System.getProperty("java.class.path") + getTestsDirectoryPath()));
+        options.addAll(Arrays.asList("-classpath", System.getProperty("java.class.path") + ":" + getTestsDirectoryPath()));
         JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnostics, options,
                 null, compilationUnits);
         boolean success = task.call();
