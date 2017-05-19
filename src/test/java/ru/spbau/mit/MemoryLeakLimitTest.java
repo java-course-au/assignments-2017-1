@@ -4,10 +4,14 @@ package ru.spbau.mit;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MemoryLeakLimitTest {
 
     private final static int BUFFER_SIZE = 2 * 1024 * 1024;
     private byte[] buffer;
+    private static List<Integer> listBuffer = new ArrayList<>();
 
     @Rule
     public final MemoryLeakLimit mlt = new MemoryLeakLimit();
@@ -27,5 +31,15 @@ public class MemoryLeakLimitTest {
     public void limitPassTest() {
         mlt.limit(2);
         buffer = new byte[BUFFER_SIZE];
+    }
+
+    @Test(expected = Exception.class)
+    public void memoryLeakException() throws Exception {
+        mlt.limit(1);
+        buffer = new byte[BUFFER_SIZE];
+        for(Integer i = 0; i < 10000; i++) {
+            listBuffer.add(i);
+        }
+        throw new Exception();
     }
 }

@@ -15,10 +15,18 @@ public class MemoryLeakLimit implements TestRule {
             @Override
             public void evaluate() throws Throwable {
                 final long before = getOccupiedMemory();
-                statement.evaluate();
+                Throwable e = null;
+                try {
+                    statement.evaluate();
+                } catch (Throwable ex) {
+                    e = ex;
+                }
                 final long after = getOccupiedMemory();
                 if (after - before > limit) {
                     throw new Exception("Exception: memory limit");
+                }
+                if (e != null) {
+                    throw e;
                 }
             }
         };
