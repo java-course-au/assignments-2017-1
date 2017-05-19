@@ -76,8 +76,31 @@ public class ImplementorTest {
     }
 
     @Test
-    public void implementCloneable() throws Exception {
+    public void implementInterfaces() throws Exception {
         checkInterfaceImplementationFromStandardLibrary("java.lang.Cloneable");
+        checkInterfaceImplementationFromStandardLibrary("java.util.List");
+    }
+
+    @Test
+    public void extendAbstracts() throws Exception {
+        checkAbstractClassImplementationFromStandardLibrary("java.lang.Object");
+        String classWithAbstractProtectedMethods = "java.awt.KeyboardFocusManager";
+        checkAbstractClassImplementationFromStandardLibrary(classWithAbstractProtectedMethods);
+        // Failed to make it work, is there is now way to transfer current runtime knowledge (loaded abstract class)
+        // into implementation compilation?
+//        String className = "AbstractProtectedBase";
+//        Path classPath = Paths.get(getTestsDirectoryPath(), className + ".java");
+//        Writer writer = Files.newBufferedWriter(classPath, StandardOpenOption.CREATE_NEW);
+//        writer
+//                .append("public abstract class ")
+//                .append(className)
+//                .append(" extends ")
+//                .append(classWithAbstractProtectedMethods)
+//                .append(" {}\n")
+//                .close();
+//        compileFile(classPath.toAbsolutePath().toString());
+//        loadClassFromTestDirectory(className);
+//        checkAbstractClassImplementationFromFolder(className);
     }
 
     private void checkInterfaceImplementationFromFolder(String className) throws Exception {
