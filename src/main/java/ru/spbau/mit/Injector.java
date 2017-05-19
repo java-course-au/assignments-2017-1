@@ -20,6 +20,9 @@ public final class Injector {
         Graph(String rootClassName, List<String> implementationClassName) {
             this.rootClassName = rootClassName;
             this.implementationClassNames = implementationClassName;
+//            if (!this.implementationClassNames.contains(rootClassName)) {
+//                this.implementationClassNames.add(rootClassName);
+//            }
         }
 
         Object dfs(String curClassName) throws ImplementationNotFoundException,
@@ -40,7 +43,8 @@ public final class Injector {
 
             Class<?> curClass = Class.forName(curClassName);
 
-            if (curClass.isInterface() || Modifier.isAbstract(curClass.getModifiers())) {
+            if (!curClassName.equals(rootClassName) &&
+                    !implementationClassNames.contains(curClassName)) {
                 int index = -1;
                 int count = 0;
                 for (int i = 0; i < implementationClassNames.size(); i++) {
@@ -56,16 +60,14 @@ public final class Injector {
                 if (index == -1) {
                     throw new ImplementationNotFoundException();
                 }
-                Object obj = null;
-                obj = dfs(implementationClassNames.get(index));
+                Object obj = dfs(implementationClassNames.get(index));
                 classToObj.put(curClassName, obj);
                 return obj;
             }
 
-
-            if (!curClassName.equals(rootClassName) && !implementationClassNames.contains(curClassName)) {
-                throw new ImplementationNotFoundException();
-            }
+//            if (!curClassName.equals(rootClassName) && !implementationClassNames.contains(curClassName)) {
+//                throw new ImplementationNotFoundException();
+//            }
 
             Constructor constructor = curClass.getDeclaredConstructors()[0];
             Class<?>[] types = constructor.getParameterTypes();
