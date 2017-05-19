@@ -95,12 +95,8 @@ public class SimpleImplementor implements Implementor {
     private String makeClassBody(Class<?> loadedClass, Package desiredPackage, String simpleName) {
         StringBuilder body = new StringBuilder();
 
-        StringBuilder bodyWithImports = new StringBuilder();
         Set<Class<?>> possibleNeedToImport = new HashSet<>();
-
-        if (desiredPackage != null) {
-            bodyWithImports.append(String.format("package %s;\n\n", desiredPackage.getName()));
-        } else {
+        if (desiredPackage == null) {
             possibleNeedToImport.add(loadedClass);
         }
 
@@ -115,7 +111,6 @@ public class SimpleImplementor implements Implementor {
 
         for (Method meth : interestingMethods) {
             int methodModifiers = meth.getModifiers();
-
             if (!Modifier.isInterface(methodModifiers) && !Modifier.isAbstract(methodModifiers)) {
                 continue;
             }
@@ -125,64 +120,84 @@ public class SimpleImplementor implements Implementor {
                 continue;
             }
             overridenMethods.add(curHash);
-
-            body.append("@Override\n");
-            body.append("public ");
-
-            Class<?> returnType = meth.getReturnType();
-            possibleNeedToImport.add(returnType);
-
-            body.append(returnType.getSimpleName()).append(" ");
-            body.append(meth.getName());
-
-
-            body.append("(");
-            int argIdx = 0;
-            for (Class<?> arg : meth.getParameterTypes()) {
-                possibleNeedToImport.add(arg);
-                if (argIdx > 0) {
-                    body.append(", ");
-                }
-                body.append(arg.getSimpleName());
-                body.append(" ");
-                body.append(String.format("arg%d", argIdx));
-                argIdx++;
-            }
-            body.append(") ");
-
-            Class<?>[] exceptionTypes = meth.getExceptionTypes();
-            if (exceptionTypes.length > 0) {
-                body.append("throws ");
-            }
-            for (int idx = 0; idx < exceptionTypes.length; idx++) {
-                Class<?> exc = exceptionTypes[idx];
-                if (idx > 0) {
-                    body.append(", ");
-                }
-                body.append(exc.getCanonicalName());
-                possibleNeedToImport.add(exc);
-            }
-
-            body.append(" {\n");
-
-            body.append("throw new UnsupportedOperationException();\n");
-            body.append("}\n");
+            addOneMethod(body, meth, possibleNeedToImport);
         }
 
         body.append("}");
 
-        for (Class<?> clsToImport : possibleNeedToImport) {
-            if (clsToImport.isPrimitive()) {
-                continue;
+        StringBuilder bodyWithImports = addImportsAndPackage(possibleNeedToImport, body, desiredPackage);
+        return bodyWithImports.toString();
+    }
+
+    private void addOneMethod(StringBuilder body, Method meth, Set<Class<?>> possibleNeedToImport) {
+        body.append("@Override\n");
+        body.append("public ");
+
+        Class<?> returnType = meth.getReturnType();
+        possibleNeedToImport.add(returnType);
+
+        body.append(returnType.getSimpleName()).append(" ");
+        body.append(meth.getName());
+
+        addMethodParams(body, meth, possibleNeedToImport);
+        addThrowsForMethod(body, meth, possibleNeedToImport);
+
+        body.append(" {\n");
+        body.append("throw new UnsupportedOperationException();\n");
+        body.append("}\n");
+    }
+
+    private void addMethodParams(StringBuilder body, Method meth, Set<Class<?>> possibleNeedToImport) {
+        body.append("(");
+        int argIdx = 0;
+        for (Class<?> arg : meth.getParameterTypes()) {
+            possibleNeedToImport.add(arg);
+            if (argIdx > 0) {
+                body.append(", ");
             }
+            body.append(arg.getSimpleName());
+            body.append(" ");
+            body.append(String.format("arg%d", argIdx));
+            argIdx++;
+        }
+        body.append(") ");
+    }
+
+    private void addThrowsForMethod(StringBuilder body, Method meth, Set<Class<?>> possibleNeedToImport) {
+        Class<?>[] exceptionTypes = meth.getExceptionTypes();
+        if (exceptionTypes.length > 0) {
+            body.append("throws ");
+        }
+        for (int idx = 0; idx < exceptionTypes.length; idx++) {
+            Class<?> exc = exceptionTypes[idx];
+            if (idx > 0) {
+                body.append(", ");
+            }
+            body.append(exc.getCanonicalName());
+            possibleNeedToImport.add(exc);
+        }
+    }
+
+    private StringBuilder addImportsAndPackage(Set<Class<?>> possibleNeedToImport, StringBuilder body,
+                                               Package desiredPackage) {
+        StringBuilder bodyWithImports = new StringBuilder();
+
+        if (desiredPackage != null) {
+            bodyWithImports.append(String.format("package %s;\n\n", desiredPackage.getName()));
+        }
+
+        for (Class<?> clsToImport : possibleNeedToImport) {
             while (clsToImport.isArray()) {
                 clsToImport = clsToImport.getComponentType();
+            }
+            if (clsToImport.isPrimitive()) {
+                continue;
             }
             bodyWithImports.append("import ").append(clsToImport.getCanonicalName()).append(";\n");
         }
         bodyWithImports.append(body.toString());
 
-        return bodyWithImports.toString();
+        return bodyWithImports;
     }
 
     @Override
