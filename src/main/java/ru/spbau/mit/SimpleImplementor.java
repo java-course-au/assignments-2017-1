@@ -146,7 +146,7 @@ public class SimpleImplementor implements Implementor {
             sb.append("public ");
         } else if (Modifier.isProtected(mod)) {
             sb.append("protected ");
-        } else if (Modifier.isPrivate(mod)){
+        } else if (Modifier.isPrivate(mod)) {
             sb.append("private ");
         }
 
