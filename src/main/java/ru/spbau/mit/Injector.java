@@ -18,7 +18,8 @@ public final class Injector {
         return doGenerate(rootClassName, implementationClassNames, new HashSet<String>());
     }
 
-    private static Object doGenerate(String rootClassName, List<String> impls, Set<String> visited) throws Exception {
+    private static Object doGenerate(String rootClassName,
+                                     List<String> impls, Set<String> visited) throws Exception {
         if (visited.contains(rootClassName)) {
             throw new InjectionCycleException();
         }
