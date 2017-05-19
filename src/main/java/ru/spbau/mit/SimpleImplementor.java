@@ -7,9 +7,7 @@ import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -93,7 +91,7 @@ public class SimpleImplementor implements Implementor {
                 clazz.isInterface() ? "implements" : "extends",
                 clazz.getCanonicalName()));
 
-        List<Method> methods = new ArrayList<>();
+        Set<Method> methods = new HashSet<>();
         extractMethods(clazz, methods);
         methods.stream()
                 .filter(m -> Modifier.isAbstract(m.getModifiers()))
@@ -103,7 +101,7 @@ public class SimpleImplementor implements Implementor {
 
     }
 
-    private void extractMethods(Class cls, List<Method> methods) {
+    private void extractMethods(Class cls, Set<Method> methods) {
 
         if (cls == null) {
             return;
