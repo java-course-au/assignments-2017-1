@@ -29,10 +29,10 @@ public final class Injector {
 
     private static void clean() {
         intance = new HashMap<>();
-        claenLoad();
+        clearLoad();
     }
 
-    private static void claenLoad() {
+    private static void clearLoad() {
         load = new ArrayList<>();
     }
 
@@ -48,10 +48,7 @@ public final class Injector {
     }
 
     private static Object find(String rootClassName, boolean flag) throws Exception {
-        Class aClass = Class.forName(rootClassName);
-
-        Constructor[] declaredConstructors = aClass.getConstructors();
-        Constructor constructor = declaredConstructors[0];
+        Constructor constructor =  Class.forName(rootClassName).getConstructors()[0];
         Parameter[] parameters = constructor.getParameters();
 
         Object[] values = new Object[parameters.length];
