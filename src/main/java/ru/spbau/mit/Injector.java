@@ -77,13 +77,24 @@ public final class Injector {
     }
 
     public static Class<?> getClass(Class<?> cl, ArrayList<Class<?>> implementationClasses)
-            throws ImplementationNotFoundException {
+            throws ImplementationNotFoundException, AmbiguousImplementationException {
+        boolean flag = false;
+        Class<?> out = null;
         for (Class<?> implClass : implementationClasses) {
+            int count = 0;
             if (cl.isAssignableFrom(implClass)) {
-                return implClass;
+                flag = true;
+                out = implClass;
+                count++;
+                if (count > 2) {
+                    throw new AmbiguousImplementationException();
+                }
             }
         }
-        throw new ImplementationNotFoundException();
+        if (!flag) {
+            throw new ImplementationNotFoundException();
+        }
+        return out;
     }
 
     public static Object run(Class<?> current, final ArrayList<Class<?>> implementationClasses)
@@ -91,7 +102,7 @@ public final class Injector {
             IllegalAccessException,
             InvocationTargetException,
             InstantiationException,
-            ImplementationNotFoundException {
+            ImplementationNotFoundException, AmbiguousImplementationException {
         if (classToObject.containsKey(current)) {
             return classToObject.get(current);
         }
@@ -131,8 +142,8 @@ public final class Injector {
         final Constructor<?> constructor = getConstructor(clazz);
         final Class<?>[] parametrTypes = constructor.getParameterTypes();
         final ArrayList<Class<?>> implementationClasses = loadImplementationClasses(implementationClassNames);
-        checkImplementationNotFound(parametrTypes, implementationClasses);
-        checkAmbiguousImplementation(parametrTypes, implementationClasses);
+//        checkImplementationNotFound(parametrTypes, implementationClasses);
+//        checkAmbiguousImplementation(parametrTypes, implementationClasses);
         root = clazz;
         return run(clazz, implementationClasses);
     }
