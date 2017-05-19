@@ -39,4 +39,21 @@ public class TestInjector {
         ClassWithOneInterfaceDependency instance = (ClassWithOneInterfaceDependency) object;
         assertTrue(instance.dependency instanceof InterfaceImpl);
     }
+
+    @Test(expected = InjectionCycleException.class)
+    public void checkCyclicDependencies() throws Exception {
+        Injector.initialize(
+                "ru.spbau.mit.testClasses.C",
+                Arrays.asList("ru.spbau.mit.testClasses.A",
+                        "ru.spbau.mit.testClasses.B")
+        );
+    }
+
+    @Test(expected = ImplementationNotFoundException.class)
+    public void checkNotFoundDependencies() throws Exception {
+        Injector.initialize(
+                "ru.spbau.mit.testClasses.C",
+                Collections.singletonList("ru.spbau.mit.testClasses.A")
+        );
+    }
 }
