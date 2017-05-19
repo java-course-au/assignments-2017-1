@@ -25,7 +25,8 @@ public final class Injector {
         return Class.forName(className);
     }
 
-    public static ArrayList<Class<?>> loadImplementationClasses(final Class<?> clazz, final List<String> implementationClassNames)
+    public static ArrayList<Class<?>> loadImplementationClasses(final Class<?> clazz,
+                                                                final List<String> implementationClassNames)
             throws ClassNotFoundException {
         final ArrayList<Class<?>> result = new ArrayList<>();
         for (String className : implementationClassNames) {
@@ -96,7 +97,8 @@ public final class Injector {
 
         clear();
         final Class<?> clazz = loadClass(rootClassName);
-        final ArrayList<Class<?>> implementationClasses = loadImplementationClasses(clazz, implementationClassNames);
+        final ArrayList<Class<?>> implementationClasses = loadImplementationClasses(clazz,
+                implementationClassNames);
         return run(clazz, implementationClasses);
     }
 }
