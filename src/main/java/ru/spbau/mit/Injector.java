@@ -16,6 +16,8 @@ public final class Injector {
     private static Class<?> root = null;
 
     private Injector(){}
+
+    
     /**
      * Create and initialize object of `rootClassName` class using classes from
      * `implementationClassNames` for concrete dependencies.
