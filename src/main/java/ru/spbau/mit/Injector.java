@@ -1,10 +1,7 @@
 package ru.spbau.mit;
 
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 public final class Injector {
@@ -20,13 +17,17 @@ public final class Injector {
             implementationClassNames = new ArrayList<>(implementationClassNames);
             implementationClassNames.add(rootClassName);
         }
-        return doGenerate(rootClassName, implementationClassNames, new HashSet<String>());
+        return doGenerate(rootClassName, implementationClassNames, new HashSet<String>(),
+                new HashMap<String, Object>());
     }
 
-    private static Object doGenerate(String rootClassName,
-                                     List<String> impls, Set<String> visited) throws Exception {
+    private static Object doGenerate(String rootClassName, List<String> impls, Set<String> visited,
+                                     Map<String, Object> created) throws Exception {
         if (visited.contains(rootClassName)) {
             throw new InjectionCycleException();
+        }
+        if (created.containsKey(rootClassName)) {
+            return created.get(rootClassName);
         }
         visited.add(rootClassName);
         Class<?> root = Class.forName(rootClassName);
@@ -37,27 +38,29 @@ public final class Injector {
         Constructor<?> constr = constructors[0];
         Class<?>[] params = constr.getParameterTypes();
         if (params.length == 0) {
-            return constr.newInstance();
-        }
-
-        Object[] paramObjects = new Object[params.length];
-        for (int i = 0; i < params.length; i++) {
-            Class<?> param = params[i];
-            String appImpl = null;
-            for (String impl : impls) {
-                if (param.isAssignableFrom(Class.forName(impl))) {
-                    if (appImpl != null) {
-                        throw new AmbiguousImplementationException();
+            created.put(rootClassName, constr.newInstance());
+        } else {
+            Object[] paramObjects = new Object[params.length];
+            for (int i = 0; i < params.length; i++) {
+                Class<?> param = params[i];
+                String appImpl = null;
+                for (String impl : impls) {
+                    if (param.isAssignableFrom(Class.forName(impl))) {
+                        if (appImpl != null) {
+                            throw new AmbiguousImplementationException();
+                        }
+                        appImpl = impl;
                     }
-                    appImpl = impl;
                 }
+                if (appImpl == null) {
+                    throw new ImplementationNotFoundException();
+                }
+                paramObjects[i] = doGenerate(appImpl, impls, visited, created);
             }
-            if (appImpl == null) {
-                throw new ImplementationNotFoundException();
-            }
-            paramObjects[i] = doGenerate(appImpl, impls, visited);
+            created.put(rootClassName, constr.newInstance(paramObjects));
         }
 
-        return constr.newInstance(paramObjects);
+        visited.remove(rootClassName);
+        return created.get(rootClassName);
     }
 }
