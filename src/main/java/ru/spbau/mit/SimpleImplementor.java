@@ -106,7 +106,8 @@ public class SimpleImplementor implements Implementor {
         if (loadedClass.isInterface()) {
             extendAction = "implements";
         }
-        body.append(String.format("class %s %s %s {\n", simpleName, extendAction, loadedClass.getCanonicalName()));
+        body.append(String.format("public class %s %s %s {\n", simpleName,
+                extendAction, loadedClass.getCanonicalName()));
 
         List<Method> interestingMethods = getAllMethods(loadedClass);
         HashSet<Integer> overridenMethods = new HashSet<>();

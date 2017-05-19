@@ -1,4 +1,4 @@
-interface EmptyInterface {
+public interface EmptyInterface {
 
     EmptyInterface smth();
 }

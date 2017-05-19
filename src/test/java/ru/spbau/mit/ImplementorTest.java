@@ -116,6 +116,11 @@ public class ImplementorTest {
         checkAbstractClassImplementationFromStandardLibrary("java.util.AbstractSet");
     }
 
+    @Test
+    public void implementFromDefaultPackage() throws Exception {
+        checkInterfaceImplementationFromFolder("EmptyInterface");
+    }
+
     @Test(expected = ImplementorException.class)
     public void implementNonexistantStandardClass() throws Exception {
         checkAbstractClassImplementationFromStandardLibrary("java.kotlin.clojure");
