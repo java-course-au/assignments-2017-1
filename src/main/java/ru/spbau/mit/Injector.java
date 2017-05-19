@@ -3,7 +3,7 @@ package ru.spbau.mit;
 import java.lang.reflect.Constructor;
 //import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
+//import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
 
@@ -43,8 +43,8 @@ public final class Injector {
 
             Class<?> curClass = Class.forName(curClassName);
 
-            if (!curClassName.equals(rootClassName) &&
-                    !implementationClassNames.contains(curClassName)) {
+            if (!curClassName.equals(rootClassName)
+                    && !implementationClassNames.contains(curClassName)) {
                 int index = -1;
                 int count = 0;
                 for (int i = 0; i < implementationClassNames.size(); i++) {
