@@ -95,9 +95,22 @@ public class SimpleImplementor implements Implementor {
         Set<Method> methods = new HashSet<>();
         extractMethods(clazz, methods);
 
-        methods.stream()
-                .filter(m -> Modifier.isAbstract(m.getModifiers()))
-                .forEach(m -> generateMethod(pw, m));
+        Set<Method> resultMethods = new HashSet<>();
+        Set<Integer> seenHashes = new HashSet<>();
+        for (Method m : methods) {
+            int methodModifiers = m.getModifiers();
+            if (!Modifier.isAbstract(methodModifiers)) {
+                continue;
+            }
+            Integer curHash = Arrays.hashCode(m.getParameterTypes()) ^ m.getName().hashCode();
+            if (seenHashes.contains(curHash)) {
+                continue;
+            }
+            seenHashes.add(curHash);
+            resultMethods.add(m);
+        }
+
+        resultMethods.forEach(m -> generateMethod(pw, m));
 
         pw.println("}");
 
