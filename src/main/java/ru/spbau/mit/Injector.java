@@ -29,7 +29,6 @@ public final class Injector {
 
     private static void clean() {
         intance = new HashMap<>();
-//        load = new ArrayList<>();
         claenLoad();
     }
 
@@ -41,7 +40,6 @@ public final class Injector {
         if (intance.containsKey(rootClassName)) {
             return intance.get(rootClassName);
         }
-
         if (load.contains(rootClassName)) {
             throw new InjectionCycleException();
         }
@@ -71,9 +69,6 @@ public final class Injector {
                 }
             }
             if (saveClass == null) {
-//                if (parameter.getType().isAssignableFrom(Class.forName(rootClassName))) {
-//                    throw new InjectionCycleException();
-//                }
                 if (flag) {
                     throw new InjectionCycleException();
                 } else {
@@ -83,7 +78,6 @@ public final class Injector {
                     throw new ImplementationNotFoundException();
                 }
             }
-
             values[idx] = initializeClass(saveClass.getName());
         }
 
