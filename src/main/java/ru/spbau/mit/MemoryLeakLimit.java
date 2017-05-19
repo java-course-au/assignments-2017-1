@@ -17,12 +17,21 @@ public class MemoryLeakLimit implements TestRule {
                 Runtime runtime = Runtime.getRuntime();
                 runtime.gc();
                 long memoryBefore = runtime.totalMemory() - runtime.freeMemory();
-                statement.evaluate();
+                Throwable throwable = null;
+                try {
+                    statement.evaluate();
+                } catch (Throwable e) {
+                    throwable = e;
+                }
                 runtime.gc();
                 long memoryAfter = runtime.totalMemory() - runtime.freeMemory();
 
                 if (memoryAfter - memoryBefore > limit) {
                     throw new Exception("memory leak");
+                }
+
+                if (throwable != null) {
+                    throw throwable;
                 }
             }
         };
