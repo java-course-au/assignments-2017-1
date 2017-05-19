@@ -2,6 +2,7 @@ package ru.spbau.mit;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,6 +10,7 @@ import java.util.stream.Collectors;
 public final class Injector {
     private Class root;
     private List<Class> imps;
+    private HashMap<Class, Object> hs = new HashMap<>();
 
     private Injector(String rootn, List<String> impsn) throws ImplementationNotFoundException {
         ClassLoader loader = this.getClass().getClassLoader();
@@ -44,7 +46,13 @@ public final class Injector {
 
         for (Class pt : paramst) {
             Class cl = find(pt, dep);
-            params.add(subs(cl, dep));
+            if (hs.containsKey(cl)) {
+                params.add(hs.get(cl));
+            } else {
+                Object obj = subs(cl, dep);
+                params.add(obj);
+                hs.put(cl, obj);
+            }
         }
 
         try {
