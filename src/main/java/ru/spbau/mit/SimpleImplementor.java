@@ -66,7 +66,7 @@ public class SimpleImplementor implements Implementor {
             outputFile.getParentFile().mkdirs();
             outputFile.createNewFile();
             PrintWriter pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream(outputFile)));
-            generateCode(pw, cls, pkg);
+            generateClass(pw, cls, pkg);
             pw.close();
 
             BufferedReader reader = new BufferedReader(new FileReader(outputFile));
@@ -85,7 +85,7 @@ public class SimpleImplementor implements Implementor {
         return fullName.replace('.', '/');
     }
 
-    private void generateCode(PrintWriter pw, Class clazz, Package pkg) {
+    private void generateClass(PrintWriter pw, Class clazz, Package pkg) {
         if (pkg != null) {
             pw.println(String.format("package %s;", clazz.getPackage().getName()));
         }
@@ -94,7 +94,7 @@ public class SimpleImplementor implements Implementor {
                 clazz.isInterface() ? "implements" : "extends",
                 clazz.getCanonicalName()));
 
-        Arrays.stream(clazz.getDeclaredMethods())
+        Arrays.stream(clazz.getMethods())
                 .filter(m -> Modifier.isAbstract(m.getModifiers()))
                 .forEach(m -> generateMethod(pw, m));
 
