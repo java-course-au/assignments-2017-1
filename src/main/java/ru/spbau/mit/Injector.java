@@ -1,6 +1,7 @@
 package ru.spbau.mit;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -15,7 +16,11 @@ public final class Injector {
      * `implementationClassNames` for concrete dependencies.
      */
     public static Object initialize(String rootClassName, List<String> implementationClassNames) throws Exception {
-        return doGenerate(rootClassName, implementationClassNames, new HashSet<String>()); //
+        if (!implementationClassNames.contains(rootClassName)) {
+            implementationClassNames = new ArrayList<>(implementationClassNames);
+            implementationClassNames.add(rootClassName);
+        }
+        return doGenerate(rootClassName, implementationClassNames, new HashSet<String>());
     }
 
     private static Object doGenerate(String rootClassName,
