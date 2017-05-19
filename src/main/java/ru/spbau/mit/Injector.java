@@ -57,16 +57,11 @@ public final class Injector {
                     throw new ImplementationNotFoundException();
                 }
                 Object obj = null;
-                try {
-                    obj = dfs(implementationClassNames.get(index));
-                } catch (InjectionCycleException
-                        | ImplementationNotFoundException
-                        | AmbiguousImplementationException e) {
-                    throw e;
-                }
+                obj = dfs(implementationClassNames.get(index));
                 classToObj.put(curClassName, obj);
                 return obj;
             }
+
 
             if (!curClassName.equals(rootClassName) && !implementationClassNames.contains(curClassName)) {
                 throw new ImplementationNotFoundException();
@@ -84,19 +79,11 @@ public final class Injector {
             Object[] objects = new Object[types.length];
             int i = 0;
             for (Class<?> type: types) {
-                try {
-                    objects[i] = dfs(type.getCanonicalName());
-                } catch (ImplementationNotFoundException | AmbiguousImplementationException
-                        | InjectionCycleException e) {
-                    throw e;
-                }
+                objects[i] = dfs(type.getCanonicalName());
                 ++i;
             }
 
-            Object obj;
-            obj = constructor.newInstance(objects);
-
-
+            Object obj = constructor.newInstance(objects);
             classToObj.put(curClassName, obj);
             return obj;
         }
