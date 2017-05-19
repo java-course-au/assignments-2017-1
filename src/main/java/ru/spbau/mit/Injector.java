@@ -43,22 +43,29 @@ public final class Injector {
         }
 
         List<Class> alreadyUsed = new ArrayList<>();
-        alreadyUsed.add(rootClass);
         return runInitialize(rootClass, implementationClasses, alreadyUsed);
     }
 
     private static Object runInitialize(Class root, List<Class> implementationClasses,
                                         List<Class> alreadyUsed) throws Exception {
-        //get constructor
-        Constructor[] constructors = root.getDeclaredConstructors();
-        Constructor theOnlyOne = constructors[0];
+
+
+        if (alreadyUsed.contains(root)) {
+            throw new InjectionCycleException();
+        }
+        List<Class> newAlreadyUsed = new ArrayList<>();
+        newAlreadyUsed.addAll(alreadyUsed);
+        newAlreadyUsed.add(root);
 
         if (alreadyConstructed.containsKey(root)) {
             return alreadyConstructed.get(root);
         }
 
+        //get constructor
+        Constructor[] constructors = root.getDeclaredConstructors();
+        Constructor theOnlyOne = constructors[0];
         //run constructor
-        Object obj = runConstructor(theOnlyOne, implementationClasses, alreadyUsed);
+        Object obj = runConstructor(theOnlyOne, implementationClasses, newAlreadyUsed);
         alreadyConstructed.put(root, obj);
         return obj;
     }
@@ -66,14 +73,11 @@ public final class Injector {
     private static Object runConstructor(Constructor constructor,
                                          List<Class> implementationClasses,
                                          List<Class> alreadyUsed) throws Exception {
+
         Class[] params = constructor.getParameterTypes();
 
         List<Object> implementations = new ArrayList<>();
         for (Class parameter : params) {
-
-            if (alreadyUsed.contains(parameter)) {
-                throw new InjectionCycleException();
-            }
 
             List<Class> candidates = getCandidates(parameter, implementationClasses);
             if (candidates.size() == 0) {
@@ -84,11 +88,7 @@ public final class Injector {
                 throw new AmbiguousImplementationException();
             }
 
-            List<Class> newAlreadyUsed = new ArrayList<>();
-            newAlreadyUsed.addAll(alreadyUsed);
-            newAlreadyUsed.add(parameter);
-            Object parameterImpl = runInitialize(candidates.get(0), implementationClasses, newAlreadyUsed);
-
+            Object parameterImpl = runInitialize(candidates.get(0), implementationClasses, alreadyUsed);
             implementations.add(parameterImpl);
         }
 
