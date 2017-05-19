@@ -57,10 +57,19 @@ public final class Injector {
                         }
                     }
                 }
-                if (index == -1) {
-                    throw new ImplementationNotFoundException();
+                Object obj;
+                if (curClass.isAssignableFrom(Class.forName(rootClassName))) {
+                    ++count;
+                    if (count > 1) {
+                        throw new AmbiguousImplementationException();
+                    }
+                    obj = dfs(rootClassName);
+                } else {
+                    if (index == -1) {
+                        throw new ImplementationNotFoundException();
+                    }
+                    obj = dfs(implementationClassNames.get(index));
                 }
-                Object obj = dfs(implementationClassNames.get(index));
                 classToObj.put(curClassName, obj);
                 return obj;
             }
