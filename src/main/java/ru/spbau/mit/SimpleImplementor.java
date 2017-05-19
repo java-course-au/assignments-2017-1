@@ -1,16 +1,15 @@
 package ru.spbau.mit;
 
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class SimpleImplementor implements Implementor {
@@ -42,18 +41,17 @@ public class SimpleImplementor implements Implementor {
     }
 
     private String doGenerate(Class<?> classToExtend, File outputFile, Boolean packageNeeded) throws ImplementorException {
-        try(BufferedWriter output = new BufferedWriter(new FileWriter(outputFile))) {
+        try (BufferedWriter output = new BufferedWriter(new FileWriter(outputFile))) {
             generatePackage(classToExtend, packageNeeded, output);
             generateGeneratedWarning(output);
             generateClassBegin(classToExtend, output);
-            for (Method method: classToExtend.getMethods()) {
+            for (Method method : classToExtend.getMethods()) {
                 if (!Modifier.isStatic(method.getModifiers()) && !Modifier.isFinal(method.getModifiers())) {
                     generateMethod(output, method);
                 }
             }
             generateClassEnd(output);
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             throw new ImplementorException("Cannot write to output file.", ex);
         }
         return getGeneratedClassName(classToExtend, packageNeeded);
@@ -78,11 +76,9 @@ public class SimpleImplementor implements Implementor {
         output.write(TAB);
         if (Modifier.isPublic(method.getModifiers())) {
             output.write(" public ");
-        }
-        else if (Modifier.isProtected(method.getModifiers())) {
+        } else if (Modifier.isProtected(method.getModifiers())) {
             output.write(" protected ");
-        }
-        else {
+        } else {
             throw new ImplementorException("Invalid input.");
         }
         output.write(method.getReturnType().getCanonicalName() + " ");
@@ -100,14 +96,11 @@ public class SimpleImplementor implements Implementor {
         Class<?> returnType = method.getReturnType();
         if (returnType.equals(void.class)) {
             output.write("return;");
-        }
-        else if (returnType.equals(boolean.class)) {
+        } else if (returnType.equals(boolean.class)) {
             output.write("return false;");
-        }
-        else if (returnType.isPrimitive()) {
+        } else if (returnType.isPrimitive()) {
             output.write("return 0;");
-        }
-        else {
+        } else {
             output.write("return null;");
         }
         output.newLine();
@@ -122,8 +115,7 @@ public class SimpleImplementor implements Implementor {
         output.write("public class " + getGeneratedClassName(classToExtend, false));
         if (classToExtend.isInterface()) {
             output.write(" implements " + classToExtend.getCanonicalName() + " {");
-        }
-        else {
+        } else {
             output.write(" extends " + classToExtend.getCanonicalName() + " {");
         }
         output.newLine();
@@ -149,13 +141,12 @@ public class SimpleImplementor implements Implementor {
     private File createOutputFile(Class<?> classToExtend, Boolean packageNeeded) throws ImplementorException {
         String generatedClassPath =
                 getGeneratedClassName(classToExtend, packageNeeded)
-                .replaceAll("\\.", File.separator) + ".java";
+                        .replaceAll("\\.", File.separator) + ".java";
         File generatedFile = new File(outputDirectory, generatedClassPath);
         try {
             generatedFile.getParentFile().mkdirs();
             generatedFile.createNewFile();
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             throw new ImplementorException("Cannot create output file.", ex);
         }
         return generatedFile;
@@ -164,8 +155,7 @@ public class SimpleImplementor implements Implementor {
     private static String getGeneratedClassName(Class<?> classToGenerate, Boolean packageNeeded) {
         if (packageNeeded) {
             return classToGenerate.getCanonicalName() + "Impl";
-        }
-        else {
+        } else {
             return classToGenerate.getSimpleName() + "Impl";
         }
     }
@@ -173,8 +163,7 @@ public class SimpleImplementor implements Implementor {
     private Class<?> getClassFromStandardLibrary(String className) throws ImplementorException {
         try {
             return Class.forName(className);
-        }
-        catch (ClassNotFoundException ex) {
+        } catch (ClassNotFoundException ex) {
             throw new ImplementorException("Cannot access the class.", ex);
         }
     }
@@ -189,8 +178,7 @@ public class SimpleImplementor implements Implementor {
             URL jar = new URL("file://" + dir.getCanonicalPath() + File.separator);
             ClassLoader cl = new URLClassLoader(new URL[]{jar});
             return cl.loadClass(className);
-        }
-        catch (IOException | ClassNotFoundException ex) {
+        } catch (IOException | ClassNotFoundException ex) {
             throw new ImplementorException("Cannot access the class.", ex);
         }
     }

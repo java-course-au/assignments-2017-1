@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -85,13 +84,13 @@ public class ImplementorTest {
 
     @Test
     public void implementSimpleInterface() throws Exception {
-        String packageFolder = String.join(File.separator, new String[] {"ru", "au", "java"});
+        String packageFolder = String.join(File.separator, new String[]{"ru", "au", "java"});
         File dir = new File(getTestsDirectoryPath(), packageFolder);
         dir.mkdirs();
         File interfaze = new File(dir, "AnInterface.java");
         interfaze.createNewFile();
 
-        try(BufferedWriter output = new BufferedWriter(new FileWriter(interfaze))) {
+        try (BufferedWriter output = new BufferedWriter(new FileWriter(interfaze))) {
             output.write("package ru.au.java;");
             output.newLine();
             output.write("public interface AnInterface {");
@@ -149,7 +148,7 @@ public class ImplementorTest {
         final Class<?> outputClass = compileAndLoadClass(implClassName);
         checkExtendsAbstractClass(className, outputClass);
     }
-    
+
     private void checkExtendsAbstractClass(String className, Class<?> outputClass) {
         assertThat(outputClass.getSuperclass().getCanonicalName(), is(className));
     }
