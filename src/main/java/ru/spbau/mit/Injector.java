@@ -44,12 +44,12 @@ public final class Injector {
     public static Class<?> getClass(Class<?> cl, ArrayList<Class<?>> implementationClasses)
             throws ImplementationNotFoundException, AmbiguousImplementationException {
 
-        boolean flag = false;
+//        boolean flag = false;
         Class<?> out = null;
         for (Class<?> implClass : implementationClasses) {
             int count = 0;
             if (cl.isAssignableFrom(implClass)) {
-                flag = true;
+//                flag = true;
                 out = implClass;
                 count++;
                 if (count >= 2) {
@@ -57,7 +57,7 @@ public final class Injector {
                 }
             }
         }
-        if (!flag) {
+        if (out == null) {
             throw new ImplementationNotFoundException();
         }
         return out;
@@ -70,10 +70,10 @@ public final class Injector {
             InstantiationException,
             ImplementationNotFoundException, AmbiguousImplementationException {
         classVisited.add(current);
-        final Class<?>[] parameters = current.getConstructors()[0].getParameterTypes();
+        final Class<?>[] parameters = getConstructor(current).getParameterTypes();
         final Object[] constructorArgs = new Object[parameters.length];
         for (int i = 0; i < parameters.length; i++) {
-            Class<?> implClass = getClass(parameters[i], implementationClasses);
+            final Class<?> implClass = getClass(parameters[i], implementationClasses);
             if (classVisited.contains(implClass) && !classToObject.containsKey(implClass)) {
                 throw new InjectionCycleException();
             }
