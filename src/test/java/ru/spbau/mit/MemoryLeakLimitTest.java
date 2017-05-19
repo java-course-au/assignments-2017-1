@@ -6,6 +6,7 @@ import org.junit.Test;
 
 public class MemoryLeakLimitTest {
     private static int[] memory;
+    private static final int TEST_MEMORY_SIZE = 100000;
 
     @Rule
     public final MemoryLeakLimit memoryLeakLimit = new MemoryLeakLimit();
@@ -14,13 +15,13 @@ public class MemoryLeakLimitTest {
     @Test
     public void testHugeMemoryAllocation() {
         memoryLeakLimit.limit(1);
-        memory = new int[200000];
+        memory = new int[TEST_MEMORY_SIZE];
     }
 
     @Test
     public void testMemoryLeakAndException() throws Exception {
         memoryLeakLimit.limit(1);
-        memory = new int[200000];
+        memory = new int[TEST_MEMORY_SIZE];
         throw new Exception("Some exception");
     }
     // CHECKSTYLE:ON
