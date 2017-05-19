@@ -18,6 +18,7 @@ public final class Injector {
             for (String cl : impsn) {
                 imps.add(loader.loadClass(cl));
             }
+            imps.add(root);
         } catch (ClassNotFoundException e) {
             throw new ImplementationNotFoundException();
         }
@@ -26,9 +27,6 @@ public final class Injector {
     private Class find(Class trg, Class dep) throws Exception {
         List<Class> cls = imps.stream().filter(x -> trg.isAssignableFrom(x)).collect(Collectors.toList());
         if (cls.size() == 0) {
-            if (trg.isAssignableFrom(root)) {
-                throw new InjectionCycleException();
-            }
             throw new ImplementationNotFoundException();
         } else if (cls.size() != 1) {
             throw new AmbiguousImplementationException();
