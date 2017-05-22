@@ -89,11 +89,11 @@ public class SimpleImplementor implements Implementor {
 
     private String generateParams(Method method) {
         return Arrays.stream(method.getParameters())
-            .map(x -> x.getType().getCanonicalName() + ' ' + x.getName())
-            .collect(Collectors.joining(",", "(", ")"));
+                .map(x -> x.getType().getCanonicalName() + ' ' + x.getName())
+                .collect(Collectors.joining(",", "(", ")"));
     }
 
-    private String generateMethod(Method method) {
+    private String tryGenerateMethod(Method method) {
         int modifiers = method.getModifiers();
         StringBuilder mbuilder = new StringBuilder();
 
@@ -121,32 +121,28 @@ public class SimpleImplementor implements Implementor {
         return mbuilder.toString();
     }
 
+    private void tryGenerateMethod(Set<String> added, Method method, StringBuilder builder) {
+        int modifiers = method.getModifiers();
+        if (Modifier.isFinal(modifiers) || Modifier.isStatic(modifiers)) {
+            return;
+        }
+        if (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)) {
+            String methodBody = tryGenerateMethod(method);
+            if (!added.contains(methodBody)) {
+                added.add(methodBody);
+                builder.append(methodBody);
+            }
+        }
+    }
+
     private void generateMethods(Class base, StringBuilder builder) {
-        Set<String> methods = new HashSet<>();
-        Queue<Class> cls = new LinkedList<>();
-        cls.add(base);
-
-        while (!cls.isEmpty()) {
-            Class clazz = cls.poll();
+        Set<String> added = new HashSet<>();
+        for (Method method : base.getMethods()) {
+            tryGenerateMethod(added, method, builder);
+        }
+        for (Class clazz = base; clazz != null; clazz = clazz.getSuperclass()) {
             for (Method method : clazz.getDeclaredMethods()) {
-                int modifiers = method.getModifiers();
-                if (Modifier.isFinal(modifiers) || Modifier.isStatic(modifiers)) {
-                    continue;
-                }
-                if (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)) {
-                    String methodBody = generateMethod(method);
-                    if (!methods.contains(methodBody)) {
-                        methods.add(methodBody);
-                        builder.append(methodBody);
-                    }
-                }
-            }
-
-            if (clazz.getSuperclass() != null) {
-                cls.add(clazz.getSuperclass());
-            }
-            for (Class interfacezz : clazz.getInterfaces()) {
-                cls.add(interfacezz);
+                tryGenerateMethod(added, method, builder);
             }
         }
     }
