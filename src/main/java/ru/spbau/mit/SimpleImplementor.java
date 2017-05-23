@@ -12,10 +12,9 @@ import java.net.URLClassLoader;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Set;
 
 public class SimpleImplementor implements Implementor {
     private String outputDirectory;
@@ -81,13 +80,12 @@ public class SimpleImplementor implements Implementor {
         return loadedClass.isAnonymousClass() || Modifier.isFinal(loadedClass.getModifiers());
     }
 
-    private List<Method> getAllMethods(Class<?> loadedClass) {
-        List<Method> interestingMethods = new ArrayList<>();
+    private Set<Method> getAllMethods(Class<?> loadedClass) {
+        Set<Method> interestingMethods = new HashSet<>();
         while (loadedClass != null) {
             interestingMethods.addAll(Arrays.asList(loadedClass.getDeclaredMethods()));
-            for (Class<?> intrf : loadedClass.getInterfaces()) {
-                interestingMethods.addAll(Arrays.asList(intrf.getDeclaredMethods()));
-            }
+            // Get inherited public methods (e.g. from interfaces).
+            interestingMethods.addAll(Arrays.asList(loadedClass.getMethods()));
             loadedClass = loadedClass.getSuperclass();
         }
         return interestingMethods;
@@ -106,43 +104,34 @@ public class SimpleImplementor implements Implementor {
         body.append(String.format("public class %s %s %s {\n", simpleName,
                 extendAction, loadedClass.getCanonicalName()));
 
-        List<Method> interestingMethods = getAllMethods(loadedClass);
-        HashSet<Integer> overridenMethods = new HashSet<>();
-
-        for (Method meth : interestingMethods) {
+        getAllMethods(loadedClass).stream().filter(meth -> {
             int methodModifiers = meth.getModifiers();
-            if (!Modifier.isInterface(methodModifiers) && !Modifier.isAbstract(methodModifiers)) {
-                continue;
-            }
-
-            Integer curHash = Arrays.hashCode(meth.getParameterTypes()) ^ meth.getName().hashCode();
-            if (overridenMethods.contains(curHash)) {
-                continue;
-            }
-            overridenMethods.add(curHash);
-            addOneMethod(body, meth);
-        }
+            return Modifier.isInterface(methodModifiers) || Modifier.isAbstract(methodModifiers);
+        }).map(this::buildOneMethod).distinct().forEach(body::append);
 
         body.append("}");
 
         return body.toString();
     }
 
-    private void addOneMethod(StringBuilder body, Method meth) {
-        body.append("@Override\n");
-        body.append("public ");
+    private String buildOneMethod(Method meth) {
+        StringBuilder methodBody = new StringBuilder();
+        methodBody.append("@Override\n");
+        methodBody.append("public ");
 
         Class<?> returnType = meth.getReturnType();
 
-        body.append(returnType.getCanonicalName()).append(" ");
-        body.append(meth.getName());
+        methodBody.append(returnType.getCanonicalName()).append(" ");
+        methodBody.append(meth.getName());
 
-        addMethodParams(body, meth);
-        addThrowsForMethod(body, meth);
+        addMethodParams(methodBody, meth);
+        addThrowsForMethod(methodBody, meth);
 
-        body.append(" {\n");
-        body.append("throw new UnsupportedOperationException();\n");
-        body.append("}\n");
+        methodBody.append(" {\n");
+        methodBody.append("throw new UnsupportedOperationException();\n");
+        methodBody.append("}\n");
+
+        return methodBody.toString();
     }
 
     private void addMethodParams(StringBuilder body, Method meth) {
