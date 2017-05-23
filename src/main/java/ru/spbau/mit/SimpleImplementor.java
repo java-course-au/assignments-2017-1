@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 public class SimpleImplementor implements Implementor {
     private String outputDirectory;
@@ -136,16 +137,17 @@ public class SimpleImplementor implements Implementor {
 
     private void addMethodParams(StringBuilder body, Method meth) {
         body.append("(");
-        int argIdx = 0;
-        for (Class<?> arg : meth.getParameterTypes()) {
+
+        Class<?>[] parameterTypes = meth.getParameterTypes();
+        IntStream.range(0, parameterTypes.length).forEachOrdered(argIdx -> {
             if (argIdx > 0) {
                 body.append(", ");
             }
-            body.append(arg.getCanonicalName());
+            body.append(parameterTypes[argIdx].getCanonicalName());
             body.append(" ");
             body.append(String.format("arg%d", argIdx));
-            argIdx++;
-        }
+        });
+
         body.append(") ");
     }
 
@@ -154,13 +156,13 @@ public class SimpleImplementor implements Implementor {
         if (exceptionTypes.length > 0) {
             body.append("throws ");
         }
-        for (int idx = 0; idx < exceptionTypes.length; idx++) {
-            Class<?> exc = exceptionTypes[idx];
+
+        IntStream.range(0, exceptionTypes.length).forEachOrdered(idx -> {
             if (idx > 0) {
                 body.append(", ");
             }
-            body.append(exc.getCanonicalName());
-        }
+            body.append(exceptionTypes[idx].getCanonicalName());
+        });
     }
 
     @Override
