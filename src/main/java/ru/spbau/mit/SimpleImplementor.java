@@ -15,7 +15,11 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static java.util.stream.Collectors.toMap;
 
 public class SimpleImplementor implements Implementor {
     private String outputDirectory;
@@ -105,14 +109,24 @@ public class SimpleImplementor implements Implementor {
         body.append(String.format("public class %s %s %s {\n", simpleName,
                 extendAction, loadedClass.getCanonicalName()));
 
+        // Filter methods based on signature per https://stackoverflow.com/a/27870202/5338270
         getAllMethods(loadedClass).stream().filter(meth -> {
             int methodModifiers = meth.getModifiers();
             return Modifier.isInterface(methodModifiers) || Modifier.isAbstract(methodModifiers);
-        }).map(this::buildOneMethod).distinct().forEach(body::append);
-
+        }).collect(toMap(this::methodSignature, Function.identity(), (p, q) -> p)).values().stream()
+                .map(this::buildOneMethod).forEach(body::append);
         body.append("}");
 
         return body.toString();
+    }
+
+    private String methodSignature(Method meth) {
+        String delim = ";;;";
+
+        return meth.getName()
+                + delim
+                + Arrays.stream(meth.getParameterTypes()).map(Class::getCanonicalName)
+                        .collect(Collectors.joining(delim));
     }
 
     private String buildOneMethod(Method meth) {
@@ -136,33 +150,18 @@ public class SimpleImplementor implements Implementor {
     }
 
     private void addMethodParams(StringBuilder body, Method meth) {
-        body.append("(");
-
         Class<?>[] parameterTypes = meth.getParameterTypes();
-        IntStream.range(0, parameterTypes.length).forEachOrdered(argIdx -> {
-            if (argIdx > 0) {
-                body.append(", ");
-            }
-            body.append(parameterTypes[argIdx].getCanonicalName());
-            body.append(" ");
-            body.append(String.format("arg%d", argIdx));
-        });
-
-        body.append(") ");
+        body.append(IntStream.range(0, parameterTypes.length)
+                .mapToObj(idx -> String.format("%s arg%d", parameterTypes[idx].getCanonicalName(), idx))
+                .collect(Collectors.joining(", ", "(", ")")));
     }
 
     private void addThrowsForMethod(StringBuilder body, Method meth) {
         Class<?>[] exceptionTypes = meth.getExceptionTypes();
         if (exceptionTypes.length > 0) {
-            body.append("throws ");
+            body.append(Arrays.stream(exceptionTypes).map(Class::getCanonicalName)
+                    .collect(Collectors.joining(", ", "throws ", "")));
         }
-
-        IntStream.range(0, exceptionTypes.length).forEachOrdered(idx -> {
-            if (idx > 0) {
-                body.append(", ");
-            }
-            body.append(exceptionTypes[idx].getCanonicalName());
-        });
     }
 
     @Override
