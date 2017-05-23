@@ -1,6 +1,7 @@
 package ru.spbau.mit;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -17,6 +18,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsArrayWithSize.arrayWithSize;
@@ -70,6 +72,35 @@ public class ImplementorTest {
         }
     }
 
+    @Before
+    public void setUp() throws IOException {
+        testsDirectory.create();
+        String prefix = "./src/test/java/ru/spbau/mit/testClasses";
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
+        StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null);
+        List<String> filesToCompile = Arrays.asList("AbstractBaseUtil", "FinalClassUtil", "InterfaceUtil",
+                "EmptyInterface");
+        List<String> filePaths = filesToCompile.stream()
+                .map(path -> Paths.get(prefix, path + ".java")
+                        .toAbsolutePath().toString()).collect(Collectors.toList());
+        Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromStrings(
+                filePaths);
+        List<String> options = new ArrayList<>();
+        options.addAll(Arrays.asList("-classpath", System.getProperty("java.class.path") + getTestsDirectoryPath(),
+                "-d", getTestsDirectoryPath()));
+        JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnostics, options,
+                null, compilationUnits);
+        boolean success = task.call();
+        if (!success) {
+            for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics()) {
+                System.err.println(diagnostic.toString());
+            }
+            throw new RuntimeException();
+        }
+        fileManager.close();
+    }
+
     @After
     public void cleanUp() {
         deleteFolderContent(new File(getOutputDirectoryPath()), false);
@@ -78,6 +109,51 @@ public class ImplementorTest {
     @Test
     public void implementCloneable() throws Exception {
         checkInterfaceImplementationFromStandardLibrary("java.lang.Cloneable");
+    }
+
+    @Test
+    public void implementAbstractSet() throws Exception {
+        checkAbstractClassImplementationFromStandardLibrary("java.util.AbstractSet");
+    }
+
+    @Test
+    public void implementFromDefaultPackage() throws Exception {
+        checkInterfaceImplementationFromFolder("EmptyInterface");
+    }
+
+    @Test(expected = ImplementorException.class)
+    public void implementNonexistantStandardClass() throws Exception {
+        checkAbstractClassImplementationFromStandardLibrary("java.kotlin.clojure");
+    }
+
+    @Test(expected = ImplementorException.class)
+    public void implementNonexistantClass() throws Exception {
+        checkAbstractClassImplementationFromFolder("blabla");
+    }
+
+    @Test(expected = ImplementorException.class)
+    public void implementFinalStandardClass() throws Exception {
+        checkAbstractClassImplementationFromStandardLibrary("java.lang.String");
+    }
+
+    @Test(expected = ImplementorException.class)
+    public void implementFinalClass() throws Exception {
+        checkAbstractClassImplementationFromFolder("ru.spbau.mit.testClasses.FinalClassUtil");
+    }
+
+    @Test
+    public void implementSomeInterface() throws Exception {
+        checkInterfaceImplementationFromFolder("ru.spbau.mit.testClasses.InterfaceUtil");
+    }
+
+    @Test
+    public void implementClassWithProtectedMeths() throws Exception {
+        checkAbstractClassImplementationFromStandardLibrary("java.net.SocketImpl");
+    }
+
+    @Test
+    public void implementSomeAbstractClass() throws Exception {
+        checkAbstractClassImplementationFromFolder("ru.spbau.mit.testClasses.AbstractBaseUtil");
     }
 
     private void checkInterfaceImplementationFromFolder(String className) throws Exception {
