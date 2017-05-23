@@ -1,13 +1,15 @@
 package ru.spbau.mit;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -66,15 +68,10 @@ public class SimpleImplementor implements Implementor {
             dir = Paths.get(dir.toString(), split[i]);
         }
 
-        if (!dir.toFile().isDirectory() && !dir.toFile().mkdirs()) {
-            throw new ImplementorException("Could not create directories");
-        }
-
         try {
-            FileWriter writer = new FileWriter(new File(dir.toString(),
-                    split[split.length - 1] + ".java"));
-            writer.write(classBody);
-            writer.close();
+            FileUtils.writeStringToFile(new File(dir.toString(), split[split.length - 1] + ".java"),
+                    classBody,
+                    Charset.defaultCharset());
         } catch (IOException e) {
             throw new ImplementorException("Could not create resulting file");
         }
