@@ -1,8 +1,8 @@
 package ru.spbau.mit;
 
-import java.io.BufferedWriter;
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -47,14 +47,9 @@ public class SimpleImplementor implements Implementor {
         generateDeclaration(implementation, classToImplement);
         generateClassBody(implementation, classToImplement);
 
-        File file = new File(outputDirectory + "/" + className.replace(".", "/") + "Impl.java");
-        file.getParentFile().mkdirs();
-
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            writer.append(implementation);
-        } catch (IOException e) {
-            throw new ImplementorException(e.getMessage(), e);
-        }
+        File file = new File(outputDirectory + "/" +
+                className.replace(".", "/") + "Impl.java");
+        writeToFile(file, implementation);
 
         return className + "Impl";
     }
@@ -81,14 +76,19 @@ public class SimpleImplementor implements Implementor {
 
         String[] classNameSplitted = className.split("\\.");
         String simpleClassName = classNameSplitted[classNameSplitted.length - 1];
-        try (BufferedWriter writer = new BufferedWriter(
-                new FileWriter(outputDirectory + "/" + simpleClassName + "Impl.java"))) {
-            writer.append(implementation);
+
+        File file = new File(outputDirectory + "/" + simpleClassName + "Impl.java");
+        writeToFile(file, implementation);
+
+        return simpleClassName + "Impl";
+    }
+
+    private void writeToFile(File file, StringBuilder implementation) throws ImplementorException {
+        try {
+            FileUtils.writeStringToFile(file, implementation.toString());
         } catch (IOException e) {
             throw new ImplementorException(e.getMessage(), e);
         }
-
-        return simpleClassName + "Impl";
     }
 
     private void generatePackage(StringBuilder implementation, Class classToImplement) {
@@ -108,13 +108,10 @@ public class SimpleImplementor implements Implementor {
     }
 
     private void generateClassBody(StringBuilder implementation, Class classToImplement) {
-        implementation.append(" {\n\t");
-
         Set<String> methodsImpl = new HashSet<>();
         generateMethodsForClass(methodsImpl, classToImplement);
-        implementation.append(String.join("\n\n\t", methodsImpl));
-
-        implementation.append("\n}\n");
+        implementation.append(methodsImpl.stream().
+                collect(Collectors.joining("\n\n\t", " {\n\t", "\n}\n")));
     }
 
     private void generateMethodsForClass(Set<String> methodsImpl, Class classToImplement) {

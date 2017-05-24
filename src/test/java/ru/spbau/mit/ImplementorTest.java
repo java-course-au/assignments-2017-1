@@ -65,6 +65,11 @@ public class ImplementorTest {
     }
 
     @Test
+    public void abstractClassImplementationFromStandardLib() throws Exception {
+        checkAbstractClassImplementationFromStandardLibrary("java.util.AbstractCollection");
+    }
+
+    @Test
     public void interfaceImplementationFromFolder() throws Exception {
         checkInterfaceImplementationFromFolder("ru.spbau.mit.SuperInterface");
     }
