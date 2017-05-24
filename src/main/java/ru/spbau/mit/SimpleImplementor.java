@@ -47,8 +47,8 @@ public class SimpleImplementor implements Implementor {
         generateDeclaration(implementation, classToImplement);
         generateClassBody(implementation, classToImplement);
 
-        File file = new File(outputDirectory + "/" +
-                className.replace(".", "/") + "Impl.java");
+        File file = new File(outputDirectory + "/"
+                + className.replace(".", "/") + "Impl.java");
         writeToFile(file, implementation);
 
         return className + "Impl";
