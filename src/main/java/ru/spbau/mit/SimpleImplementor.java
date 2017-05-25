@@ -127,10 +127,9 @@ public class SimpleImplementor implements Implementor {
         List<Method> methods = new ArrayList<>();
         Class<?> cur = classImpl;
         while (cur != null) {
-//            Arrays.stream(cur.getDeclaredMethods())
-//                    .filter(m -> Modifier.isAbstract(m.getModifiers())
-//                            || Modifier.isInterface(m.getModifiers()))
-//                    .forEach(methods::add);
+            Arrays.stream(cur.getDeclaredMethods())
+                    .filter(m -> Modifier.isAbstract(m.getModifiers()))
+                    .forEach(methods::add);
 
             Arrays.stream(cur.getMethods())
                     .filter(m -> Modifier.isAbstract(m.getModifiers()))
