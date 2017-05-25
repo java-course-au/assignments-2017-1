@@ -101,11 +101,6 @@ public class SimpleImplementor implements Implementor {
         createMethods(classImpl, sb);
         sb.append("}");
         return sb.toString();
-//        return createClassName(classImpl, baseClass)
-//                + " {"
-//                + System.lineSeparator()
-//                + createMethods(classImpl)
-//                + "}";
     }
 
     private static void createClassName(Class<?> classImpl, String baseClass,
@@ -115,12 +110,6 @@ public class SimpleImplementor implements Implementor {
                 .append("Impl")
                 .append(classImpl.isInterface() ? " implements " : " extends ")
                 .append(baseClass);
-
-//        return "public class "
-//                + classImpl.getSimpleName()
-//                + "Impl"
-//                + (classImpl.isInterface() ? " implements " : " extends ")
-//                + baseClass;
     }
 
     private static void createMethods(Class<?> classImpl, StringBuilder sb) {
@@ -135,19 +124,6 @@ public class SimpleImplementor implements Implementor {
                     .filter(m -> Modifier.isAbstract(m.getModifiers()))
                     .forEach(methods::add);
 
-//            methods.addAll(Arrays.asList(cur.getDeclaredMethods()));
-//            methods.addAll(Arrays.asList(cur.getMethods()));
-
-//            Arrays.stream(cur.getDeclaredMethods())
-//                    .filter(m -> Modifier.isAbstract(m.getModifiers()))
-//                    .map(SimpleImplementor::createMethod)
-//                    .forEach(methods::add);
-//
-//            Arrays.stream(cur.getInterfaces())
-//                    .flatMap(c -> Arrays.stream(c.getDeclaredMethods()))
-//                    .map(SimpleImplementor::createMethod)
-//                    .forEach(methods::add);
-
             cur = cur.getSuperclass();
         }
 
@@ -157,13 +133,6 @@ public class SimpleImplementor implements Implementor {
                     Function.identity(), (p, q) -> p))
                 .values()
                 .forEach(m -> createMethod(m, sb));
-
-//                .distinct()
-//            .forEach(m -> createMethod(m, sb));
-//        return methods
-//                .stream()
-//                .distinct()
-//                .collect(Collectors.joining(""));
     }
 
     private static String methodToString(Method method) {
@@ -183,16 +152,6 @@ public class SimpleImplementor implements Implementor {
         sb.append(System.lineSeparator())
                 .append("\t}")
                 .append(System.lineSeparator());
-
-//        return  "\t"
-//                + createMethodDeclaration(method)
-//                + " {"
-//                + System.lineSeparator()
-//                + "\t\t"
-//                + createReturn(method)
-//                + System.lineSeparator()
-//                + "\t}"
-//                + System.lineSeparator();
     }
 
     private static void createMethodDeclaration(Method method, StringBuilder sb) {
@@ -203,12 +162,6 @@ public class SimpleImplementor implements Implementor {
                 .append(method.getName());
         createMethodParams(method.getParameters(), sb);
 
-//        return  Modifier.toString(method.getModifiers()).replace("abstract", "")
-//                + " "
-//                + method.getReturnType().getCanonicalName()
-//                + " "
-//                + method.getName()
-//                + createMethodParams(method.getParameters());
     }
 
     private static void createMethodParams(Parameter[] params, StringBuilder sb) {
