@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class SimpleImplementor implements Implementor {
@@ -33,13 +34,7 @@ public class SimpleImplementor implements Implementor {
                     + classImpl.getSimpleName()
                     + "Impl.java");
 
-            if (!Files.exists(pathToImpl.getParent())) {
-                Files.createDirectories(pathToImpl.getParent());
-            }
-            if (!Files.exists(pathToImpl)) {
-                Files.createFile(pathToImpl);
-            }
-
+            createFiles(pathToImpl);
             String res = createClass(classImpl, classImpl.getCanonicalName());
             Files.write(pathToImpl, res.getBytes());
         } catch (ClassNotFoundException e) {
@@ -61,13 +56,8 @@ public class SimpleImplementor implements Implementor {
             Path pathToImpl = Paths.get(outputDirectory + System.getProperty("file.separator")
                     + className.replace(".", System.getProperty("file.separator"))
                     + "Impl.java");
-            if (!Files.exists(pathToImpl.getParent())) {
-                Files.createDirectories(pathToImpl.getParent());
-            }
-            if (!Files.exists(pathToImpl)) {
-                Files.createFile(pathToImpl);
-            }
 
+            createFiles(pathToImpl);
             String packageName = "";
             if (classImpl.getPackage() != null) {
                 packageName = "package "
@@ -88,6 +78,16 @@ public class SimpleImplementor implements Implementor {
         return className + "Impl";
     }
 
+
+    private static void createFiles(Path pathToImpl) throws IOException {
+        if (!Files.exists(pathToImpl.getParent())) {
+            Files.createDirectories(pathToImpl.getParent());
+        }
+        if (!Files.exists(pathToImpl)) {
+            Files.createFile(pathToImpl);
+        }
+    }
+
     private static String createClass(Class<?> classImpl, String baseClass)
             throws ImplementorException {
 
@@ -95,82 +95,142 @@ public class SimpleImplementor implements Implementor {
             throw new ImplementorException(classImpl.getSimpleName() + " is final");
         }
 
-        return createClassName(classImpl, baseClass)
-                + " {"
-                + System.lineSeparator()
-                + createMethods(classImpl)
-                + "}";
+        StringBuilder sb = new StringBuilder();
+        createClassName(classImpl, baseClass, sb);
+        sb.append(" {").append(System.lineSeparator());
+        createMethods(classImpl, sb);
+        sb.append("}");
+        return sb.toString();
+//        return createClassName(classImpl, baseClass)
+//                + " {"
+//                + System.lineSeparator()
+//                + createMethods(classImpl)
+//                + "}";
     }
 
-    private static String createClassName(Class<?> classImpl, String baseClass) {
-        return "public class "
-                + classImpl.getSimpleName()
-                + "Impl"
-                + (classImpl.isInterface() ? " implements " : " extends ")
-                + baseClass;
+    private static void createClassName(Class<?> classImpl, String baseClass,
+                                          StringBuilder sb) {
+        sb.append("public class ")
+                .append(classImpl.getSimpleName())
+                .append("Impl")
+                .append(classImpl.isInterface() ? " implements " : " extends ")
+                .append(baseClass);
+
+//        return "public class "
+//                + classImpl.getSimpleName()
+//                + "Impl"
+//                + (classImpl.isInterface() ? " implements " : " extends ")
+//                + baseClass;
     }
 
-    private static String createMethods(Class<?> classImpl) {
-        List<String> methods = new ArrayList<>();
+    private static void createMethods(Class<?> classImpl, StringBuilder sb) {
+        List<Method> methods = new ArrayList<>();
         Class<?> cur = classImpl;
         while (cur != null) {
-            Arrays.stream(cur.getDeclaredMethods())
+//            Arrays.stream(cur.getDeclaredMethods())
+//                    .filter(m -> Modifier.isAbstract(m.getModifiers())
+//                            || Modifier.isInterface(m.getModifiers()))
+//                    .forEach(methods::add);
+
+            Arrays.stream(cur.getMethods())
                     .filter(m -> Modifier.isAbstract(m.getModifiers()))
-                    .map(SimpleImplementor::createMethod)
                     .forEach(methods::add);
 
-            Arrays.stream(cur.getInterfaces())
-                    .flatMap(c -> Arrays.stream(c.getDeclaredMethods()))
-                    .map(SimpleImplementor::createMethod)
-                    .forEach(methods::add);
+//            methods.addAll(Arrays.asList(cur.getDeclaredMethods()));
+//            methods.addAll(Arrays.asList(cur.getMethods()));
+
+//            Arrays.stream(cur.getDeclaredMethods())
+//                    .filter(m -> Modifier.isAbstract(m.getModifiers()))
+//                    .map(SimpleImplementor::createMethod)
+//                    .forEach(methods::add);
+//
+//            Arrays.stream(cur.getInterfaces())
+//                    .flatMap(c -> Arrays.stream(c.getDeclaredMethods()))
+//                    .map(SimpleImplementor::createMethod)
+//                    .forEach(methods::add);
 
             cur = cur.getSuperclass();
         }
-        return methods
-                .stream()
-                .distinct()
-                .collect(Collectors.joining(""));
+
+        methods
+            .stream()
+            .collect(Collectors.toMap(SimpleImplementor::methodToString,
+                    Function.identity(), (p, q) -> p))
+                .values()
+                .forEach(m -> createMethod(m, sb));
+
+//                .distinct()
+//            .forEach(m -> createMethod(m, sb));
+//        return methods
+//                .stream()
+//                .distinct()
+//                .collect(Collectors.joining(""));
     }
 
-    private static String createMethod(Method method) {
-        // compiler will use StringBuilder automatically
-        return  "\t"
-                + createMethodDeclaration(method)
-                + " {"
-                + System.lineSeparator()
-                + "\t\t"
-                + createReturn(method)
-                + System.lineSeparator()
-                + "\t}"
-                + System.lineSeparator();
+    private static String methodToString(Method method) {
+        return method.getName()
+                + Arrays.stream(method.getParameters())
+                    .map(param -> param.getType().getSimpleName())
+                    .collect(Collectors.joining(", ", "(", ")"));
     }
 
-    private static String createMethodDeclaration(Method method) {
-        return  Modifier.toString(method.getModifiers()).replace("abstract", "")
-                + " "
-                + method.getReturnType().getCanonicalName()
-                + " "
-                + method.getName()
-                + createMethodParams(method.getParameters());
+    private static void createMethod(Method method, StringBuilder sb) {
+        sb.append("\t");
+        createMethodDeclaration(method, sb);
+        sb.append(" {")
+                .append(System.lineSeparator())
+                .append("\t\t");
+        createReturn(method, sb);
+        sb.append(System.lineSeparator())
+                .append("\t}")
+                .append(System.lineSeparator());
+
+//        return  "\t"
+//                + createMethodDeclaration(method)
+//                + " {"
+//                + System.lineSeparator()
+//                + "\t\t"
+//                + createReturn(method)
+//                + System.lineSeparator()
+//                + "\t}"
+//                + System.lineSeparator();
     }
 
-    private static String createMethodParams(Parameter[] params) {
-        return Arrays.stream(params)
+    private static void createMethodDeclaration(Method method, StringBuilder sb) {
+        sb.append(Modifier.toString(method.getModifiers()).replace("abstract", ""))
+                .append(" ")
+                .append(method.getReturnType().getCanonicalName())
+                .append(" ")
+                .append(method.getName());
+        createMethodParams(method.getParameters(), sb);
+
+//        return  Modifier.toString(method.getModifiers()).replace("abstract", "")
+//                + " "
+//                + method.getReturnType().getCanonicalName()
+//                + " "
+//                + method.getName()
+//                + createMethodParams(method.getParameters());
+    }
+
+    private static void createMethodParams(Parameter[] params, StringBuilder sb) {
+        sb.append(Arrays.stream(params)
                 .map(param -> param.getType().getCanonicalName() + " " + param.getName())
-                .collect(Collectors.joining(", ", "(", ")"));
+                .collect(Collectors.joining(", ", "(", ")")));
     }
 
-    private static String createReturn(Method method) {
+    private static void createReturn(Method method, StringBuilder sb) {
         Class<?> returnType = method.getReturnType();
         if (returnType.isPrimitive()) {
             if (returnType.equals(boolean.class)) {
-                return "return true;";
+                sb.append("return true;");
+                return;
             }
             if (returnType.equals(void.class)) {
-                return "";
+                return;
             }
-            return "return 0;";
+            sb.append("return 0;");
+            return;
         }
-        return "return null;";
+        sb.append("return null;");
     }
 }
