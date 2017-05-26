@@ -124,11 +124,12 @@ public class SimpleImplementor implements Implementor {
         }
 
         methods.addAll(Arrays.asList(cls.getDeclaredMethods()));
+        methods.addAll(Arrays.asList(cls.getMethods()));
         extractMethods(cls.getSuperclass(), methods);
 
-        for (Class interf : cls.getInterfaces()) {
-            extractMethods(interf, methods);
-        }
+//        for (Class interf : cls.getInterfaces()) {
+//            extractMethods(interf, methods);
+//        }
     }
 
     private void generateMethod(PrintWriter pw, Method method, VarNameGenerator gen) {
