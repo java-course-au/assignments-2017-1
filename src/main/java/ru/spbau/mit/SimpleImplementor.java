@@ -80,6 +80,7 @@ public class SimpleImplementor implements Implementor {
             tmp.append(" {\n");
             implReturn(tmp, method.getReturnType());
             tmp.append("\t}\n\n");
+        }
         if (!methods.contains(tmp.toString()) && !Modifier.isFinal(method.getModifiers())) {
             methods.add(tmp.toString());
             out.append(tmp.toString());
