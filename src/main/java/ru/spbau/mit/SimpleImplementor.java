@@ -69,6 +69,24 @@ public class SimpleImplementor implements Implementor {
         out.append(")");
     }
 
+    private static void implMethods(final StringBuilder out, final Method method, final HashSet<String> methods) {
+        StringBuilder tmp = new StringBuilder();
+        if (Modifier.isPublic(method.getModifiers()) || Modifier.isProtected(method.getModifiers())) {
+            tmp.append("\t");
+            tmp.append("public ");
+            tmp.append(method.getReturnType().getCanonicalName()).append(" ");
+            tmp.append(method.getName()).append(" ");
+            implArgs(tmp, method);
+            tmp.append(" {\n");
+            implReturn(tmp, method.getReturnType());
+            tmp.append("\t}\n\n");
+        }
+        if (!methods.contains(tmp.toString()) && !Modifier.isFinal(method.getModifiers())) {
+            methods.add(tmp.toString());
+            out.append(tmp.toString());
+        }
+    }
+
     private static void implBody(final StringBuilder out, final Class<?> cl) {
         final Queue<Class> queue = new LinkedList<>();
         final HashSet<String> methods = new HashSet<>();
@@ -76,22 +94,10 @@ public class SimpleImplementor implements Implementor {
         while (!queue.isEmpty()) {
             Class<?> clazz = queue.poll();
             for (Method method : cl.getDeclaredMethods()) {
-                StringBuilder tmp = new StringBuilder();
-                if (Modifier.isPublic(method.getModifiers()) || Modifier.isProtected(method.getModifiers())) {
-                    tmp.append("\t");
-                    tmp.append("public ");
-                    tmp.append(method.getReturnType().getCanonicalName()).append(" ");
-                    tmp.append(method.getName()).append(" ");
-                    implArgs(tmp, method);
-                    tmp.append(" {\n");
-                    implReturn(tmp, method.getReturnType());
-                    tmp.append("\t}\n\n");
-                }
-                int i = 0;
-                if (!methods.contains(tmp.toString()) && !Modifier.isFinal(method.getModifiers())) {
-                    methods.add(tmp.toString());
-                    out.append(tmp.toString());
-                }
+                implMethods(out, method, methods);
+            }
+            for (Method method : cl.getMethods()) {
+                implMethods(out, method, methods);
             }
             if (clazz.getSuperclass() != null) {
                 queue.add(clazz.getSuperclass());
