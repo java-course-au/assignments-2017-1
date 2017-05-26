@@ -126,10 +126,6 @@ public class SimpleImplementor implements Implementor {
         methods.addAll(Arrays.asList(cls.getDeclaredMethods()));
         methods.addAll(Arrays.asList(cls.getMethods()));
         extractMethods(cls.getSuperclass(), methods);
-
-//        for (Class interf : cls.getInterfaces()) {
-//            extractMethods(interf, methods);
-//        }
     }
 
     private void generateMethod(PrintWriter pw, Method method, VarNameGenerator gen) {
@@ -153,15 +149,6 @@ public class SimpleImplementor implements Implementor {
             sb.append("public ");
         } else if (Modifier.isProtected(mod)) {
             sb.append("protected ");
-        } else if (Modifier.isPrivate(mod)) {
-            sb.append("private ");
-        }
-
-        if (Modifier.isStatic(mod)) {
-            sb.append("static ");
-        }
-        if (Modifier.isFinal(mod)) {
-            sb.append("final ");
         }
 
         return sb.toString();
