@@ -17,7 +17,7 @@ public class SmartList<T> extends AbstractList<T> {
         add(obj);
     }
 
-    public SmartList(Collection<T> objs) {
+    public SmartList(Collection<? extends T> objs) {
         addAll(objs);
     }
 
