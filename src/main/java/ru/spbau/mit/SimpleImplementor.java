@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 public class SimpleImplementor implements Implementor {
 
     private String outputDirectory;
-    private int varNameInd = 0;
 
     public SimpleImplementor(String outputDirectory) {
         this.outputDirectory = outputDirectory;
@@ -84,6 +83,7 @@ public class SimpleImplementor implements Implementor {
     }
 
     private void generateClass(PrintWriter pw, Class clazz, Package pkg) {
+
         if (pkg != null) {
             pw.println(String.format("package %s;", clazz.getPackage().getName()));
         }
@@ -110,7 +110,8 @@ public class SimpleImplementor implements Implementor {
             resultMethods.add(m);
         }
 
-        resultMethods.forEach(m -> generateMethod(pw, m));
+        VarNameGenerator gen = new VarNameGenerator();
+        resultMethods.forEach(m -> generateMethod(pw, m, gen));
 
         pw.println("}");
 
@@ -130,22 +131,18 @@ public class SimpleImplementor implements Implementor {
         }
     }
 
-    private void generateMethod(PrintWriter pw, Method method) {
+    private void generateMethod(PrintWriter pw, Method method, VarNameGenerator gen) {
         String mods = getMethodModifiersString(method);
         String returnType = method.getReturnType().getCanonicalName();
         String name = method.getName();
         String parametersString = Arrays
                 .stream(method.getParameterTypes())
-                .map(cls -> cls.getCanonicalName() + " " + getFreshVarName())
+                .map(cls -> cls.getCanonicalName() + " " + gen.getFreshVarName())
                 .collect(Collectors.joining(","));
 
         pw.println(String.format("%s %s %s(%s) {", mods, returnType, name, parametersString));
         pw.println("throw new UnsupportedOperationException();");
         pw.println("}");
-    }
-
-    private String getFreshVarName() {
-        return "var" + varNameInd++;
     }
 
     private String getMethodModifiersString(Method method) {
@@ -169,4 +166,10 @@ public class SimpleImplementor implements Implementor {
         return sb.toString();
     }
 
+    private static class VarNameGenerator {
+        private int varNameInd = 0;
+        public String getFreshVarName() {
+            return "var" + varNameInd++;
+        }
+    }
 }
