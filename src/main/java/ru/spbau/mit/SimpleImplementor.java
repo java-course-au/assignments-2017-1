@@ -71,14 +71,15 @@ public class SimpleImplementor implements Implementor {
 
     private static void implMethods(final StringBuilder out, final Method method, final HashSet<String> methods) {
         StringBuilder tmp = new StringBuilder();
-        tmp.append("\t");
-        tmp.append(Modifier.toString(method.getModifiers()).replace("abstract", ""));
-        tmp.append(method.getReturnType().getCanonicalName()).append(" ");
-        tmp.append(method.getName()).append(" ");
-        implArgs(tmp, method);
-        tmp.append(" {\n");
-        implReturn(tmp, method.getReturnType());
-        tmp.append("\t}\n\n");
+        if (Modifier.isAbstract(method.getModifiers())) {
+            tmp.append("\t");
+            tmp.append(Modifier.toString(method.getModifiers()).replace("abstract", ""));
+            tmp.append(method.getReturnType().getCanonicalName()).append(" ");
+            tmp.append(method.getName()).append(" ");
+            implArgs(tmp, method);
+            tmp.append(" {\n");
+            implReturn(tmp, method.getReturnType());
+            tmp.append("\t}\n\n");
         if (!methods.contains(tmp.toString()) && !Modifier.isFinal(method.getModifiers())) {
             methods.add(tmp.toString());
             out.append(tmp.toString());
