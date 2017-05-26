@@ -108,6 +108,8 @@ public class SimpleImplementor implements Implementor {
             methods.addAll(Arrays.asList(curClass.getDeclaredMethods()));
         }
 
+        methods.addAll(Arrays.asList(clazz.getMethods()));
+
         methods = methods.stream()
                 .collect(Collectors.groupingBy(
                         method ->
