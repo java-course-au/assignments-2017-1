@@ -1,5 +1,7 @@
 package ru.spbau.mit;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -87,10 +89,8 @@ public class SimpleImplementor implements Implementor {
             String path = outputDirectory + File.separatorChar
                     + packages + File.separatorChar;
 
-            Files.createDirectories(Paths.get(path));
-            PrintWriter writer = new PrintWriter(path + derivedClassName + ".java");
-            writer.write(classBuilder.toString());
-            writer.close();
+            FileUtils.writeStringToFile(new File(path + derivedClassName
+                    + ".java"), classBuilder.toString());
         } catch (IOException e) {
             throw new ImplementorException("Cannot create output file", e);
         }
@@ -109,19 +109,6 @@ public class SimpleImplementor implements Implementor {
         for (Class<?> curClass = clazz; curClass != null; curClass = curClass.getSuperclass()) {
             baseClasses.add(curClass);
             methods.addAll(Arrays.asList(curClass.getDeclaredMethods()));
-        }
-
-        while (!baseClasses.isEmpty()) {
-            Class<?> curClass = baseClasses.poll();
-
-            for (Class<?> baseClass : curClass.getInterfaces()) {
-                methods.addAll(Arrays.asList(
-                        baseClass.getDeclaredMethods()
-                ));
-                baseClasses.addAll(Arrays.asList(
-                        baseClass.getInterfaces()
-                ));
-            }
         }
 
         methods = methods.stream()
@@ -176,12 +163,9 @@ public class SimpleImplementor implements Implementor {
             return "false";
         }
 
-        if (clazz == char.class) {
-            return "\'0\'";
-        }
-
         if (clazz == byte.class || clazz == short.class
-            || clazz == int.class || clazz == long.class) {
+            || clazz == int.class || clazz == long.class
+            || clazz == char.class) {
             return "0";
         }
 
