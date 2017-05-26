@@ -12,8 +12,6 @@ import java.net.URLClassLoader;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.stream.Collectors;
 
 public class SimpleImplementor implements Implementor {
@@ -88,20 +86,16 @@ public class SimpleImplementor implements Implementor {
     }
 
     private static void implBody(final StringBuilder out, final Class<?> cl) {
-        final Queue<Class> queue = new LinkedList<>();
         final HashSet<String> methods = new HashSet<>();
-        queue.add(cl);
-        while (!queue.isEmpty()) {
-            Class<?> clazz = queue.poll();
-            for (Method method : cl.getDeclaredMethods()) {
+        Class<?> current = cl;
+        while (current != null) {
+            for (Method method : current.getDeclaredMethods()) {
                 implMethods(out, method, methods);
             }
-            for (Method method : cl.getMethods()) {
+            for (Method method : current.getMethods()) {
                 implMethods(out, method, methods);
             }
-            if (clazz.getSuperclass() != null) {
-                queue.add(clazz.getSuperclass());
-            }
+            current = current.getSuperclass();
         }
     }
 
