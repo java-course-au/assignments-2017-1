@@ -29,7 +29,7 @@ public class SmartList<T> extends AbstractList<T> {
 
         if (size == 1) {
             return (T) list;
-        } else if (size < ARRAY_SIZE) {
+        } else if (size <= ARRAY_SIZE) {
             return ((T[]) (list))[i];
         } else {
             return ((ArrayList<T>) (list)).get(i);
@@ -45,7 +45,7 @@ public class SmartList<T> extends AbstractList<T> {
         T oldValue = get(i);
         if (size == 1) {
             list = t;
-        } else if (size < ARRAY_SIZE) {
+        } else if (size <= ARRAY_SIZE) {
             ((T[]) list)[i] = t;
         } else {
             ((ArrayList<T>) list).set(i, t);
@@ -60,16 +60,16 @@ public class SmartList<T> extends AbstractList<T> {
             list = t;
         } else if (size == 1) {
             T oldValue = (T) list;
-            T[] array = (T[]) (new Object[ARRAY_SIZE - 1]);
+            T[] array = (T[]) (new Object[ARRAY_SIZE]);
 
             array[0] = oldValue;
             array[1] = t;
 
             list = array;
-        } else if (size < ARRAY_SIZE - 1) {
+        } else if (size < ARRAY_SIZE) {
             T[] array = (T[]) list;
             array[size] = t;
-        } else if (size == ARRAY_SIZE - 1) {
+        } else if (size == ARRAY_SIZE) {
             ArrayList<T> arrayList = new ArrayList<>(ARRAY_SIZE + 1);
 
             T[] array = (T[]) list;
@@ -99,7 +99,7 @@ public class SmartList<T> extends AbstractList<T> {
             list = null;
         } else if (size == 2) {
             list = get((i + 1) % 2);
-        } else if (size < ARRAY_SIZE) {
+        } else if (size <= ARRAY_SIZE) {
             T[] array = (T[]) list;
 
             for (int j = 0; j < size; j++) {
@@ -107,8 +107,8 @@ public class SmartList<T> extends AbstractList<T> {
                     array[j - 1] = array[j];
                 }
             }
-        } else if (size == ARRAY_SIZE) {
-            T[] array = (T[]) new Object[ARRAY_SIZE - 1];
+        } else if (size == ARRAY_SIZE + 1) {
+            T[] array = (T[]) new Object[ARRAY_SIZE];
             ArrayList<T> arrayList = (ArrayList<T>) list;
 
             for (int j = 0; j < size; j++) {
