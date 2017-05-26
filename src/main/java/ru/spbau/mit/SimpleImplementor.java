@@ -10,9 +10,7 @@ import java.lang.reflect.Parameter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -133,15 +131,15 @@ public class SimpleImplementor implements Implementor {
     }
 
     private String implementMethod(Method method) {
-        List<String> methodImpl = new ArrayList<>();
+        StringBuilder methodImpl = new StringBuilder();
 
-        methodImpl.add(getModifier(method));
-        methodImpl.add(method.getReturnType().getCanonicalName());
-        methodImpl.add(method.getName());
-        methodImpl.add(getParameters(method.getParameters()));
-        methodImpl.add(getImplementationByReturnType(method.getReturnType()));
+        methodImpl.append(getModifier(method)).append(" ");
+        methodImpl.append(method.getReturnType().getCanonicalName()).append(" ");
+        methodImpl.append(method.getName()).append(" ");
+        methodImpl.append(getParameters(method.getParameters())).append(" ");
+        methodImpl.append(getImplementationByReturnType(method.getReturnType())).append(" ");
 
-        return String.join(" ", methodImpl);
+        return methodImpl.toString();
     }
 
     private String getModifier(Method method) {
