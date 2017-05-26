@@ -71,7 +71,7 @@ public class SimpleImplementor implements Implementor {
 
     private static void implMethods(final StringBuilder out, final Method method, final HashSet<String> methods) {
         StringBuilder tmp = new StringBuilder();
-        if (Modifier.isPublic(method.getModifiers()) || Modifier.isProtected(method.getModifiers())) {
+        if (Modifier.isAbstract(method.getModifiers())) {
             tmp.append("\t");
             tmp.append("public ");
             tmp.append(method.getReturnType().getCanonicalName()).append(" ");
