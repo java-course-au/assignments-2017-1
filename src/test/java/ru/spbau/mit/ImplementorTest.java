@@ -54,6 +54,57 @@ public class ImplementorTest {
         newImplementor();
     }
 
+    @Test
+    public void interfaceImplementationFromStandardLibrary() throws Exception {
+        checkInterfaceImplementationFromStandardLibrary("java.util.Queue");
+    }
+
+    @Test
+    public void abstractClassImplementationFromStandardLibrary() throws Exception {
+        checkAbstractClassImplementationFromStandardLibrary("java.util.AbstractQueue");
+    }
+
+    @Test
+    public void abstractClassImplementationFromStandardLib() throws Exception {
+        checkAbstractClassImplementationFromStandardLibrary("java.util.AbstractCollection");
+    }
+
+    @Test
+    public void interfaceImplementationFromFolder() throws Exception {
+        checkInterfaceImplementationFromFolder("ru.spbau.mit.SuperInterface");
+    }
+
+    @Test
+    public void abstractClassImplementationFromFolder() throws Exception {
+        checkAbstractClassImplementationFromFolder("ru.spbau.mit.SuperAbstract");
+    }
+
+    @Test
+    public void mostAbstractClassImplementationFromFolder() throws Exception {
+        checkAbstractClassImplementationFromFolder("ru.spbau.mit.DerivedAbstract");
+    }
+
+    @Test(expected = ImplementorException.class)
+    public void nonAvailableInterfaceInFile() throws Exception {
+        checkInterfaceImplementationFromFolder("ru.spbau.mit.NoSuchInterface");
+    }
+
+    @Test(expected = ImplementorException.class)
+    public void nonAvailableAbstractClassInFile() throws Exception {
+        checkAbstractClassImplementationFromFolder("ru.spbau.mit.NoSuchAbstractClass");
+    }
+
+    @Test(expected = ImplementorException.class)
+    public void nonAvailableInterfaceInStandardLibrary() throws Exception {
+        checkInterfaceImplementationFromStandardLibrary("ru.spbau.mit.NoSuchInterface");
+    }
+
+    @Test(expected = ImplementorException.class)
+    public void nonAvailableAbstractClassInStandardLibrary() throws Exception {
+        checkAbstractClassImplementationFromStandardLibrary("ru.spbau.mit.NoSuchAbstractClass");
+    }
+
+
     private void deleteFolderContent(File folder, boolean isInner) {
         File[] files = folder.listFiles();
         if (files != null) { //some JVMs return null for empty dirs
@@ -114,7 +165,7 @@ public class ImplementorTest {
         final Class<?> outputClass = compileAndLoadClass(implClassName);
         checkExtendsAbstractClass(className, outputClass);
     }
-    
+
     private void checkExtendsAbstractClass(String className, Class<?> outputClass) {
         assertThat(outputClass.getSuperclass().getCanonicalName(), is(className));
     }
