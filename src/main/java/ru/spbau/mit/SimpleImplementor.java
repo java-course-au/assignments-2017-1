@@ -1,8 +1,8 @@
 package ru.spbau.mit;
 
-import java.io.BufferedWriter;
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -69,36 +69,29 @@ public class SimpleImplementor implements Implementor {
         out.append(")");
     }
 
-    private static void implMethods(final StringBuilder out, final Class<?> cl, final HashSet<String> methods) {
-        for (Method method : cl.getDeclaredMethods()) {
-            StringBuilder tmp = new StringBuilder();
-            if (Modifier.isPublic(method.getModifiers()) || Modifier.isProtected(method.getModifiers())) {
-                tmp.append("\t");
-                tmp.append(Modifier.isPublic(cl.getModifiers()) ? "public " : "protected ");
-                tmp.append(method.getReturnType().getCanonicalName()).append(" ");
-                tmp.append(method.getName()).append(" ");
-                implArgs(tmp, method);
-                tmp.append(" {\n");
-                implReturn(tmp, method.getReturnType());
-                tmp.append("\t}\n\n");
-            }
-            int i = 0;
-            if (!methods.contains(tmp.toString()) && !Modifier.isFinal(method.getModifiers())) {
-                methods.add(tmp.toString());
-                out.append(tmp.toString());
-            }
-        }
-    }
-
     private static void implBody(final StringBuilder out, final Class<?> cl) {
         final Queue<Class> queue = new LinkedList<>();
         final HashSet<String> methods = new HashSet<>();
         queue.add(cl);
         while (!queue.isEmpty()) {
             Class<?> clazz = queue.poll();
-            implMethods(out, clazz, methods);
-            if (clazz.getInterfaces() != null) {
-                queue.addAll(Arrays.asList(clazz.getInterfaces()));
+            for (Method method : cl.getDeclaredMethods()) {
+                StringBuilder tmp = new StringBuilder();
+                if (Modifier.isPublic(method.getModifiers()) || Modifier.isProtected(method.getModifiers())) {
+                    tmp.append("\t");
+                    tmp.append("public ");
+                    tmp.append(method.getReturnType().getCanonicalName()).append(" ");
+                    tmp.append(method.getName()).append(" ");
+                    implArgs(tmp, method);
+                    tmp.append(" {\n");
+                    implReturn(tmp, method.getReturnType());
+                    tmp.append("\t}\n\n");
+                }
+                int i = 0;
+                if (!methods.contains(tmp.toString()) && !Modifier.isFinal(method.getModifiers())) {
+                    methods.add(tmp.toString());
+                    out.append(tmp.toString());
+                }
             }
             if (clazz.getSuperclass() != null) {
                 queue.add(clazz.getSuperclass());
@@ -124,8 +117,8 @@ public class SimpleImplementor implements Implementor {
         final File dirs = Paths.get(outputDirectory, pkgSplit).toFile();
         final File target = new File(dirs, cl.getSimpleName() + "Impl.java");
         dirs.mkdirs();
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(target))) {
-            writer.append(out.toString());
+        try {
+            FileUtils.writeStringToFile(target, out.toString());
         } catch (IOException e) {
             throw new ImplementorException("Unable to write the buffer to file", e);
         }
